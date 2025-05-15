@@ -1,0 +1,24 @@
+{
+    "name": "ols-viikkopelit",
+    "version": "1.0.0",
+    "description": "",
+    "main": "dist/pdfParser.js",
+    "type": "module",
+    "scripts": {
+        "start": "node dist/pdfParser.js",
+        "dev": "node --loader ts-node/esm src/pdfParser.ts",
+        "build": "tsc",
+        "extract": "node --loader ts-node/esm src/dataExtractor.ts"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "pdf2json": "^3.1.2"
+    },
+    "devDependencies": {
+        "@types/node": "^20.12.12",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.4.5"
+    }
+}
