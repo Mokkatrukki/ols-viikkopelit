@@ -25,6 +25,28 @@ interface GroupedTeamEntry {
   teams: string[];
 }
 
+// Define fieldMapData here
+const fieldMapData: { [key: string]: string } = {
+    "HEINÄPÄÄN TEKONURMI A": '/images/tekonurmi_map_kentta_a.png',
+    "HEINÄPÄÄN TEKONURMI B": '/images/tekonurmi_map_kentta_b.png',
+    "HEINÄPÄÄN TEKONURMI C": '/images/tekonurmi_map_kentta_c.png',
+    "HEINÄPÄÄN TEKONURMI D": '/images/tekonurmi_map_kentta_d.png',
+
+    "GARAM MASALA 1A": '/images/garam_masala_map_kentta_1a.png',
+    "GARAM MASALA 1B": '/images/garam_masala_map_kentta_1b.png',
+    "GARAM MASALA 1C": '/images/garam_masala_map_kentta_1c.png',
+    "GARAM MASALA 1D": '/images/garam_masala_map_kentta_1d.png',
+    "GARAM MASALA 2A": '/images/garam_masala_map_kentta_2a.png',
+    "GARAM MASALA 2B": '/images/garam_masala_map_kentta_2b.png',
+    "GARAM MASALA 2C": '/images/garam_masala_map_kentta_2c.png',
+    "GARAM MASALA 2D": '/images/garam_masala_map_kentta_2d.png',
+
+    "HEPA - HALLI A": '/images/heinapaan_halli_map_kentta_a.png',
+    "HEPA - HALLI B": '/images/heinapaan_halli_map_kentta_b.png',
+    "HEPA - HALLI C": '/images/heinapaan_halli_map_kentta_c.png',
+    "HEPA - HALLI D": '/images/heinapaan_halli_map_kentta_d.png'
+};
+
 // Helper function to get all unique teams and group them by extracted year
 function getGroupedTeams(allGamesData: GameInfo[]): GroupedTeamEntry[] {
     const teamsByBaseYear: Record<string, Set<string>> = {};
@@ -88,7 +110,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req: Request, res: Response) => {
   const groupedTeams = getGroupedTeams(allGames);
-  res.render('index', { groupedTeams, selectedTeam: null, gamesForTeam: [] });
+  res.render('index', { groupedTeams, selectedTeam: null, gamesForTeam: [], fieldMapData });
 });
 
 app.get('/team/:teamName', (req: Request, res: Response) => {
@@ -102,7 +124,7 @@ app.get('/team/:teamName', (req: Request, res: Response) => {
 
   const groupedTeams = getGroupedTeams(allGames);
 
-  res.render('index', { groupedTeams, selectedTeam: teamName, gamesForTeam });
+  res.render('index', { groupedTeams, selectedTeam: teamName, gamesForTeam, fieldMapData });
 });
 
 app.listen(PORT, () => {
