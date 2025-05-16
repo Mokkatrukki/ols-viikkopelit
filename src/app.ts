@@ -25,6 +25,25 @@ interface GroupedTeamEntry {
   teams: string[];
 }
 
+// Helper function to parse HH.MM time to minutes since midnight
+function parseTimeToMinutes(timeHM: string): number {
+    const parts = timeHM.split('.');
+    if (parts.length !== 2) return NaN; // Invalid format
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    if (isNaN(hours) || isNaN(minutes)) return NaN;
+    return hours * 60 + minutes;
+}
+
+// Helper function to get the start time of a game in minutes
+function getGameStartTimeInMinutes(game: GameInfo): number {
+    const timeParts = game.time.split(' - ');
+    if (timeParts.length > 0) {
+        return parseTimeToMinutes(timeParts[0]);
+    }
+    return NaN; // Should not happen with valid data
+}
+
 // Define fieldMapData here
 const fieldMapData: { [key: string]: string } = {
     "HEINÄPÄÄN TEKONURMI A": '/images/tekonurmi_map_kentta_a.png',
@@ -115,12 +134,39 @@ app.get('/', (req: Request, res: Response) => {
 
 app.get('/team/:teamName', (req: Request, res: Response) => {
   const teamName = decodeURIComponent(req.params.teamName);
-  const gamesForTeam = allGames.filter(
-    game => game.team1 === teamName || game.team2 === teamName
-  ).map(game => {
-    const opponent = game.team1 === teamName ? game.team2 : game.team1;
-    return { ...game, opponent: opponent || 'VASTUSTAJA PUUTTUU' }; // Handle cases with missing opponent
+  let gamesForTeam = allGames
+    .filter(game => game.team1 === teamName || game.team2 === teamName)
+    .map(game => {
+      const opponent = game.team1 === teamName ? game.team2 : game.team1;
+      return { ...game, opponent: opponent || 'VASTUSTAJA PUUTTUU' };
+    });
+
+  // Sort games by start time
+  gamesForTeam.sort((a, b) => {
+    const startTimeA = getGameStartTimeInMinutes(a);
+    const startTimeB = getGameStartTimeInMinutes(b);
+    if (isNaN(startTimeA) || isNaN(startTimeB)) return 0; // Keep order if times are invalid
+    return startTimeA - startTimeB;
   });
+
+  // Calculate break time between games
+  for (let i = 1; i < gamesForTeam.length; i++) {
+    const currentGame = gamesForTeam[i] as any; // Use any to add new property
+    const previousGame = gamesForTeam[i - 1];
+
+    const previousGameEndTimeParts = previousGame.time.split(' - ');
+    if (previousGameEndTimeParts.length === 2) {
+        const previousGameEndTimeMinutes = parseTimeToMinutes(previousGameEndTimeParts[1]);
+        const currentGameStartTimeMinutes = getGameStartTimeInMinutes(currentGame);
+
+        if (!isNaN(previousGameEndTimeMinutes) && !isNaN(currentGameStartTimeMinutes)) {
+            const breakDuration = currentGameStartTimeMinutes - previousGameEndTimeMinutes;
+            if (breakDuration > 0) {
+                currentGame.breakDurationMinutes = breakDuration;
+            }
+        }
+    }
+  }
 
   const groupedTeams = getGroupedTeams(allGames);
 
