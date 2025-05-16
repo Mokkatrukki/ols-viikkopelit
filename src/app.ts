@@ -8,10 +8,54 @@ interface GameInfo {
   field: string;
   gameDuration: string;
   gameType: string;
-  year: string;
+  year: string; // This is the game's league/season year, e.g., "2017 EP"
   time: string;
   team1: string;
   team2: string;
+}
+
+// Helper function to extract the base year (e.g., "2017" from "2017 EP")
+function getBaseYear(gameYear: string): string {
+    const match = gameYear.match(/^(\d{4})/); // Extracts the first 4 digits
+    return match ? match[1] : "Muut"; // Default to "Muut" if no 4-digit year found
+}
+
+interface GroupedTeamEntry {
+  year: string; // This will be the base year like "2017"
+  teams: string[];
+}
+
+// Helper function to get all unique teams and group them by extracted year
+function getGroupedTeams(allGamesData: GameInfo[]): GroupedTeamEntry[] {
+    const teamsByBaseYear: Record<string, Set<string>> = {};
+
+    allGamesData.forEach(game => {
+        const baseYear = getBaseYear(game.year);
+        if (!teamsByBaseYear[baseYear]) {
+            teamsByBaseYear[baseYear] = new Set<string>();
+        }
+        if (game.team1 && game.team1.trim() !== "") {
+            teamsByBaseYear[baseYear].add(game.team1);
+        }
+        if (game.team2 && game.team2.trim() !== "") {
+            teamsByBaseYear[baseYear].add(game.team2);
+        }
+    });
+
+    const result: GroupedTeamEntry[] = [];
+    Object.keys(teamsByBaseYear).sort((a, b) => {
+        // Sort "Muut" last, otherwise numerically by year
+        if (a === "Muut") return 1;
+        if (b === "Muut") return -1;
+        return parseInt(a, 10) - parseInt(b, 10);
+    }).forEach(baseYear => {
+        result.push({
+            year: baseYear,
+            teams: Array.from(teamsByBaseYear[baseYear]).sort()
+        });
+    });
+
+    return result;
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -43,13 +87,8 @@ app.set('views', path.join(__dirname, '..', 'views')); // Assuming views are in 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req: Request, res: Response) => {
-  const teams = new Set<string>();
-  allGames.forEach(game => {
-    if (game.team1) teams.add(game.team1);
-    if (game.team2) teams.add(game.team2);
-  });
-  const sortedTeams = Array.from(teams).sort();
-  res.render('index', { teams: sortedTeams, selectedTeam: null, gamesForTeam: [] });
+  const groupedTeams = getGroupedTeams(allGames);
+  res.render('index', { groupedTeams, selectedTeam: null, gamesForTeam: [] });
 });
 
 app.get('/team/:teamName', (req: Request, res: Response) => {
@@ -61,14 +100,9 @@ app.get('/team/:teamName', (req: Request, res: Response) => {
     return { ...game, opponent: opponent || 'VASTUSTAJA PUUTTUU' }; // Handle cases with missing opponent
   });
 
-  const teams = new Set<string>();
-  allGames.forEach(game => {
-    if (game.team1) teams.add(game.team1);
-    if (game.team2) teams.add(game.team2);
-  });
-  const sortedTeams = Array.from(teams).sort();
+  const groupedTeams = getGroupedTeams(allGames);
 
-  res.render('index', { teams: sortedTeams, selectedTeam: teamName, gamesForTeam });
+  res.render('index', { groupedTeams, selectedTeam: teamName, gamesForTeam });
 });
 
 app.listen(PORT, () => {
