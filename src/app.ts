@@ -39,8 +39,8 @@ try {
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views')); // Assuming views are in project_root/views
 
-// Serve static files (CSS, images, etc.) - we'll create a public folder later
-// app.use(express.static(path.join(__dirname, '..', 'public')));
+// Serve static files (CSS, images, etc.)
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req: Request, res: Response) => {
   const teams = new Set<string>();
