@@ -1,12 +1,21 @@
 import fs from 'fs';
 import PDFParser from 'pdf2json';
+import { exec } from 'child_process';
 
-// The path to the PDF file, assuming it's in the project root
-const pdfFilePath = './Viikkopelit_15_5_2025.pdf';
+// Get PDF filename from command line arguments
+const pdfFileNameArg = process.argv[2];
+
+if (!pdfFileNameArg) {
+  console.error('Error: PDF filename not provided.');
+  console.log('Usage: npm run process-pdf -- <filename.pdf>');
+  process.exit(1); // Exit with an error code
+}
+
+const pdfFilePath = `./${pdfFileNameArg}`; // Prepend './' to look in the current directory
 const outputJsonFilePath = './parsed_pdf_data.json'; // New output file
 
 // Use default constructor for full JSON output
-const pdfParser = new PDFParser(); 
+const pdfParser = new PDFParser();
 
 pdfParser.on('pdfParser_dataError', (errData: any) => {
   console.error(`Error parsing PDF: ${pdfFilePath}`);
@@ -14,7 +23,7 @@ pdfParser.on('pdfParser_dataError', (errData: any) => {
 });
 
 // The pdfData argument here contains the full structured data
-pdfParser.on('pdfParser_dataReady', (pdfData: any) => { 
+pdfParser.on('pdfParser_dataReady', (pdfData: any) => {
   console.log(`PDF parsed successfully: ${pdfFilePath}`);
   try {
     const jsonString = JSON.stringify(pdfData, null, 2); // Pretty print JSON
@@ -23,6 +32,22 @@ pdfParser.on('pdfParser_dataReady', (pdfData: any) => {
         console.error(`Error writing JSON data to file: ${outputJsonFilePath}`, err);
       } else {
         console.log(`Structured PDF data saved to ${outputJsonFilePath}`);
+        // Now, run the dataExtractor.ts script
+        const extractCommand = 'node --loader ts-node/esm src/dataExtractor.ts';
+        console.log(`Executing: ${extractCommand}`);
+        exec(extractCommand, (error, stdout, stderr) => {
+          if (error) {
+            console.error(`Error executing dataExtractor.ts: ${error.message}`);
+            return;
+          }
+          if (stderr) {
+            console.error(`dataExtractor.ts stderr: ${stderr}`);
+            // Potentially return here if stderr indicates a critical error,
+            // or just log it and assume stdout will confirm success/failure.
+          }
+          console.log(`dataExtractor.ts stdout: ${stdout}`);
+          console.log('Data extraction completed.');
+        });
       }
     });
   } catch (e) {
@@ -36,4 +61,6 @@ if (fs.existsSync(pdfFilePath)) {
   pdfParser.loadPDF(pdfFilePath);
 } else {
   console.error(`PDF file not found at: ${pdfFilePath}. Please ensure the file exists in the project root.`);
+  console.log('Make sure the filename passed as an argument is correct and the file is in the root directory.');
+  process.exit(1); // Exit with an error code if file not found
 } 

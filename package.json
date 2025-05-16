@@ -10,7 +10,8 @@
         "start:server": "node --loader ts-node/esm src/app.ts",
         "build": "tsc && npm run build:css",
         "build:css": "tailwindcss -i ./src/input.css -o ./public/css/style.css --watch",
-        "extract": "node --loader ts-node/esm src/dataExtractor.ts"
+        "extract": "node --loader ts-node/esm src/dataExtractor.ts",
+        "process-pdf": "node --loader ts-node/esm src/pdfParser.ts"
     },
     "keywords": [],
     "author": "",

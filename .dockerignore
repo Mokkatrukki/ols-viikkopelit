@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.git
+.gitignore
+# dist is created during the Docker build, so it should not be ignored here if we copy '.'
+# However, if your build process relies on a pre-built dist, adjust accordingly.
+# For now, assuming 'npm run build' in Dockerfile handles it.
+
+# Input PDF and intermediate JSON files
+# If Viikkopelit_*.pdf and parsed_pdf_data.json are only build-time artifacts
+# and not needed by the running app, they can be ignored.
+# extracted_games_output.json is needed by the app, so it should NOT be ignored.
+parsed_pdf_data.json 

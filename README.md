@@ -17,17 +17,12 @@ This web application is designed to parse and display game schedules from the OL
 
 ## PDF Parsing
 
-The core of this application is its PDF parsing capability, which transforms the visual layout of the game schedule PDF into structured data. This is a two-step process:
+The core of this application is its PDF parsing capability, which transforms the visual layout of the game schedule PDF into structured data. This process is now streamlined:
 
-1.  **Initial PDF to JSON Conversion (`src/pdfParser.ts`)**:
-    *   The `pdf2json` library is used to convert the input PDF file (e.g., `Viikkopelit_15_5_2025.pdf`) into a detailed JSON structure.
-    *   This initial JSON output (`parsed_pdf_data.json`) contains all text elements along with their precise coordinates (x, y), font information, and page numbers. This level of detail is crucial for handling the PDF's column-based layout where raw text extraction would result in jumbled data.
-
-2.  **Structured Data Extraction (`src/dataExtractor.ts`)**:
-    *   This script takes the `parsed_pdf_data.json` as input.
-    *   It processes the text elements, grouping them into lines and then identifying game blocks based on their spatial relationships.
-    *   It extracts key game information such as time, teams, opponent, field, game duration, game type, and year (league/season).
-    *   The final extracted game data is saved into `extracted_games_output.json` in a structured format, ready for use by the web application.
+1.  **PDF to Structured Data (`src/pdfParser.ts` and `src/dataExtractor.ts` working together)**:
+    *   The `pdf2json` library is used for initial conversion of the input PDF file into a detailed JSON structure (`parsed_pdf_data.json`). This contains all text elements with their precise coordinates, crucial for handling column-based layouts.
+    *   The `src/dataExtractor.ts` script then processes this intermediate JSON to identify game blocks and extract key game information (time, teams, opponent, field, etc.).
+    *   These two steps are now orchestrated by a single command (see "Setup and Usage"). The final extracted game data is saved into `extracted_games_output.json`, ready for the web application.
 
 ## Tech Stack
 
@@ -49,19 +44,21 @@ The core of this application is its PDF parsing capability, which transforms the
     npm install
     ```
 
-3.  **Place the PDF and Generate Game Data:**
-    *   Ensure the target PDF file (e.g., `Viikkopelit_15_5_2025.pdf`) is present in the root directory of the project, or update the path in `src/pdfParser.ts`.
-    *   Run the PDF parsing process (this might need to be adapted based on your `package.json` scripts for `pdfParser.ts` and `dataExtractor.ts`):
-        *   To generate intermediate `parsed_pdf_data.json` (if your `npm run dev` points to `pdfParser.ts` or similar):
-            ```bash
-            # Example: node --loader ts-node/esm src/pdfParser.ts 
-            ```
-        *   To extract structured game data into `extracted_games_output.json`:
-            ```bash
-            npm run extract 
-            # or directly: node --loader ts-node/esm src/dataExtractor.ts
-            ```
-        This `extracted_games_output.json` is crucial for the application to run.
+3.  **Generate Game Data from PDF:**
+    *   Place your Viikkopelit PDF file (e.g., `Viikkopelit_8_5_2025.pdf`) in the root directory of the project.
+    *   Run the PDF processing script, providing the name of your PDF file as an argument:
+        ```bash
+        npm run process-pdf -- your_pdf_filename.pdf
+        ```
+        For example:
+        ```bash
+        npm run process-pdf -- Viikkopelit_8_5_2025.pdf
+        ```
+    *   This command will:
+        1.  Invoke `src/pdfParser.ts` with your specified PDF.
+        2.  Generate an intermediate `parsed_pdf_data.json`.
+        3.  Automatically trigger `src/dataExtractor.ts` to process the intermediate JSON.
+        4.  Produce the final `extracted_games_output.json` required by the application.
 
 4.  **Build the project:**
     *   This compiles TypeScript and Tailwind CSS.
