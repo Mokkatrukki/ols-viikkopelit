@@ -1,4 +1,5 @@
 node_modules/
 extracted_games_output.json
 parsed_pdf_data.json
-parsed_text_content.txt 
+parsed_text_content.txt
+/dist 
