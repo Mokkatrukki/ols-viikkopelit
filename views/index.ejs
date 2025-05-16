@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OLS Viikkopelit</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        
+        h1,
+        h2 {
+            color: #005a9c;
+            /* OLS Blue */
+            text-align: center;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .schedule {
+            margin-top: 20px;
+        }
+        
+        .match {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        
+        .match p {
+            margin: 5px 0;
+            line-height: 1.6;
+        }
+        
+        .match strong {
+            color: #005a9c;
+        }
+        
+        .no-games {
+            text-align: center;
+            color: #777;
+            padding: 20px;
+        }
+        /* Basic responsive adjustments */
+        
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>OLS Viikkopelit</h1>
+
+        <form id="teamSelectorForm" method="GET">
+            <label for="teamSelect">Valitse joukkue:</label>
+            <select name="teamName" id="teamSelect" onchange="this.form.action = '/team/' + encodeURIComponent(this.value); this.form.submit();">
+                <option value="">-- Valitse joukkue --</option>
+                <% teams.forEach(team => { %>
+                    <option value="<%- team %>" <%= selectedTeam === team ? 'selected' : '' %>>
+                        <%- team %>
+                    </option>
+                <% }); %>
+            </select>
+        </form>
+
+        <% if (selectedTeam && gamesForTeam && gamesForTeam.length > 0) { %>
+            <h2>
+                <%- selectedTeam %> - Otteluohjelma</h2>
+            <div class="schedule">
+                <% gamesForTeam.forEach(game => { %>
+                    <div class="match">
+                        <p><strong>🗓️ Aika:</strong>
+                            <%- game.time %>
+                        </p>
+                        <p><strong>🆚 Vastustaja:</strong>
+                            <%- game.opponent %>
+                        </p>
+                        <p><strong>📍 Kenttä:</strong>
+                            <%- game.field %>
+                        </p>
+                        <p><strong>ℹ️ Info:</strong>
+                            <%- game.gameDuration %>,
+                                <%- game.gameType %> (
+                                    <%- game.year %>)</p>
+                        <!-- Placeholder for map link -->
+                        <!-- <p><a href="#">🗺️ Näytä kartalla</a></p> -->
+                    </div>
+                    <% }); %>
+            </div>
+            <% } else if (selectedTeam) { %>
+                <p class="no-games">Ei pelejä valitulle joukkueelle (
+                    <%- selectedTeam %>).</p>
+                <% } else { %>
+                    <p class="no-games">Valitse joukkue ylläolevasta listasta nähdäksesi otteluohjelman.</p>
+                    <% } %>
+    </div>
+
+    <script>
+        // Optional: if you want to avoid the form action change and use JS for navigation
+        // document.getElementById('teamSelect').addEventListener('change', function() {
+        //     if (this.value) {
+        //         window.location.href = '/team/' + encodeURIComponent(this.value);
+        //     }
+        // });
+    </script>
+</body>
+
+</html>

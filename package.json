@@ -5,8 +5,9 @@
     "main": "dist/pdfParser.js",
     "type": "module",
     "scripts": {
-        "start": "node dist/pdfParser.js",
+        "start": "node dist/app.js",
         "dev": "node --loader ts-node/esm src/pdfParser.ts",
+        "start:server": "node --loader ts-node/esm src/app.ts",
         "build": "tsc",
         "extract": "node --loader ts-node/esm src/dataExtractor.ts"
     },
@@ -14,6 +15,10 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@types/ejs": "^3.1.5",
+        "@types/express": "^5.0.1",
+        "ejs": "^3.1.10",
+        "express": "^5.1.0",
         "pdf2json": "^3.1.2"
     },
     "devDependencies": {
