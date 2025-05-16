@@ -25,6 +25,12 @@ interface PdfJsonOutput {
   Pages: PdfJsonPage[];
 }
 
+// New interface for the final output structure
+interface ExtractedOutput {
+  documentDate: string | null;
+  games: GameInfo[];
+}
+
 // ----- Interfaces for our extracted data -----
 interface ExtractedTextElement {
   text: string;
@@ -274,6 +280,26 @@ async function main() {
       return;
     }
 
+    let documentDate: string | null = null;
+    // Try to extract date from the first page
+    if (pdfData.Pages.length > 0) {
+      const firstPageTexts = extractTextElementsFromPage(pdfData.Pages[0]);
+      // Regex to find dd.mm.yyyy or d.m.yyyy pattern within a string
+      const dateRegex = /(\d{1,2}\.\d{1,2}\.\d{4})/; 
+      for (const textElement of firstPageTexts) {
+        const potentialText = textElement.text.trim();
+        const match = potentialText.match(dateRegex);
+        if (match && match[1]) { // Check if regex matches and capturing group is found
+          documentDate = match[1]; // Assign the captured date string
+          console.log(`--- Found Document Date: ${documentDate} (from text: "${potentialText}") ---`);
+          break; // Assuming the first match is the correct one
+        }
+      }
+      if (!documentDate) {
+        console.log("--- Document Date not found on the first page ---");
+      }
+    }
+
     const allGames: GameInfo[] = [];
 
     for (let i = 0; i < pdfData.Pages.length; i++) {
@@ -297,14 +323,20 @@ async function main() {
     console.log(`
 Extraction finished. Found ${allGames.length} games in total.`);
     // For inspection, print the first few games if any
-    if (allGames.length > 0) {
+    if (allGames.length > 0 || documentDate) {
       console.log("\n--- Sample Extracted Games ---");
       allGames.slice(0, 5).forEach(game => console.log(game));
+      
+      const outputData: ExtractedOutput = {
+        documentDate,
+        games: allGames
+      };
+
        // Save all games to a file for easier inspection
-      fs.writeFileSync('extracted_games_output.json', JSON.stringify(allGames, null, 2));
-      console.log('\nAll extracted games saved to extracted_games_output.json');
+      fs.writeFileSync('extracted_games_output.json', JSON.stringify(outputData, null, 2));
+      console.log('\nAll extracted data (including date and games) saved to extracted_games_output.json');
     } else {
-      console.log('No games extracted, so extracted_games_output.json was not written.');
+      console.log('No games extracted and no date found, so extracted_games_output.json was not written.');
     }
     
 

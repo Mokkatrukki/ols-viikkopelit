@@ -107,13 +107,26 @@ const PORT = process.env.PORT || 3002;
 
 // Path to the JSON data
 const jsonDataPath = path.join(__dirname, '..', 'extracted_games_output.json');
+
+interface ExtractedData {
+  documentDate: string | null;
+  games: GameInfo[];
+}
+
 let allGames: GameInfo[] = [];
+let documentDate: string | null = null;
 
 // Read and parse the JSON data
 try {
   const fileContent = fs.readFileSync(jsonDataPath, 'utf-8');
-  allGames = JSON.parse(fileContent);
+  const parsedData: ExtractedData = JSON.parse(fileContent);
+  allGames = parsedData.games; // Assign the games array
+  documentDate = parsedData.documentDate; // Assign the document date
+
   console.log(`Successfully loaded ${allGames.length} games.`);
+  if (documentDate) {
+    console.log(`Document date: ${documentDate}`);
+  }
 } catch (error) {
   console.error('Error reading or parsing game data:', error);
   // Exit or provide default empty data if the file is critical and not found
@@ -129,7 +142,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req: Request, res: Response) => {
   const groupedTeams = getGroupedTeams(allGames);
-  res.render('index', { groupedTeams, selectedTeam: null, gamesForTeam: [], fieldMapData });
+  res.render('index', { documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : ''}`, groupedTeams, selectedTeam: null, gamesForTeam: [], fieldMapData });
 });
 
 app.get('/team/:teamName', (req: Request, res: Response) => {
@@ -170,7 +183,7 @@ app.get('/team/:teamName', (req: Request, res: Response) => {
 
   const groupedTeams = getGroupedTeams(allGames);
 
-  res.render('index', { groupedTeams, selectedTeam: teamName, gamesForTeam, fieldMapData });
+  res.render('index', { documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : ''}`, groupedTeams, selectedTeam: teamName, gamesForTeam, fieldMapData });
 });
 
 app.listen(PORT, () => {
