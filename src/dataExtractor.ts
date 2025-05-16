@@ -29,6 +29,7 @@ interface PdfJsonOutput {
 interface ExtractedOutput {
   documentDate: string | null;
   games: GameInfo[];
+  sourceFile?: string; // Added to store the name of the PDF it came from
 }
 
 // ----- Interfaces for our extracted data -----
@@ -51,6 +52,8 @@ interface GameInfo {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
 
 function decodeText(encodedText: string): string {
   try {
@@ -267,82 +270,101 @@ function processPageLines(lines: ExtractedTextElement[][], pageWidth: number): G
 }
 
 async function main() {
-  const jsonFilePath = path.join(__dirname, '..', 'parsed_pdf_data.json');
-  console.log(`Reading PDF data from: ${jsonFilePath}`);
+  const inputPath = path.join(PERSISTENT_STORAGE_BASE_PATH, 'parsed_pdf_data.json');
+  const outputPath = path.join(PERSISTENT_STORAGE_BASE_PATH, 'extracted_games_output.json');
 
+  console.log(`Reading PDF data from: ${inputPath}`);
+  let rawPdfJson: string;
   try {
-    const fileContent = fs.readFileSync(jsonFilePath, 'utf-8');
-    const pdfData = JSON.parse(fileContent) as PdfJsonOutput;
-
-    console.log(`Successfully parsed PDF data. Number of pages: ${pdfData.Pages.length}`);
-    if (pdfData.Pages.length === 0) {
-      console.log('No pages found in PDF data.');
-      return;
-    }
-
-    let documentDate: string | null = null;
-    // Try to extract date from the first page
-    if (pdfData.Pages.length > 0) {
-      const firstPageTexts = extractTextElementsFromPage(pdfData.Pages[0]);
-      // Regex to find dd.mm.yyyy or d.m.yyyy pattern within a string
-      const dateRegex = /(\d{1,2}\.\d{1,2}\.\d{4})/; 
-      for (const textElement of firstPageTexts) {
-        const potentialText = textElement.text.trim();
-        const match = potentialText.match(dateRegex);
-        if (match && match[1]) { // Check if regex matches and capturing group is found
-          documentDate = match[1]; // Assign the captured date string
-          console.log(`--- Found Document Date: ${documentDate} (from text: "${potentialText}") ---`);
-          break; // Assuming the first match is the correct one
-        }
-      }
-      if (!documentDate) {
-        console.log("--- Document Date not found on the first page ---");
-      }
-    }
-
-    const allGames: GameInfo[] = [];
-
-    for (let i = 0; i < pdfData.Pages.length; i++) {
-      const page = pdfData.Pages[i];
-      console.log(`
---- Processing Page ${i + 1} ---`);
-      const extractedTexts = extractTextElementsFromPage(page);
-      const lines = groupElementsByLine(extractedTexts);
-      
-      // console.log(`--- Grouped Text Lines from Page ${i + 1} ---`);
-      // lines.forEach((line, index) => {
-      //   const lineText = line.map(el => `"${el.text}" (x:${el.x.toFixed(2)})`).join(' | ');
-      //   const lineY = line.length > 0 ? line[0].y.toFixed(3) : 'N/A';
-      //   console.log(`Line ${index + 1} (y~${lineY}, items: ${line.length}): ${lineText}`);
-      // });
-
-      const gamesFromPage = processPageLines(lines, page.Width);
-      allGames.push(...gamesFromPage);
-    }
-    
-    console.log(`
-Extraction finished. Found ${allGames.length} games in total.`);
-    // For inspection, print the first few games if any
-    if (allGames.length > 0 || documentDate) {
-      console.log("\n--- Sample Extracted Games ---");
-      allGames.slice(0, 5).forEach(game => console.log(game));
-      
-      const outputData: ExtractedOutput = {
-        documentDate,
-        games: allGames
-      };
-
-       // Save all games to a file for easier inspection
-      fs.writeFileSync('extracted_games_output.json', JSON.stringify(outputData, null, 2));
-      console.log('\nAll extracted data (including date and games) saved to extracted_games_output.json');
-    } else {
-      console.log('No games extracted and no date found, so extracted_games_output.json was not written.');
-    }
-    
-
+    rawPdfJson = fs.readFileSync(inputPath, 'utf-8');
   } catch (error) {
-    console.error('Error processing PDF data:', error);
+    console.error(`Failed to read input JSON file: ${inputPath}`, error);
+    return;
   }
+
+  let parsedData: PdfJsonOutput & { sourcePdfFile?: string }; // Add sourcePdfFile to type
+  try {
+    parsedData = JSON.parse(rawPdfJson);
+  } catch (error) {
+    console.error(`Failed to parse input JSON from ${inputPath}`, error);
+    return;
+  }
+
+  if (!parsedData || !parsedData.Pages || parsedData.Pages.length === 0) {
+    console.log('No pages found in PDF data.');
+    return;
+  }
+
+  let documentDate: string | null = null;
+  // Try to extract date from the first page
+  if (parsedData.Pages.length > 0) {
+    const firstPageTexts = extractTextElementsFromPage(parsedData.Pages[0]);
+    // Regex to find dd.mm.yyyy or d.m.yyyy pattern within a string
+    const dateRegex = /(\d{1,2}\.\d{1,2}\.\d{4})/; 
+    for (const textElement of firstPageTexts) {
+      const potentialText = textElement.text.trim();
+      const match = potentialText.match(dateRegex);
+      if (match && match[1]) { // Check if regex matches and capturing group is found
+        documentDate = match[1]; // Assign the captured date string
+        console.log(`--- Found Document Date: ${documentDate} (from text: "${potentialText}") ---`);
+        break; // Assuming the first match is the correct one
+      }
+    }
+    if (!documentDate) {
+      console.log("--- Document Date not found on the first page ---");
+    }
+  }
+
+  const allGames: GameInfo[] = [];
+
+  for (let i = 0; i < parsedData.Pages.length; i++) {
+    const page = parsedData.Pages[i];
+    console.log(`
+--- Processing Page ${i + 1} ---`);
+    const extractedTexts = extractTextElementsFromPage(page);
+    const lines = groupElementsByLine(extractedTexts);
+    
+    // console.log(`--- Grouped Text Lines from Page ${i + 1} ---`);
+    // lines.forEach((line, index) => {
+    //   const lineText = line.map(el => `"${el.text}" (x:${el.x.toFixed(2)})`).join(' | ');
+    //   const lineY = line.length > 0 ? line[0].y.toFixed(3) : 'N/A';
+    //   console.log(`Line ${index + 1} (y~${lineY}, items: ${line.length}): ${lineText}`);
+    // });
+
+    const gamesFromPage = processPageLines(lines, page.Width);
+    allGames.push(...gamesFromPage);
+  }
+  
+  console.log(`
+Extraction finished. Found ${allGames.length} games in total.`);
+  // For inspection, print the first few games if any
+  if (allGames.length > 0 || documentDate) {
+    console.log("\n--- Sample Extracted Games ---");
+    allGames.slice(0, 5).forEach(game => console.log(game));
+    
+    const outputData: ExtractedOutput = {
+      documentDate,
+      games: allGames,
+      sourceFile: parsedData.sourcePdfFile ? path.basename(parsedData.sourcePdfFile) : undefined // Extract and store just the filename
+    };
+
+    // Ensure the output directory exists before writing the final JSON
+    const outputDir = path.dirname(outputPath);
+    try {
+        fs.mkdirSync(outputDir, { recursive: true }); // Use mkdirSync for simplicity here or convert main to async for await fs.promises.mkdir
+        console.log(`Directory ensured for final output: ${outputDir}`);
+    } catch (error) {
+        console.error(`Error creating directory ${outputDir} for final output:`, error);
+        // Decide if to throw or proceed if directory already exists (recursive:true handles this for mkdirSync)
+    }
+
+    fs.writeFileSync(outputPath, JSON.stringify(outputData, null, 2));
+    console.log(`\nAll extracted data (including date and games) saved to ${outputPath}`);
+  } else {
+    console.log('No games extracted and no date found, so extracted_games_output.json was not written.');
+  }
+  
+
 }
 
 main().catch(console.error); 

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import PDFParser from 'pdf2json';
 import { exec } from 'child_process';
+import path from 'path';
 
 // Get PDF filename from command line arguments
 const pdfFileNameArg = process.argv[2];
@@ -11,8 +12,23 @@ if (!pdfFileNameArg) {
   process.exit(1); // Exit with an error code
 }
 
-const pdfFilePath = `./${pdfFileNameArg}`; // Prepend './' to look in the current directory
-const outputJsonFilePath = './parsed_pdf_data.json'; // New output file
+// const pdfFilePath = `./${pdfFileNameArg}`; // Prepend './' to look in the current directory
+const pdfFilePath = path.isAbsolute(pdfFileNameArg) ? pdfFileNameArg : `./${pdfFileNameArg}`;
+
+const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
+const outputJsonFilePath = path.join(PERSISTENT_STORAGE_BASE_PATH, 'parsed_pdf_data.json');
+
+// Function to ensure directory for outputJsonFilePath exists
+async function ensureOutputDirectoryExists() {
+    const dir = path.dirname(outputJsonFilePath);
+    try {
+        await fs.promises.mkdir(dir, { recursive: true });
+        console.log(`Directory ensured for output JSON: ${dir}`);
+    } catch (error) {
+        console.error(`Error creating directory ${dir} for output JSON:`, error);
+        throw error; 
+    }
+}
 
 // Use default constructor for full JSON output
 const pdfParser = new PDFParser();
@@ -23,10 +39,17 @@ pdfParser.on('pdfParser_dataError', (errData: any) => {
 });
 
 // The pdfData argument here contains the full structured data
-pdfParser.on('pdfParser_dataReady', (pdfData: any) => {
+pdfParser.on('pdfParser_dataReady', async (pdfData: any) => {
   console.log(`PDF parsed successfully: ${pdfFilePath}`);
   try {
-    const jsonString = JSON.stringify(pdfData, null, 2); // Pretty print JSON
+    await ensureOutputDirectoryExists(); // Ensure directory before writing
+
+    // Add the source PDF filename to the data before stringifying
+    const dataToWrite = {
+        sourcePdfFile: pdfFileNameArg, // The original argument, which could be relative or absolute
+        ...pdfData
+    };
+    const jsonString = JSON.stringify(dataToWrite, null, 2); // Pretty print JSON
     fs.writeFile(outputJsonFilePath, jsonString, (err: Error | null) => {
       if (err) {
         console.error(`Error writing JSON data to file: ${outputJsonFilePath}`, err);

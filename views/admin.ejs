@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - OLS Viikkopelit Schedule</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+        async function triggerUpdate() {
+            const button = document.getElementById('updateButton');
+            const messageDiv = document.getElementById('message');
+
+            button.disabled = true;
+            button.textContent = 'Updating...';
+            messageDiv.textContent = 'Attempting to fetch and process the latest PDF schedule. This may take a moment...';
+            messageDiv.className = 'text-blue-700';
+
+            try {
+                const response = await fetch('/trigger-pdf-update', {
+                    method: 'POST'
+                });
+
+                const responseText = await response.text(); // Get text for more detailed messages
+
+                if (response.ok) {
+                    messageDiv.textContent = `Update process initiated successfully. Server response: ${responseText}. Page will refresh in 5 seconds to reflect potential changes.`;
+                    messageDiv.className = 'text-green-700';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
+                } else {
+                    messageDiv.textContent = `Error: ${response.status} - ${responseText || 'Failed to trigger update.'}`;
+                    messageDiv.className = 'text-red-700';
+                }
+            } catch (error) {
+                console.error('Client-side error triggering update:', error);
+                messageDiv.textContent = 'Client-side error: ' + error.message;
+                messageDiv.className = 'text-red-700';
+            }
+
+            button.disabled = false;
+            button.textContent = 'Check for New Schedule & Update';
+        }
+    </script>
+</head>
+
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-4 text-center">OLS Schedule Updater</h1>
+
+        <div class="mb-4">
+            <h2 class="text-xl font-semibold mb-2">Current Schedule Information</h2>
+            <% if (scheduleDate) { %>
+                <p>Based on schedule for: <span class="font-semibold"><%= scheduleDate %></span></p>
+                <% } else if (scheduleFile) { %>
+                    <p>Based on file: <span class="font-semibold"><%= scheduleFile %></span> (Date not found in data)</p>
+                    <% } else { %>
+                        <p>No schedule data loaded yet, or data file is missing/corrupt.</p>
+                        <% } %>
+        </div>
+
+        <button id="updateButton" onclick="triggerUpdate()" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            Check for New Schedule & Update
+        </button>
+
+        <div id="message" class="mt-4 p-3 rounded-md text-sm"></div>
+    </div>
+</body>
+
+</html>

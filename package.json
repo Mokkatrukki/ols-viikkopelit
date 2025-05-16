@@ -11,7 +11,8 @@
         "build": "tsc && npm run build:css",
         "build:css": "tailwindcss -i ./src/input.css -o ./public/css/style.css --watch",
         "extract": "node --loader ts-node/esm src/dataExtractor.ts",
-        "process-pdf": "node --loader ts-node/esm src/pdfParser.ts"
+        "process-pdf": "node --loader ts-node/esm src/pdfParser.ts",
+        "update-schedule": "node --loader ts-node/esm src/updateLatestPdf.ts"
     },
     "keywords": [],
     "author": "",
@@ -21,10 +22,12 @@
         "@types/express": "^5.0.1",
         "ejs": "^3.1.10",
         "express": "^5.1.0",
-        "pdf2json": "^3.1.2"
+        "pdf2json": "^3.1.2",
+        "puppeteer": "^22.9.0"
     },
     "devDependencies": {
         "@types/node": "^20.12.12",
+        "@types/puppeteer": "^7.0.4",
         "autoprefixer": "^10.4.21",
         "postcss": "^8.5.3",
         "tailwindcss": "^3.4.0",

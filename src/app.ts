@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { runUpdater } from './updateLatestPdf.js'; // Added .js extension
 
 // Define the GameInfo interface (can be moved to a shared types file later)
 interface GameInfo {
@@ -105,33 +106,63 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3002;
 
+const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
 // Path to the JSON data
-const jsonDataPath = path.join(__dirname, '..', 'extracted_games_output.json');
+const jsonDataPath = path.join(PERSISTENT_STORAGE_BASE_PATH, 'extracted_games_output.json');
 
 interface ExtractedData {
   documentDate: string | null;
   games: GameInfo[];
+  sourceFile?: string; // Optional: to store the name of the PDF it came from
 }
 
 let allGames: GameInfo[] = [];
 let documentDate: string | null = null;
+let sourceFile: string | null = null; // To store the source PDF filename
 
-// Read and parse the JSON data
-try {
-  const fileContent = fs.readFileSync(jsonDataPath, 'utf-8');
-  const parsedData: ExtractedData = JSON.parse(fileContent);
-  allGames = parsedData.games; // Assign the games array
-  documentDate = parsedData.documentDate; // Assign the document date
+// Function to load or reload game data
+function loadGameData() {
+    try {
+        // Ensure the directory exists before trying to read (especially for first run)
+        const dataDir = path.dirname(jsonDataPath);
+        if (!fs.existsSync(dataDir)){
+            fs.mkdirSync(dataDir, { recursive: true });
+            console.log(`Created data directory: ${dataDir}`);
+        }
 
-  console.log(`Successfully loaded ${allGames.length} games.`);
-  if (documentDate) {
-    console.log(`Document date: ${documentDate}`);
-  }
-} catch (error) {
-  console.error('Error reading or parsing game data:', error);
-  // Exit or provide default empty data if the file is critical and not found
-  process.exit(1); 
+        if (!fs.existsSync(jsonDataPath)) {
+            console.warn(`Data file not found at ${jsonDataPath}. App will start with empty data. Run updater to generate it.`);
+            allGames = [];
+            documentDate = null;
+            sourceFile = null;
+            return; // Exit early if file doesn't exist
+        }
+
+        const fileContent = fs.readFileSync(jsonDataPath, 'utf-8');
+        const parsedData: ExtractedData = JSON.parse(fileContent);
+        allGames = parsedData.games || []; // Ensure games is an array
+        documentDate = parsedData.documentDate;
+        sourceFile = parsedData.sourceFile || null; // Load source file if available
+
+        console.log(`Successfully loaded ${allGames.length} games.`);
+        if (documentDate) {
+            console.log(`Document date: ${documentDate}`);
+        }
+        if (sourceFile) {
+            console.log(`Source PDF: ${sourceFile}`);
+        }
+    } catch (error) {
+        console.error('Error reading or parsing game data:', error);
+        // Don't exit, allow the app to run, maybe with a message on the page
+        allGames = [];
+        documentDate = null;
+        sourceFile = null;
+        console.log('Proceeding with empty game data.');
+    }
 }
+
+// Initial data load
+loadGameData();
 
 // Set view engine to EJS
 app.set('view engine', 'ejs');
@@ -142,7 +173,36 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req: Request, res: Response) => {
   const groupedTeams = getGroupedTeams(allGames);
-  res.render('index', { documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : ''}`, groupedTeams, selectedTeam: null, gamesForTeam: [], fieldMapData });
+  res.render('index', { 
+    documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : (sourceFile ? ' (' + sourceFile + ')' : '')}`,
+    groupedTeams, 
+    selectedTeam: null, 
+    gamesForTeam: [], 
+    fieldMapData 
+  });
+});
+
+// Admin page route
+app.get('/admin', (req: Request, res: Response) => {
+    // The documentDate and sourceFile are already loaded by loadGameData()
+    res.render('admin', {
+        scheduleDate: documentDate,
+        scheduleFile: sourceFile // Pass this to the admin view
+    });
+});
+
+// Trigger PDF update endpoint
+app.post('/trigger-pdf-update', async (req: Request, res: Response) => {
+    console.log('Received request to update PDF schedule via /trigger-pdf-update.');
+    try {
+        await runUpdater(); // This now returns a Promise
+        console.log('runUpdater completed. Reloading game data...');
+        loadGameData(); // Reload data after update
+        res.status(200).send('PDF update process completed successfully. Game data reloaded.');
+    } catch (error: any) {
+        console.error('Error during PDF update process triggered by endpoint:', error);
+        res.status(500).send(`Failed to update PDF: ${error.message || 'Unknown error'}`);
+    }
 });
 
 app.get('/team/:teamName', (req: Request, res: Response) => {

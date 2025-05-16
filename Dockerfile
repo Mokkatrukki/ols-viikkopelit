@@ -1,39 +1,63 @@
-# Use an official Node.js runtime as a parent image
-FROM node:20-slim
+# Use an official Node.js LTS image (e.g., Node 18 or 20)
+FROM node:18-slim
 
-# Set the working directory in the container
+# Set environment variable for Puppeteer to use installed Chromium and skip download
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+# Install necessary dependencies for Puppeteer (Debian-based)
+# Including fonts needed for rendering PDFs correctly, if applicable
+RUN apt-get update && apt-get install -y \
+    chromium \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxrandr2 \
+    libasound2 \
+    libpangocairo-1.0-0 \
+    libxshmfence1 \
+    libgconf-2-4 \
+    libfontconfig1 \
+    libxss1 \
+    ca-certificates \
+    fonts-liberation \
+    xdg-utils \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json
+# Define the path for persistent storage within the container
+# This path should correspond to where a Fly Volume will be mounted.
+ENV APP_PERSISTENT_STORAGE_PATH=/data/app_files
+
+# Copy package.json and package-lock.json (or yarn.lock)
 COPY package*.json ./
 
-# Install all dependencies (including devDependencies for build and extract scripts)
-RUN npm install
+# Install dependencies using npm ci for cleaner, reproducible builds
+RUN npm ci
 
-# Copy the rest of your app's source code
+# Copy the rest of the application code
 COPY . .
 
-# Ensure the target PDF is present for the extract script if it's not committed
-# If Viikkopelit_15_5_2025.pdf is always the same and committed, this is fine.
-# If it changes, you'll need a way to get it into the build context or into the container.
-
-# First, generate parsed_pdf_data.json from the PDF
-RUN node --loader ts-node/esm src/pdfParser.ts
-
-# Generate the extracted_games_output.json
-RUN npm run extract
-
-# Build the project (compile TypeScript and Tailwind CSS)
+# Build the application (compiles TypeScript, Tailwind CSS, etc.)
 RUN npm run build
 
-# Prune devDependencies after build and extract are complete
-RUN npm prune --production
-
-# Make port 3002 available to the world outside this container
+# Expose the port the app runs on (ensure this matches your app's configuration)
 EXPOSE 3002
 
-# Define environment variables (if any, e.g. PORT)
-# ENV PORT=3002 # Uncomment and set if your app uses process.env.PORT
-
-# Run the app when the container launches
-CMD [ "npm", "start" ] 
+# Command to run the application
+# This runs the 'start' script defined in your package.json
+CMD ["npm", "start"] 
