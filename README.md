@@ -101,7 +101,7 @@ The core of this application is its PDF parsing capability, which transforms the
 ├── tsconfig.json               # TypeScript compiler options
 ├── plan.md                     # Initial project plan (may be outdated)
 └── README.md                   # This file
-```
+``` 
 
 ## Automated PDF Schedule Updates
 

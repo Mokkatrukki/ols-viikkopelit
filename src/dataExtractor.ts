@@ -117,6 +117,26 @@ function extractTextElementsFromPage(page: PdfJsonPage): ExtractedTextElement[] 
   return elements;
 }
 
+// Function to infer year from team names
+function inferYearFromTeams(team1: string, team2: string): string | null {
+  const teams = [team1, team2].filter(t => t.trim());
+  
+  for (const team of teams) {
+    // Look for year patterns in team names
+    if (team.includes(' 17 ')) {
+      return '2017 A'; // Default to A, could be A/B/C
+    }
+    if (team.includes(' 19 ')) {
+      return '2019 VP';
+    }
+    if (team.includes(' 20 ')) {
+      return '2020 / 2019 EP';
+    }
+  }
+  
+  return null;
+}
+
 // New function to process lines from a page
 function processPageLines(lines: ExtractedTextElement[][], pageWidth: number): GameInfo[] {
   const games: GameInfo[] = [];
@@ -136,7 +156,13 @@ function processPageLines(lines: ExtractedTextElement[][], pageWidth: number): G
     const fieldNameElements = line.filter(el => 
         el.text.includes("GARAM MASALA") || 
         el.text.includes("HEINÄPÄÄN TEKONURMI") || 
-        el.text.includes("HEPA - HALLI")
+        el.text.includes("HEPA - HALLI") ||
+        el.text.includes("GARAM 2A") ||
+        el.text.includes("GARAM 2B") ||
+        el.text.includes("NURMI 4A") ||
+        el.text.includes("NURMI 4B") ||
+        el.text.includes("NURMI 4C") ||
+        el.text.includes("NURMI 4D")
     );
 
     if (fieldNameElements.length > 0) {
@@ -226,16 +252,20 @@ function processPageLines(lines: ExtractedTextElement[][], pageWidth: number): G
             if (leftElements.length > 2 && !leftElements[2].text.match(/^\d{2}\.\d{2}\s*-\s*\d{2}\.\d{2}$/)) team2 = leftElements[2].text;
             
             if (time.trim() || team1.trim() || team2.trim()) {
-                 games.push({
+                // Try to infer year from team names, fallback to header year
+                const inferredYear = inferYearFromTeams(team1, team2);
+                const finalYear = inferredYear || currentLeftBlock.year;
+                
+                games.push({
                     field: currentLeftBlock.name,
                     gameDuration: currentLeftBlock.gameDuration,
                     gameType: currentLeftBlock.gameType,
-                    year: currentLeftBlock.year,
+                    year: finalYear,
                     time: time,
                     team1: team1,
                     team2: team2,
                 });
-                console.log(`Game L in ${currentLeftBlock.name}: ${time} | ${team1 || '---'} vs ${team2 || '---'}`);
+                console.log(`Game L in ${currentLeftBlock.name}: ${time} | ${team1 || '---'} vs ${team2 || '---'} | Year: ${finalYear}${inferredYear ? ' (inferred)' : ' (header)'}`);
             }
         }
     }
@@ -251,16 +281,20 @@ function processPageLines(lines: ExtractedTextElement[][], pageWidth: number): G
             if (rightElements.length > 2 && !rightElements[2].text.match(/^\d{2}\.\d{2}\s*-\s*\d{2}\.\d{2}$/)) team2 = rightElements[2].text;
 
             if (time.trim() || team1.trim() || team2.trim()) {
+                // Try to infer year from team names, fallback to header year
+                const inferredYear = inferYearFromTeams(team1, team2);
+                const finalYear = inferredYear || currentRightBlock.year;
+                
                 games.push({
                     field: currentRightBlock.name,
                     gameDuration: currentRightBlock.gameDuration,
                     gameType: currentRightBlock.gameType,
-                    year: currentRightBlock.year,
+                    year: finalYear,
                     time: time,
                     team1: team1,
                     team2: team2,
                 });
-                console.log(`Game R in ${currentRightBlock.name}: ${time} | ${team1 || '---'} vs ${team2 || '---'}`);
+                console.log(`Game R in ${currentRightBlock.name}: ${time} | ${team1 || '---'} vs ${team2 || '---'} | Year: ${finalYear}${inferredYear ? ' (inferred)' : ' (header)'}`);
             }
         }
     }
@@ -291,59 +325,59 @@ async function main() {
   }
 
   if (!parsedData || !parsedData.Pages || parsedData.Pages.length === 0) {
-    console.log('No pages found in PDF data.');
-    return;
-  }
+      console.log('No pages found in PDF data.');
+      return;
+    }
 
-  let documentDate: string | null = null;
-  // Try to extract date from the first page
+    let documentDate: string | null = null;
+    // Try to extract date from the first page
   if (parsedData.Pages.length > 0) {
     const firstPageTexts = extractTextElementsFromPage(parsedData.Pages[0]);
-    // Regex to find dd.mm.yyyy or d.m.yyyy pattern within a string
-    const dateRegex = /(\d{1,2}\.\d{1,2}\.\d{4})/; 
-    for (const textElement of firstPageTexts) {
-      const potentialText = textElement.text.trim();
-      const match = potentialText.match(dateRegex);
-      if (match && match[1]) { // Check if regex matches and capturing group is found
-        documentDate = match[1]; // Assign the captured date string
-        console.log(`--- Found Document Date: ${documentDate} (from text: "${potentialText}") ---`);
-        break; // Assuming the first match is the correct one
+      // Regex to find dd.mm.yyyy or d.m.yyyy pattern within a string
+      const dateRegex = /(\d{1,2}\.\d{1,2}\.\d{4})/; 
+      for (const textElement of firstPageTexts) {
+        const potentialText = textElement.text.trim();
+        const match = potentialText.match(dateRegex);
+        if (match && match[1]) { // Check if regex matches and capturing group is found
+          documentDate = match[1]; // Assign the captured date string
+          console.log(`--- Found Document Date: ${documentDate} (from text: "${potentialText}") ---`);
+          break; // Assuming the first match is the correct one
+        }
+      }
+      if (!documentDate) {
+        console.log("--- Document Date not found on the first page ---");
       }
     }
-    if (!documentDate) {
-      console.log("--- Document Date not found on the first page ---");
-    }
-  }
 
-  const allGames: GameInfo[] = [];
+    const allGames: GameInfo[] = [];
 
   for (let i = 0; i < parsedData.Pages.length; i++) {
     const page = parsedData.Pages[i];
-    console.log(`
+      console.log(`
 --- Processing Page ${i + 1} ---`);
-    const extractedTexts = extractTextElementsFromPage(page);
-    const lines = groupElementsByLine(extractedTexts);
-    
-    // console.log(`--- Grouped Text Lines from Page ${i + 1} ---`);
-    // lines.forEach((line, index) => {
-    //   const lineText = line.map(el => `"${el.text}" (x:${el.x.toFixed(2)})`).join(' | ');
-    //   const lineY = line.length > 0 ? line[0].y.toFixed(3) : 'N/A';
-    //   console.log(`Line ${index + 1} (y~${lineY}, items: ${line.length}): ${lineText}`);
-    // });
+      const extractedTexts = extractTextElementsFromPage(page);
+      const lines = groupElementsByLine(extractedTexts);
+      
+      // console.log(`--- Grouped Text Lines from Page ${i + 1} ---`);
+      // lines.forEach((line, index) => {
+      //   const lineText = line.map(el => `"${el.text}" (x:${el.x.toFixed(2)})`).join(' | ');
+      //   const lineY = line.length > 0 ? line[0].y.toFixed(3) : 'N/A';
+      //   console.log(`Line ${index + 1} (y~${lineY}, items: ${line.length}): ${lineText}`);
+      // });
 
-    const gamesFromPage = processPageLines(lines, page.Width);
-    allGames.push(...gamesFromPage);
-  }
-  
-  console.log(`
-Extraction finished. Found ${allGames.length} games in total.`);
-  // For inspection, print the first few games if any
-  if (allGames.length > 0 || documentDate) {
-    console.log("\n--- Sample Extracted Games ---");
-    allGames.slice(0, 5).forEach(game => console.log(game));
+      const gamesFromPage = processPageLines(lines, page.Width);
+      allGames.push(...gamesFromPage);
+    }
     
-    const outputData: ExtractedOutput = {
-      documentDate,
+    console.log(`
+Extraction finished. Found ${allGames.length} games in total.`);
+    // For inspection, print the first few games if any
+    if (allGames.length > 0 || documentDate) {
+      console.log("\n--- Sample Extracted Games ---");
+      allGames.slice(0, 5).forEach(game => console.log(game));
+      
+      const outputData: ExtractedOutput = {
+        documentDate,
       games: allGames,
       sourceFile: parsedData.sourcePdfFile ? path.basename(parsedData.sourcePdfFile) : undefined // Extract and store just the filename
     };
@@ -360,10 +394,10 @@ Extraction finished. Found ${allGames.length} games in total.`);
 
     fs.writeFileSync(outputPath, JSON.stringify(outputData, null, 2));
     console.log(`\nAll extracted data (including date and games) saved to ${outputPath}`);
-  } else {
-    console.log('No games extracted and no date found, so extracted_games_output.json was not written.');
-  }
-  
+    } else {
+      console.log('No games extracted and no date found, so extracted_games_output.json was not written.');
+    }
+    
 
 }
 

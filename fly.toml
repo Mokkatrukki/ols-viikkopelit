@@ -21,7 +21,7 @@ primary_region = 'arn'
   processes = ['app']
 
 [[vm]]
-  memory = '256mb'
+  memory = '1024mb'
   cpu_kind = 'shared'
   cpus = 1
   # Add this to explicitly tie this VM config to the 'app' process group defined above

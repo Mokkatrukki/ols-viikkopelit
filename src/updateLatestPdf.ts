@@ -7,8 +7,39 @@ import { pipeline } from 'stream/promises';
 const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
 const PDF_DOWNLOAD_SUB_DIR = 'downloaded_pdfs';
 const PDF_DOWNLOAD_DIR = path.join(PERSISTENT_STORAGE_BASE_PATH, PDF_DOWNLOAD_SUB_DIR);
+const EXTRACTED_GAMES_OUTPUT_PATH = path.join(PERSISTENT_STORAGE_BASE_PATH, 'extracted_games_output.json');
 
 const TARGET_URL = 'https://ols.fi/jalkapallo/viikkopelit/';
+
+const expectedReleaseDatesStrings = [
+    "6.5.2025", "8.5.2025", "15.5.2025", "22.5.2025", "29.5.2025",
+    "5.6.2025", "12.6.2025", "19.6.2025", "26.6.2025", "31.7.2025",
+    "7.8.2025", "14.8.2025", "21.8.2025", "28.8.2025", "4.9.2025",
+    "11.9.2025", "18.9.2025"
+];
+
+// Helper function to parse D.M.YYYY string to Date object
+function parseDMYStringToDate(dateString: string): Date | null {
+    if (!dateString) return null;
+    const parts = dateString.split('.');
+    if (parts.length === 3) {
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+        const year = parseInt(parts[2], 10);
+        if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+            const date = new Date(year, month, day);
+            date.setHours(0,0,0,0); // Normalize to start of day
+            return date;
+        }
+    }
+    return null;
+}
+
+// Helper function to format Date to D.M.YYYY string
+function formatDateToDMY(date: Date | null | undefined): string {
+    if (!date) return 'N/A';
+    return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
+}
 
 async function ensureDirectoryExists(dirPath: string) {
     try {
@@ -37,17 +68,61 @@ async function downloadFile(url: string, outputPath: string) {
     }
 }
 
-async function runUpdater() {
-    console.log('Starting PDF update process...');
+export interface UpdateResult {
+    status: 'updated' | 'already-latest-expected' | 'no-newer-on-website' | 'no-pdf-found-on-site' | 'error' | 'initial-check-no-current-data';
+    message: string;
+    newScheduleDate?: string | null;
+    newSourceFile?: string | null;
+}
+
+async function runUpdater(currentLoadedScheduleDateString: string | null): Promise<UpdateResult> {
+    console.log(`Starting PDF update process. Current schedule date from app: ${currentLoadedScheduleDateString}`);
     let browser;
+
+    const currentLoadedScheduleDateObj = parseDMYStringToDate(currentLoadedScheduleDateString || '');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const expectedReleaseDates = expectedReleaseDatesStrings.map(parseDMYStringToDate).filter(d => d !== null) as Date[];
+    
+    // Find the latest expected release date that is on or before today
+    const relevantExpectedDates = expectedReleaseDates.filter(d => d <= today);
+    let latestRelevantExpectedDate: Date | null = null;
+    if (relevantExpectedDates.length > 0) {
+        latestRelevantExpectedDate = new Date(Math.max(...relevantExpectedDates.map(d => d.getTime())));
+    }
+
+    if (currentLoadedScheduleDateObj && latestRelevantExpectedDate) {
+        if (currentLoadedScheduleDateObj >= latestRelevantExpectedDate) {
+            // Current schedule meets or exceeds the latest past/current expected release.
+            // Log this, but proceed to check the website for any newer versions regardless.
+            const message = `Current schedule (${formatDateToDMY(currentLoadedScheduleDateObj)}) meets/exceeds latest past/current expectation (${formatDateToDMY(latestRelevantExpectedDate)}). Proceeding to check website.`;
+            console.log(message);
+        } else {
+            // Current schedule is older than the latest past/current expected release. Definitely check website.
+            console.log(`Current schedule (${formatDateToDMY(currentLoadedScheduleDateObj)}) is older than latest past/current expectation (${formatDateToDMY(latestRelevantExpectedDate)}). Proceeding to check website.`);
+        }
+    } else if (!currentLoadedScheduleDateObj && latestRelevantExpectedDate) {
+        // No current data, but there is an expectation. Proceed to check.
+        console.log('No current schedule data available, but expected schedules exist. Proceeding to check website.');
+    } else if (!latestRelevantExpectedDate) {
+        // No expected releases yet based on today's date (e.g. very early in season).
+        // In this specific case, we can skip the website check.
+        const message = `No past or current expected PDF release dates found as of ${formatDateToDMY(today)}. No website check will be performed.`;
+        console.log(message);
+        return { status: 'initial-check-no-current-data', message, newScheduleDate: currentLoadedScheduleDateString, newSourceFile: null };
+    }
+
+    // If we've reached here, we proceed to launch Puppeteer and check the website.
     try {
-        // Ensure the download directory exists before launching browser or anything else
         await ensureDirectoryExists(PDF_DOWNLOAD_DIR);
 
+        console.log('Launching browser to check OLS website...');
         browser = await puppeteer.launch({
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined, // For Docker, can be /usr/bin/chromium
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+            timeout: 60000 // Increased timeout to 60 seconds
         });
         const page = await browser.newPage();
         await page.goto(TARGET_URL, { waitUntil: 'networkidle2' });
@@ -55,21 +130,25 @@ async function runUpdater() {
         type PdfLink = {
             href: string;
             text: string;
-            date?: string;
-            dateObj?: Date; // Add dateObj for typed usage later
+            date?: string; // YYYY-MM-DD from filename
+            dateObj?: Date;
         };
 
         const pdfLinks: PdfLink[] = await page.evaluate(() => {
             const links: PdfLink[] = [];
             document.querySelectorAll('a').forEach(anchor => {
                 if (anchor.href && anchor.href.endsWith('.pdf')) {
-                    const hrefMatch = anchor.href.match(/(\d{1,2})[_.\-](\d{1,2})[_.\-](\d{4})/);
+                    // Regex to find dates like 1.5.2024 or 01-05-2024 or 1_5_24 in filenames
+                    // For example: OLS_Viikkopelit_06.05.2024.pdf or Viikkopelit_SarjaX_15_5_2024_OLS.pdf
+                    // This will capture day, month, year. Using new RegExp for clarity with escapes.
+                    const hrefMatch = anchor.href.match(new RegExp('(\\d{1,2})[._-](\\d{1,2})[._-](\\d{4})'));
                     let dateStr: string | undefined;
                     if (hrefMatch) {
                         const day = hrefMatch[1].padStart(2, '0');
                         const month = hrefMatch[2].padStart(2, '0');
                         const year = hrefMatch[3];
-                        dateStr = `${year}-${month}-${day}`; // ISO format YYYY-MM-DD
+                        // Convert to YYYY-MM-DD for easier Date construction and reliable parsing
+                        dateStr = `${year}-${month}-${day}`; 
                     }
                     links.push({ href: anchor.href, text: anchor.textContent || '', date: dateStr });
                 }
@@ -78,83 +157,96 @@ async function runUpdater() {
         });
 
         if (pdfLinks.length === 0) {
-            console.log('No PDF links found on the page.');
-            return;
+            const message = 'No PDF links found on the page.';
+            console.log(message);
+            return { status: 'no-pdf-found-on-site', message };
         }
 
         const datedPdfLinks: PdfLink[] = pdfLinks
             .filter((link: PdfLink) => link.date)
-            .map((link: PdfLink) => ({ ...link, dateObj: new Date(link.date!) }))
-            .sort((a: PdfLink, b: PdfLink) => (b.dateObj as Date).getTime() - (a.dateObj as Date).getTime()); // Sort descending by date (most recent first)
+            .map((link: PdfLink) => {
+                const dateObj = new Date(link.date!); // link.date is YYYY-MM-DD
+                dateObj.setHours(0,0,0,0);
+                return { ...link, dateObj };
+            })
+            .sort((a: PdfLink, b: PdfLink) => (b.dateObj as Date).getTime() - (a.dateObj as Date).getTime());
 
         if (datedPdfLinks.length === 0) {
-            console.log('No PDF links with recognizable dates in filenames found.');
-            return;
+            const message = 'No PDF links with recognizable dates in filenames found.';
+            console.log(message);
+            return { status: 'no-pdf-found-on-site', message };
+        }
+        
+        // Select the most recent PDF based on its filename date (already sorted: datedPdfLinks[0])
+        const selectedPdfLink = datedPdfLinks[0];
+        const latestPdfDateOnWebsite = selectedPdfLink.dateObj;
+
+        if (!latestPdfDateOnWebsite) {
+            const message = 'Could not determine date for the latest PDF on website.';
+            console.log(message);
+            return { status: 'no-pdf-found-on-site', message };
+        }
+        
+        console.log(`Latest PDF on website: \"${selectedPdfLink.text}\" from ${selectedPdfLink.href} (Date: ${formatDateToDMY(latestPdfDateOnWebsite)})`);
+
+        if (currentLoadedScheduleDateObj && latestPdfDateOnWebsite <= currentLoadedScheduleDateObj) {
+            const message = `The latest PDF on the website (${formatDateToDMY(latestPdfDateOnWebsite)}) is not newer than the current schedule (${formatDateToDMY(currentLoadedScheduleDateObj)}).`;
+            console.log(message);
+            return { status: 'no-newer-on-website', message, newScheduleDate: currentLoadedScheduleDateString, newSourceFile: null /* App still has old one */ };
         }
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        let selectedPdfLink = null;
-
-        // Prefer future or current PDFs, sorted to pick the nearest future one
-        const futureOrCurrentLinks: PdfLink[] = datedPdfLinks
-            .filter((link: PdfLink) => link.dateObj && link.dateObj >= today)
-            .sort((a: PdfLink, b: PdfLink) => (a.dateObj as Date).getTime() - (b.dateObj as Date).getTime());
-
-        if (futureOrCurrentLinks.length > 0) {
-            selectedPdfLink = futureOrCurrentLinks[0];
-        } else if (datedPdfLinks.length > 0) {
-            // If no future/current, pick the most recent past one (already sorted descending)
-            selectedPdfLink = datedPdfLinks[0];
-        }
-
-        if (!selectedPdfLink || !selectedPdfLink.dateObj) {
-            console.log('Selected PDF link is invalid or missing a date object.');
-            return;
-        }
-
-        console.log(`Selected PDF: "${selectedPdfLink.text}" from ${selectedPdfLink.href} (Date: ${selectedPdfLink.dateObj.toDateString()})`);
-
-        const pdfUrl = new URL(selectedPdfLink.href, TARGET_URL); // Resolve relative URLs
+        const pdfUrl = new URL(selectedPdfLink.href, TARGET_URL);
         const pdfFileName = path.basename(pdfUrl.pathname);
         const downloadPath = path.join(PDF_DOWNLOAD_DIR, pdfFileName);
-
-        // Check if this exact PDF version (by filename) has already been processed
-        // This is a simple check; you might want more sophisticated logic, e.g., checking if content changed
-        // For now, we'll rely on the `extracted_games_output.json` being the source of truth for the app
-        // and always download + process the selected PDF. If it's the same, processing might be redundant but harmless.
 
         console.log(`Downloading ${pdfUrl.href} to ${downloadPath}...`);
         await downloadFile(pdfUrl.href, downloadPath);
         console.log('Download complete.');
 
         console.log(`Processing ${downloadPath} with npm run process-pdf...`);
-        // Ensure the path is correctly quoted if it contains spaces, though pdfFileName typically won't.
-        const processCommand = `npm run process-pdf -- "${downloadPath}"`;
+        const processCommand = `npm run process-pdf -- \"${downloadPath}\"`;
         
-        await new Promise<void>((resolve, reject) => { // Wrap exec in a Promise
+        await new Promise<void>((resolve, reject) => {
             exec(processCommand, (error, stdout, stderr) => {
                 if (error) {
                     console.error(`Error processing PDF: ${error.message}`);
                     console.error(`Stdout: ${stdout}`);
                     console.error(`Stderr: ${stderr}`);
-                    reject(error); // Reject the promise on error
+                    reject(error);
                     return;
                 }
                 if (stderr) {
-                    // pdf2json often outputs to stderr even on success, so treat as warning
                     console.warn(`Stderr while processing PDF (normal for pdf2json): ${stderr}`);
                 }
                 console.log(`PDF processing script stdout: ${stdout}`);
-                console.log('PDF processed successfully. Application data should be updated.');
-                resolve(); // Resolve the promise on success
+                console.log('PDF processed successfully.');
+                resolve();
             });
         });
 
-    } catch (error) {
+        // After successful processing, read the new documentDate and sourceFile
+        // to confirm and return to the caller.
+        let newExtractedData: { documentDate: string | null, sourceFile?: string } = { documentDate: null };
+        try {
+            const fileContent = await fs.promises.readFile(EXTRACTED_GAMES_OUTPUT_PATH, 'utf-8');
+            newExtractedData = JSON.parse(fileContent);
+        } catch (readError) {
+            console.error(`Error reading ${EXTRACTED_GAMES_OUTPUT_PATH} after update:`, readError);
+            // Fallback or decide how to handle; for now, it means we can't confirm new date/file
+        }
+        
+        const successMessage = `Schedule updated successfully using ${pdfFileName}. New schedule date: ${newExtractedData.documentDate || 'Unknown'}.`;
+        console.log(successMessage);
+        return { 
+            status: 'updated', 
+            message: successMessage, 
+            newScheduleDate: newExtractedData.documentDate, 
+            newSourceFile: newExtractedData.sourceFile || pdfFileName 
+        };
+
+    } catch (error: any) {
         console.error('Error in PDF update process:', error);
-        throw error; // Re-throw error to be caught by the caller (e.g., the HTTP endpoint)
+        return { status: 'error', message: error.message || 'Unknown error in runUpdater', newScheduleDate: null, newSourceFile: null };
     } finally {
         if (browser) {
             await browser.close();
@@ -163,10 +255,14 @@ async function runUpdater() {
     }
 }
 
-// Self-invocation check if you want to run this file directly
+// Self-invocation check (modified to reflect new signature, mostly for testing)
 if (process.argv[1] && (process.argv[1].endsWith('updateLatestPdf.ts') || process.argv[1].endsWith('updateLatestPdf.js'))) {
-    runUpdater().catch(console.error);
+    console.log('Running updateLatestPdf.ts directly for testing...');
+    // Example: run with null for current date, or a specific date string like "5.5.2025"
+    runUpdater(null).then(result => {
+        console.log('Direct run completed. Result:', result);
+    }).catch(console.error);
 }
 
 // Export if you want to call it from elsewhere, e.g. an HTTP endpoint
-export { runUpdater }; 
+export { runUpdater, expectedReleaseDatesStrings, parseDMYStringToDate, formatDateToDMY }; 

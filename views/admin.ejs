@@ -6,66 +6,218 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - OLS Viikkopelit Schedule</title>
     <link rel="stylesheet" href="/css/style.css">
-    <script>
-        async function triggerUpdate() {
-            const button = document.getElementById('updateButton');
-            const messageDiv = document.getElementById('message');
-
-            button.disabled = true;
-            button.textContent = 'Updating...';
-            messageDiv.textContent = 'Attempting to fetch and process the latest PDF schedule. This may take a moment...';
-            messageDiv.className = 'text-blue-700';
-
-            try {
-                const response = await fetch('/trigger-pdf-update', {
-                    method: 'POST'
-                });
-
-                const responseText = await response.text(); // Get text for more detailed messages
-
-                if (response.ok) {
-                    messageDiv.textContent = `Update process initiated successfully. Server response: ${responseText}. Page will refresh in 5 seconds to reflect potential changes.`;
-                    messageDiv.className = 'text-green-700';
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 5000);
-                } else {
-                    messageDiv.textContent = `Error: ${response.status} - ${responseText || 'Failed to trigger update.'}`;
-                    messageDiv.className = 'text-red-700';
-                }
-            } catch (error) {
-                console.error('Client-side error triggering update:', error);
-                messageDiv.textContent = 'Client-side error: ' + error.message;
-                messageDiv.className = 'text-red-700';
-            }
-
-            button.disabled = false;
-            button.textContent = 'Check for New Schedule & Update';
+    <style>
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, .1);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s ease infinite;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
         }
-    </script>
+        
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100 p-8">
     <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h1 class="text-2xl font-bold mb-4 text-center">OLS Schedule Updater</h1>
+        <h1 class="text-2xl font-bold mb-6 text-center">OLS Schedule Updater</h1>
 
-        <div class="mb-4">
-            <h2 class="text-xl font-semibold mb-2">Current Schedule Information</h2>
-            <% if (scheduleDate) { %>
-                <p>Based on schedule for: <span class="font-semibold"><%= scheduleDate %></span></p>
-                <% } else if (scheduleFile) { %>
-                    <p>Based on file: <span class="font-semibold"><%= scheduleFile %></span> (Date not found in data)</p>
-                    <% } else { %>
-                        <p>No schedule data loaded yet, or data file is missing/corrupt.</p>
-                        <% } %>
+        <div id="updateMessageBanner" class="mb-4 p-3 rounded-md" style="display: none;">
+            <p id="updateMessageText"></p>
         </div>
 
-        <button id="updateButton" onclick="triggerUpdate()" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-            Check for New Schedule & Update
-        </button>
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Current Schedule Information</h2>
+            <p>Today's Date: <span class="font-semibold"><%= locals.todayFormatted || 'N/A' %></span></p>
+            <p>Current Schedule Date: <span id="currentScheduleDateElem" class="font-semibold"><%= locals.scheduleDate || 'N/A' %></span></p>
+            <p>Source File: <span id="currentSourceFileElem" class="font-semibold"><%= locals.scheduleFile || 'N/A' %></span></p>
+            <p>Next Expected Schedule Release: <span class="font-semibold"><%= locals.nextExpectedDateFormatted || 'Not specified' %></span></p>
+        </div>
 
-        <div id="message" class="mt-4 p-3 rounded-md text-sm"></div>
+        <form id="updateForm">
+            <button type="submit" id="updateButton" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline text-lg flex items-center justify-center mb-3">
+                <span id="buttonSpinner" class="spinner" style="display: none;"></span>
+                <span id="buttonText">Check for New Schedule & Update</span>
+            </button>
+        </form>
+
+        <form id="forceReprocessForm">
+            <button type="submit" id="forceReprocessButton" class="w-full bg-orange-500 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline text-lg flex items-center justify-center">
+                <span id="forceButtonSpinner" class="spinner" style="display: none;"></span>
+                <span id="forceButtonText">Force Re-process Current PDF</span>
+            </button>
+        </form>
+
+        <div class="mt-4 p-3 rounded-md text-sm bg-gray-50" id="progressInfo" style="display:none;">
+            <p id="progressText">Starting update process...</p>
+        </div>
+
+        <div class="mt-6 text-sm text-gray-600">
+            <p><strong>How this works:</strong></p>
+            <ul class="list-disc list-inside ml-4 mt-1">
+                <li><strong>Check for New Schedule & Update:</strong> Checks the OLS website for the newest PDF schedule. If a newer PDF is found (compared to your current schedule date), it's downloaded and processed.</li>
+                <li><strong>Force Re-process Current PDF:</strong> Re-processes the current PDF file with the latest extraction logic. Useful when the extraction code has been updated and you want to regenerate the data without downloading a new PDF.</li>
+                <li>Status updates will appear above the buttons.</li>
+            </ul>
+        </div>
     </div>
+
+    <script>
+        const updateForm = document.getElementById('updateForm');
+        const updateButton = document.getElementById('updateButton');
+        const buttonSpinner = document.getElementById('buttonSpinner');
+        const buttonText = document.getElementById('buttonText');
+
+        const forceReprocessForm = document.getElementById('forceReprocessForm');
+        const forceReprocessButton = document.getElementById('forceReprocessButton');
+        const forceButtonSpinner = document.getElementById('forceButtonSpinner');
+        const forceButtonText = document.getElementById('forceButtonText');
+
+        const messageBanner = document.getElementById('updateMessageBanner');
+        const messageText = document.getElementById('updateMessageText');
+
+        const progressInfo = document.getElementById('progressInfo');
+        const progressText = document.getElementById('progressText');
+
+        const currentScheduleDateElem = document.getElementById('currentScheduleDateElem');
+        const currentSourceFileElem = document.getElementById('currentSourceFileElem');
+
+        // Display initial message if passed from server (e.g., after a redirect from a non-JS context)
+        const initialMessage = "<%= locals.initialUpdateMessage || '' %>";
+        if (initialMessage) {
+            showMessage(initialMessage, initialMessage.toLowerCase().includes('error') || initialMessage.toLowerCase().includes('failed'));
+        }
+
+        updateForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            updateButton.disabled = true;
+            buttonSpinner.style.display = 'inline-block';
+            buttonText.textContent = 'Processing...';
+            messageBanner.style.display = 'none'; // Hide old messages
+            progressInfo.style.display = 'block';
+            progressText.textContent = 'Checking current schedule expectations...';
+
+            try {
+                // Small delay to allow UI to update before fetch, 
+                // then give periodic updates to user about what's happening.
+                await new Promise(resolve => setTimeout(resolve, 100));
+                progressText.textContent = 'Contacting OLS website (this may take up to a minute for Puppeteer to start)... ';
+
+                // Simulate progress for long operations
+                // In a real scenario, you might not have discrete steps from the backend 
+                // during the runUpdater call, so this is mostly for UX.
+                setTimeout(() => {
+                    progressText.textContent = 'Puppeteer is launching... (can take a while on first run or low memory)';
+                }, 5000);
+                setTimeout(() => {
+                    progressText.textContent = 'Navigating to page and searching for PDF... ';
+                }, 15000);
+                setTimeout(() => {
+                    progressText.textContent = 'If a new PDF is found, it will be downloaded and processed... ';
+                }, 25000);
+
+                const response = await fetch('/trigger-pdf-update', {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+                progressInfo.style.display = 'none'; // Hide progress once result is back
+
+                if (response.ok) {
+                    showMessage(result.message, false); // Not an error for HTTP OK
+                    if (result.updatedScheduleDate) {
+                        currentScheduleDateElem.textContent = result.updatedScheduleDate;
+                    }
+                    if (result.updatedSourceFile) {
+                        currentSourceFileElem.textContent = result.updatedSourceFile;
+                    } else if (result.status === 'updated' && !result.updatedSourceFile) {
+                        currentSourceFileElem.textContent = 'N/A'; // If updated but no source file somehow
+                    }
+                } else {
+                    // Server responded with an error status code (e.g. 500)
+                    showMessage(result.message || 'Update failed with server error.', true);
+                    if (result.updatedScheduleDate) currentScheduleDateElem.textContent = result.updatedScheduleDate;
+                    if (result.updatedSourceFile) currentSourceFileElem.textContent = result.updatedSourceFile;
+                }
+
+            } catch (error) {
+                console.error('Client-side error triggering update:', error);
+                progressInfo.style.display = 'none';
+                showMessage('Client-side error: ' + error.message, true);
+            }
+
+            updateButton.disabled = false;
+            buttonSpinner.style.display = 'none';
+            buttonText.textContent = 'Check for New Schedule & Update';
+        });
+
+        forceReprocessForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            forceReprocessButton.disabled = true;
+            forceButtonSpinner.style.display = 'inline-block';
+            forceButtonText.textContent = 'Re-processing...';
+            messageBanner.style.display = 'none'; // Hide old messages
+            progressInfo.style.display = 'block';
+            progressText.textContent = 'Re-processing current PDF with updated extraction logic...';
+
+            try {
+                const response = await fetch('/force-reprocess-current-pdf', {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+                progressInfo.style.display = 'none'; // Hide progress once result is back
+
+                if (response.ok) {
+                    showMessage(result.message, false); // Not an error for HTTP OK
+                    if (result.updatedScheduleDate) {
+                        currentScheduleDateElem.textContent = result.updatedScheduleDate;
+                    }
+                    if (result.updatedSourceFile) {
+                        currentSourceFileElem.textContent = result.updatedSourceFile;
+                    }
+                } else {
+                    // Server responded with an error status code
+                    showMessage(result.message || 'Force re-processing failed with server error.', true);
+                }
+
+            } catch (error) {
+                console.error('Client-side error triggering force re-process:', error);
+                progressInfo.style.display = 'none';
+                showMessage('Client-side error: ' + error.message, true);
+            }
+
+            forceReprocessButton.disabled = false;
+            forceButtonSpinner.style.display = 'none';
+            forceButtonText.textContent = 'Force Re-process Current PDF';
+        });
+
+        function showMessage(msg, isError) {
+            messageText.textContent = msg;
+            messageBanner.className = `mb-4 p-3 rounded-md ${isError ? 'bg-red-100 text-red-700' : (msg.toLowerCase().includes('updated') || msg.toLowerCase().includes('successfully') ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700')}`;
+            messageBanner.style.display = 'block';
+        }
+
+        // Initial state for current schedule if passed directly for JS use
+        const initialData = JSON.parse('<%- JSON.stringify(locals.currentScheduleDataForClient || {}) %>');
+        if (initialData.scheduleDate) currentScheduleDateElem.textContent = initialData.scheduleDate;
+        if (initialData.sourceFile) currentSourceFileElem.textContent = initialData.sourceFile;
+    </script>
+
 </body>
 
 </html>
