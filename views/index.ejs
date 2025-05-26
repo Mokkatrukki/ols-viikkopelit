@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 
 <head>
     <meta charset="UTF-8">
@@ -8,17 +8,34 @@
         <%= documentTitle %>
     </title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .font-heading {
+            font-family: 'Montserrat', sans-serif;
+        }
+        .font-body {
+            font-family: 'Open Sans', sans-serif;
+        }
+    </style>
 </head>
 
-<body class="bg-gray-100 text-gray-800 font-sans">
-    <div class="container mx-auto p-4 md:p-8 max-w-3xl">
-        <h1 class="text-3xl md:text-4xl font-bold text-blue-700 mb-6 text-center">
-            <%= documentTitle %>
-        </h1>
+<body class="bg-slate-100 text-slate-800 font-body flex flex-col min-h-screen">
+    <div class="container mx-auto max-w-3xl flex-col flex-grow w-full">
+        <header class="bg-green-700 text-white p-4 rounded-b-lg shadow-md font-heading">
+            <h1 class="text-2xl md:text-3xl font-bold text-center">
+                <%= documentTitle %>
+            </h1>
+        </header>
 
-        <form method="GET" id="teamSelectionForm" class="mb-8">
-            <label for="team" class="block text-lg font-medium text-gray-700 mb-2">Valitse joukkue:</label>
-            <select name="teamName" id="team" onchange="if (this.value) { window.location.href = '/team/' + encodeURIComponent(this.value); } else { window.location.href = '/'; }" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        <main class="p-4 md:p-8 mt-4 flex-grow">
+        <form method="GET" id="teamSelectionForm" class="mb-6">
+            <label for="team" class="block text-lg font-medium text-green-800 mb-2 font-heading">Valitse joukkue:</label>
+            <select name="teamName" id="team" onchange="if (this.value) { window.location.href = '/team/' + encodeURIComponent(this.value); } else { window.location.href = '/'; }" class="w-full p-3 border border-slate-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 font-body">
                 <option value="">-- Kaikki joukkueet --</option>
                 <% groupedTeams.forEach(group => { %>
                     <optgroup label="<%= group.year %>">
@@ -33,60 +50,71 @@
         </form>
 
         <% if (selectedTeam && gamesForTeam.length > 0) { %>
-            <h2 class="text-2xl font-semibold text-blue-600 mb-4 text-center">
+            <h2 class="text-2xl font-semibold text-green-800 mb-4 text-center font-heading">
                 <%= selectedTeam %> - Otteluohjelma
             </h2>
+
             <div class="space-y-6">
                 <% gamesForTeam.forEach((game, index) => { %>
                     <% if (game.breakDurationMinutes && game.breakDurationMinutes > 0) { %>
-                        <div class="bg-yellow-100 border border-yellow-300 p-4 rounded-lg shadow-lg text-center my-4">
-                            <p class="text-lg font-medium text-yellow-800">
-                                <span class="font-semibold">Taukoa:</span> <span class="font-bold"><%= game.breakDurationMinutes %> min</span>
+                        <div class="bg-sky-50 border-l-4 border-sky-400 text-sky-700 p-4 rounded-md shadow-md my-4" role="alert">
+                            <p class="font-bold font-heading">Tauko</p>
+                            <p class="font-body"><%= game.breakDurationMinutes %> minuuttia</p>
+                        </div>
+                    <% } %>
+
+                    <div class="bg-white p-5 rounded-lg shadow-xl border border-green-600 hover:shadow-2xl transition-shadow duration-300">
+                        <div class="flex justify-between items-center mb-3">
+                            <p class="text-xl font-bold text-green-700 font-heading">
+                                <%= game.time %>
+                            </p>
+                            <p class="text-lg font-semibold text-slate-700 font-heading">
+                                <%= game.field %>
                             </p>
                         </div>
-                        <% } %>
+                        <div class="mb-2">
+                            <p class="text-md text-slate-800 font-body">
+                                <span class="font-bold text-green-700"><%= selectedTeam.split('(')[0].trim() %></span> vs <span class="text-slate-700"><%= game.opponent.split('(')[0].trim() %></span>
+                            </p>
+                        </div>
+                        <div class="text-xs text-slate-600 font-body mt-3 pt-3 border-t border-slate-200">
+                            <span class="font-semibold">Pelimuoto:</span> <%= game.gameType %> &nbsp;&middot;&nbsp; 
+                            <span class="font-semibold">Sarja/Ikäluokka:</span> <%= game.year %> &nbsp;&middot;&nbsp; 
+                            <span class="font-semibold">Kesto:</span> <%= game.gameDuration %>
+                        </div>
 
-                            <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                                <p class="text-xl font-semibold text-gray-700 mb-1">
-                                    <span class="font-bold">Aika:</span>
-                                    <%= game.time %>
-                                </p>
-                                <p class="text-lg text-gray-600 mb-1">
-                                    <span class="font-bold">Vastustaja:</span>
-                                    <%= game.opponent %>
-                                </p>
-                                <p class="text-lg text-gray-600 mb-1">
-                                    <span class="font-bold">Kenttä:</span>
-                                    <%= game.field %>
-                                </p>
-                                <% 
+                        <% // Display field map for this game %>
+                        <% 
                         const currentFieldKey = game.field.toUpperCase();
                         const imageName = fieldMapData[currentFieldKey];
                         if (imageName) { 
                         %>
-                                    <div class="mt-4 mb-2 border border-gray-300 rounded overflow-hidden">
-                                        <img src="<%= imageName %>" alt="Kenttäkartta - <%= game.field %>" class="block w-full h-auto">
-                                    </div>
-                                    <% } %>
-                                        <p class="text-sm text-gray-500">
-                                            <span class="font-bold">Info:</span>
-                                            <%= game.gameDuration %>,
-                                                <%= game.gameType %> (
-                                                    <%= game.year %>)
-                                        </p>
+                            <div class="mt-4 border border-slate-300 rounded-lg overflow-hidden shadow">
+                                <img src="<%= imageName %>" alt="Kenttäkartta - <%= game.field %>" class="block w-full h-auto">
                             </div>
-                            <% }); %>
+                        <% } %>
+                    </div>
+                <% }); %>
             </div>
-            <% } else if (selectedTeam) { %>
-                <p class="text-center text-gray-500 mt-10 text-lg">Ei pelejä valitulle joukkueelle.</p>
-                <% } %>
+        <% } else if (selectedTeam) { %>
+            <p class="text-center text-slate-500 mt-10 text-lg font-body">Ei pelejä valitulle joukkueelle.</p>
+        <% } else { %>
+            <p class="text-center text-slate-500 mt-10 text-lg font-body">Valitse joukkue ylläolevasta valikosta nähdäksesi otteluohjelman.</p>
+        <% } %>
+        </main>
+
+        <footer class="bg-slate-800 text-slate-300 text-center p-4 rounded-t-lg mt-12 font-body shadow-inner">
+            <p>Tämä on epävirallinen työkalu OLS Viikkopelien otteluohjelman selaamiseen.</p>
+        </footer>
     </div>
 
     <script>
         // Optional: if you want to avoid the form action change and use JS for navigation
-        // document.getElementById('teamSelect').addEventListener('change', function() {
+        // document.getElementById('team').addEventListener('change', function() {
         //     if (this.value) {
         //         window.location.href = '/team/' + encodeURIComponent(this.value);
+        //     } else {
+        //         window.location.href = '/';
         //     }
         // });
     </script>
