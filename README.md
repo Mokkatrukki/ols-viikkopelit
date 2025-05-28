@@ -1,256 +1,279 @@
 # OLS Viikkopelit Viewer
 
-This web application is designed to parse and display game schedules from the OLS Viikkopelit PDF files. It allows users to easily view upcoming matches, opponents, game times, and field locations.
+This project consists of two web applications designed to parse, manage, and display game schedules from the OLS Viikkopelit PDF files.
+
+1.  **OLS Viikkopelit Viewer (`ols-viikkopelit`)**: The main user-facing application that displays the game schedules. Users can easily view upcoming matches, opponents, game times, and field locations.
+2.  **OLS Viikkopelit Admin (`ols-viikkopelit-admin`)**: A separate microservice responsible for web scraping the latest PDF, parsing it, extracting game data, and providing an API for the viewer app.
 
 ## Project Goals
 
-- Provide a user-friendly interface to view team schedules.
-- Accurately extract game information from complex PDF layouts.
-- Offer a clear overview of all games for a given PDF.
+- Provide a user-friendly interface to view team schedules (`ols-viikkopelit`).
+- Reliably automate the process of fetching and parsing PDF game schedules (`ols-viikkopelit-admin`).
+- Decouple data scraping/processing from the data presentation layer.
+- Ensure persistent storage for scraped game data.
+- Deploy both applications efficiently on Fly.io.
 
-## Features
+## Architecture Overview
+
+The system is designed as a microservice architecture:
+
+*   **`ols-viikkopelit` (Main Viewer App)**:
+    *   Responsibilities: Displays game schedules, team information, and field maps to end-users.
+    *   Data Source: Fetches structured game data from the `ols-viikkopelit-admin` app via an internal API call.
+    *   Storage: Stores a local copy of the game data on its own persistent Fly.io volume (`ols_data`) for quick access.
+    *   URL: [https://ols-viikkopelit.fly.dev/](https://ols-viikkopelit.fly.dev/)
+
+*   **`ols-viikkopelit-admin` (Admin & Scraping App)**:
+    *   Responsibilities: 
+        *   Provides an admin dashboard to trigger data updates.
+        *   Uses Puppeteer to scrape the latest Viikkopelit PDF from the OLS website.
+        *   Parses the PDF using `pdf2json` and custom extraction logic.
+        *   Saves the extracted structured game data (`extracted_games_output.json`) to its dedicated persistent Fly.io volume (`ols_admin_data`).
+        *   Exposes a secure API endpoint for the main viewer app to fetch the latest game data.
+    *   URL: [https://ols-viikkopelit-admin.fly.dev/](https://ols-viikkopelit-admin.fly.dev/)
+
+**Data Flow:**
+1. An administrator accesses the `ols-viikkopelit-admin` dashboard and triggers an update.
+2. `ols-viikkopelit-admin` scrapes the PDF, processes it, and saves `extracted_games_output.json` to its volume.
+3. An administrator accesses the `/admin` page on the main `ols-viikkopelit` app and triggers a data refresh.
+4. The main `ols-viikkopelit` app calls a secure API endpoint on `ols-viikkopelit-admin` to get the latest `extracted_games_output.json`.
+5. The main `ols-viikkopelit` app saves this data to its own volume and updates its display.
+
+## Features (Main Viewer App - `ols-viikkopelit`)
 
 - **Clean User Interface**: Styled with Tailwind CSS for a modern and responsive look.
 - **Team Schedule Display**: View game schedules by selecting a team.
 - **Grouped Team Selection**: Teams in the dropdown are grouped by their league/season year (e.g., 2017, 2019) for easier navigation.
 - **Dynamic Game Information**: Displays time, opponent, and field for each match.
+- **Admin Refresh**: Ability for an admin to trigger a refresh of game data from the admin service.
 
-## PDF Parsing
+## PDF Parsing & Data Extraction (`ols-viikkopelit-admin`)
 
-The core of this application is its PDF parsing capability, which transforms the visual layout of the game schedule PDF into structured data. This process is now streamlined:
+The PDF parsing and data extraction logic resides entirely within the `ols-viikkopelit-admin` application.
 
-1.  **PDF to Structured Data (`src/pdfParser.ts` and `src/dataExtractor.ts` working together)**:
-    *   The `pdf2json` library is used for initial conversion of the input PDF file into a detailed JSON structure (`parsed_pdf_data.json`). This contains all text elements with their precise coordinates, crucial for handling column-based layouts.
-    *   The `src/dataExtractor.ts` script then processes this intermediate JSON to identify game blocks and extract key game information (time, teams, opponent, field, etc.).
-    *   These two steps are now orchestrated by a single command (see "Setup and Usage"). The final extracted game data is saved into `extracted_games_output.json`, ready for the web application.
+1.  **Web Scraping**: Puppeteer is used to navigate to `https://ols.fi/jalkapallo/viikkopelit/` and download the latest Viikkopelit PDF schedule.
+2.  **PDF to Structured JSON (`pdfParser.ts` in admin app)**: The downloaded PDF is processed by `pdf2json` to convert its content and layout into a structured JSON file (`parsed_pdf_data.json`). This file includes text elements and their coordinates.
+3.  **Data Extraction (`dataExtractor.ts` in admin app)**: Custom logic in this script reads `parsed_pdf_data.json`, identifies game blocks, headers, and extracts game details (time, teams, field, year/league). The final output is `extracted_games_output.json`.
+
+This entire process is triggered from the `ols-viikkopelit-admin` dashboard and runs on its Fly.io instance, saving the output to its dedicated volume.
 
 ## Tech Stack
 
-- **Backend**: Express.js with TypeScript
-- **Frontend**: EJS (Embedded JavaScript templates) for server-side rendering.
-- **Styling**: Tailwind CSS
-- **PDF Parsing**: `pdf2json` (initial parsing), custom logic for data extraction (`src/dataExtractor.ts`).
+**`ols-viikkopelit` (Main Viewer App):**
+- Backend: Express.js with TypeScript
+- Frontend: EJS (Embedded JavaScript templates) for server-side rendering
+- Styling: Tailwind CSS
+- HTTP Client: `axios` (for fetching data from the admin app)
 
-## Setup and Usage
+**`ols-viikkopelit-admin` (Admin & Scraping App):**
+- Backend: Express.js with TypeScript
+- Frontend (Admin Dashboard): EJS
+- Styling: Tailwind CSS
+- Web Scraping: Puppeteer (with Chromium)
+- PDF Parsing: `pdf2json` and custom extraction logic
 
-1.  **Clone the repository:**
+## Local Development Setup
+
+This project contains two separate Node.js applications: the main viewer app (`ols-viikkopelit`) in the root directory, and the admin/scraping app (`ols-viikkopelit-admin`) in the `admin_app/` subdirectory.
+
+**1. `ols-viikkopelit` (Main Viewer App - Root Directory)**
+
+*   **Prerequisites:** Node.js, npm.
+*   **Installation:**
     ```bash
-    git clone <repository-url>
-    cd ols-viikkopelit
-    ```
-
-2.  **Install dependencies:**
-    ```bash
+    # Navigate to the project root
+    cd /path/to/ols-viikkopelit
     npm install
     ```
-
-3.  **Generate Game Data from PDF:**
-    *   Place your Viikkopelit PDF file (e.g., `Viikkopelit_8_5_2025.pdf`) in the root directory of the project.
-    *   Run the PDF processing script, providing the name of your PDF file as an argument:
-        ```bash
-        npm run process-pdf -- your_pdf_filename.pdf
-        ```
-        For example:
-        ```bash
-        npm run process-pdf -- Viikkopelit_8_5_2025.pdf
-        ```
-    *   This command will:
-        1.  Invoke `src/pdfParser.ts` with your specified PDF.
-        2.  Generate an intermediate `parsed_pdf_data.json`.
-        3.  Automatically trigger `src/dataExtractor.ts` to process the intermediate JSON.
-        4.  Produce the final `extracted_games_output.json` required by the application.
-
-4.  **Build the project:**
-    *   This compiles TypeScript and Tailwind CSS.
+*   **Data File:** This app requires `persistent_app_files/extracted_games_output.json` to display data. For local development, you can:
+    *   Manually create this file with sample data.
+    *   Or, run the `ols-viikkopelit-admin` app locally (see below) and then copy its generated `extracted_games_output.json` into the main app's `./persistent_app_files/` directory.
+    *   Alternatively, for more integrated local development, you could modify the main app's environment to fetch from a locally running admin app instance (requires setting `ADMIN_APP_DATA_URL` and `API_ACCESS_KEY` locally, e.g., via a `.env` file and `dotenv` package).
+*   **Build:**
     ```bash
-    npm run build
+    npm run build # Compiles TypeScript and Tailwind CSS
     ```
-
-5.  **Start the application:**
+*   **Run:**
     ```bash
-    npm start # Runs the compiled JavaScript from dist/
+    npm start # Runs from dist/
+    # OR for development with auto-rebuilds:
+    npm run dev
     ```
-    Alternatively, for development with auto-rebuild for TS and CSS:
-    ```bash
-    npm run dev 
-    ```
-    The application will be available at `http://localhost:3002` (or your configured port).
+    The viewer app will be available at `http://localhost:3002` (or as configured).
 
-## Project Structure
+**2. `ols-viikkopelit-admin` (Admin & Scraping App - `admin_app/` Directory)**
+
+*   **Prerequisites:** Node.js, npm. For Puppeteer, a local installation of Chromium is typically needed if not running via Docker.
+*   **Installation:**
+    ```bash
+    # Navigate to the admin_app subdirectory
+    cd /path/to/ols-viikkopelit/admin_app
+    npm install
+    ```
+*   **Environment (Local):**
+    *   This app uses `APP_PERSISTENT_STORAGE_PATH` to know where to save downloaded PDFs and generated JSON. Locally, it defaults to a path relative to its own `admin_app.ts` (e.g., `admin_app/persistent_app_files_admin/`). You might want to use a `.env` file with `dotenv` to manage this and `API_ACCESS_KEY` for local testing of its API.
+*   **Build:**
+    ```bash
+    npm run build # Compiles TypeScript
+    ```
+*   **Run:**
+    ```bash
+    npm start # Runs from dist/
+    # OR for development (if dev script configured):
+    # npm run dev 
+    ```
+    The admin app will be available at `http://localhost:3003` (or as configured).
+    *   You can then access its dashboard to trigger PDF scraping and processing. The output `extracted_games_output.json` will be in its configured persistent storage path.
+
+## Project Structure (Simplified)
 
 ```
 .
-├── Viikkopelit_15_5_2025.pdf  # Example input PDF
-├── dist/                       # Compiled JavaScript and CSS files (ignored by Git)
-├── node_modules/               # Project dependencies
+├── admin_app/                  # OLS Viikkopelit Admin microservice
+│   ├── src/
+│   │   ├── admin_app.ts        # Admin app Express logic
+│   │   ├── updateLatestPdf.ts  # Puppeteer scraping logic
+│   │   ├── pdfParser.ts        # PDF to JSON conversion
+│   │   └── dataExtractor.ts    # Game data extraction from JSON
+│   ├── views/
+│   │   └── admin_dashboard.ejs # Admin dashboard template
+│   ├── Dockerfile              # Dockerfile for admin_app (with Puppeteer)
+│   ├── fly.toml                # Fly.io config for admin_app
+│   ├── package.json
+│   └── ...                     # Other admin_app files (tsconfig, tailwind config, etc.)
+├── dist/                       # Compiled JS for main app (ols-viikkopelit)
+├── node_modules/               # Dependencies for main app
+├── persistent_app_files/       # Local storage for main app's extracted_games_output.json
 ├── public/
-│   └── css/
-│       └── style.css           # Output CSS from Tailwind
+│   └── css/style.css           # Tailwind output for main app
 ├── src/
-│   ├── app.ts                  # Express application logic
-│   ├── pdfParser.ts            # Script to convert PDF to structured JSON
-│   ├── dataExtractor.ts        # Script to extract game data from JSON
-│   └── input.css               # Tailwind CSS input file
+│   ├── app.ts                  # Express logic for main app (ols-viikkopelit)
+│   └── input.css               # Tailwind input for main app
 ├── views/
-│   └── index.ejs              # EJS template for the main page
-├── .gitignore                  # Specifies intentionally untracked files
-├── package.json                # Project metadata and dependencies
-├── package-lock.json           # Lockfile for dependencies
-├── postcss.config.js           # PostCSS configuration (for Tailwind)
-├── tailwind.config.js          # Tailwind CSS configuration
-├── tsconfig.json               # TypeScript compiler options
-├── plan.md                     # Initial project plan (may be outdated)
+│   ├── index.ejs               # Main page template for main app
+│   └── ops-refresh-data.ejs    # Admin refresh page for main app
+├── Dockerfile                  # Dockerfile for main app (ols-viikkopelit)
+├── fly.toml                    # Fly.io config for main app
+├── package.json                # Main app dependencies & scripts
+├── tsconfig.json               # Main app TypeScript config
 └── README.md                   # This file
 ``` 
 
-## Automated PDF Schedule Updates
+## Data Update Process (Production)
 
-This project includes a script to automatically fetch the latest Viikkopelit game schedule PDF from the OLS website, process it, and update the `extracted_games_output.json` file used by the application.
+The data update process involves interacting with both deployed applications:
 
-- **Script**: `src/updateLatestPdf.ts`
-- **How it works**: Uses Puppeteer to navigate to `https://ols.fi/jalkapallo/viikkopelit/`, identifies the most relevant PDF link (based on dates in filenames, prioritizing upcoming or recent games), downloads the PDF to the project root, and then runs the `npm run process-pdf -- <downloaded_pdf_filename>.pdf` command.
-- **To run manually**: 
-  ```bash
-  npm run update-schedule
-  ```
+1.  **Trigger Scraping & Parsing (`ols-viikkopelit-admin`):
+    *   Navigate to the admin dashboard of the `ols-viikkopelit-admin` app: [https://ols-viikkopelit-admin.fly.dev/](https://ols-viikkopelit-admin.fly.dev/)
+    *   Click the "Trigger Full Data Update" button.
+    *   This initiates the Puppeteer script to scrape the latest PDF from the OLS website, parse it, extract game data, and save `extracted_games_output.json` to its dedicated volume (`ols_admin_data`) on Fly.io.
+    *   Monitor the `ols-viikkopelit-admin` logs on Fly.io for progress and confirmation.
+
+2.  **Refresh Data in Main Viewer App (`ols-viikkopelit`):
+    *   Navigate to the admin page of the main `ols-viikkopelit` app: [https://ols-viikkopelit.fly.dev/admin](https://ols-viikkopelit.fly.dev/admin)
+    *   Click the "Reload Data from Shared Storage" (or similarly named) button.
+    *   This action triggers the main app to call the secure API of `ols-viikkopelit-admin`, fetch the latest `extracted_games_output.json`, save it to its own Fly.io volume (`ols_data`), and then reload the game data for display.
+    *   Monitor the `ols-viikkopelit` logs on Fly.io for confirmation.
+
+This two-step process ensures that the data scraping is handled by the specialized admin app, and the main app consumes this data in a controlled manner.
 
 ## Dockerization
 
-The application can be built and run as a Docker container. A `Dockerfile` is provided, which sets up Node.js, installs all dependencies (including those for Puppeteer/Chromium), builds the project, and configures it to run.
+Both applications are designed to be run as Docker containers.
 
-**Key Dockerfile features**:
-- Based on `node:18-slim`.
-- Installs `chromium` and necessary libraries for Puppeteer.
-- Sets `PUPPETEER_EXECUTABLE_PATH` and `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD` so Puppeteer uses the system-installed Chromium.
-- Runs `npm ci` for dependency installation and `npm run build`.
-- Exposes port `3002` and starts the application with `npm start`.
+*   **`ols-viikkopelit` (Main Viewer App - Root Directory):**
+    *   Its `Dockerfile` (in the project root) sets up a simple Node.js 18 environment, installs dependencies, builds the TypeScript & Tailwind CSS, and runs the application. It does **not** include Puppeteer or Chromium, making the image significantly smaller.
+    *   To build locally: `docker build -t ols-viikkopelit .`
+    *   To run locally: `docker run -p 3002:3002 -v $(pwd)/persistent_app_files:/usr/src/app/persistent_app_files -e APP_PERSISTENT_STORAGE_PATH=/usr/src/app/persistent_app_files ols-viikkopelit` (This example mounts a local directory for data and sets the env var; adapt as needed for local testing).
 
-**Build the Docker image**:
-```bash
-npm install # Ensure local puppeteer types are available for local dev if needed
-docker build -t ols-viikkopelit-viewer .
-```
-
-**Run the Docker container**:
-```bash
-docker run -p 3002:3002 -d ols-viikkopelit-viewer
-```
-Access the application at `http://localhost:3002`.
+*   **`ols-viikkopelit-admin` (Admin & Scraping App - `admin_app/` Directory):**
+    *   Its `Dockerfile` (in `admin_app/`) is based on Node.js 18 but **includes** the installation of Chromium and necessary dependencies for Puppeteer to function correctly.
+    *   It sets environment variables like `PUPPETEER_EXECUTABLE_PATH` to use the installed Chromium.
+    *   To build locally: `cd admin_app && docker build -t ols-viikkopelit-admin . && cd ..`
+    *   To run locally: `docker run -p 3003:3003 -v $(pwd)/admin_app/persistent_app_files_admin:/data/app_files -e APP_PERSISTENT_STORAGE_PATH=/data/app_files -e API_ACCESS_KEY=your_local_key ols-viikkopelit-admin` (Example, adjust port, volume mount, and env vars).
 
 ## Deployment to Fly.io
 
-This application is suitable for deployment on [Fly.io](https://fly.io/).
+Both applications are deployed to Fly.io. Ensure you have `flyctl` installed and are logged in (`fly auth login`).
 
-1.  **Install `flyctl`**: Follow the instructions on the Fly.io website.
-2.  **Login to Fly.io**: `fly auth login`
-3.  **Launch the app** (first time only):
+**1. `ols-viikkopelit` (Main Viewer App)**
+
+*   **App Name on Fly.io**: `ols-viikkopelit` (or your chosen name)
+*   **Location in Repository**: Project root (`/`)
+*   **Configuration File**: `fly.toml` (in the project root)
+*   **First-time Launch (if not already done for this app name):**
     ```bash
-    fly launch --name your-app-name --region your-preferred-region
+    # From the project root directory (/path/to/ols-viikkopelit)
+    fly launch --name ols-viikkopelit --region arn 
+    # Follow prompts. It should detect Dockerfile. Review fly.toml.
     ```
-    Replace `your-app-name` (e.g., `ols-viikkopelit`) and `your-preferred-region` (e.g., `arn` for Stockholm, `hel` for Helsinki).
-    This will detect the `Dockerfile`, create a `fly.toml` configuration file, and may ask you to choose an organization. Review the `fly.toml` settings.
-    *   **Important**: Ensure your `fly.toml` has `internal_port = 3002` (or your app's configured port) under `[http_service]`.
-    *   Consider setting `auto_stop_machines = 'stop'`, `auto_start_machines = true`, and `min_machines_running = 0` in `[http_service]` for cost-effective scaling to zero.
-    *   You can adjust machine resources (e.g., `memory = '256mb'`) under the `[[vm]]` section.
-
-4.  **Provision a Fly Volume** (for persistent storage, see section below for details):
-    Before the first deploy, or if you haven't already, create a volume:
-    ```bash
-    fly volumes create ols_data --region your-preferred-region --size 1 --app your-app-name
-    ```
-    (Replace `ols_data` if you prefer a different volume name, and update `fly.toml` accordingly).
-
-5.  **Configure `fly.toml` for the Volume**:
-    Ensure your `fly.toml` has a `[mounts]` section like this (matching your volume name):
-    ```toml
-    [mounts]
-      source = "ols_data"
-      destination = "/data"
-    ```
-
-6.  **Deploy**:
-    ```bash
-    fly deploy
-    ```
-    This command builds your Docker image (or uses one from a registry if configured) and deploys it to Fly.io.
-
-7.  **Scaling and Machine Management**:
-    *   If you encounter issues related to volume attachments (e.g., "volume is attached to another machine"), you might need to scale your app to one machine if it was launched with more:
-        ```bash
-        fly scale count app=1 --app your-app-name
-        ```
-    *   You can list your volumes: `fly volumes list --app your-app-name`
-    *   You can access your machine's console: `fly ssh console --app your-app-name`
-
-## Persistent Data Storage with Fly.io Volumes
-
-By default, files created by the application inside the Docker container (like downloaded PDFs and generated JSON data) are lost when the container restarts or is redeployed. To make this data persistent on Fly.io, you need to use Fly Volumes.
-
-1.  **Environment Variable for Storage Path**:
-    *   The application uses the `APP_PERSISTENT_STORAGE_PATH` environment variable to determine where to store and read persistent files (downloaded PDFs, `parsed_pdf_data.json`, `extracted_games_output.json`).
-    *   If this variable is not set (e.g., during local development), it defaults to `./persistent_app_files/` in your project root.
-    *   In the `Dockerfile`, this is set to `/data/app_files`. This path is within the volume when mounted.
-
-2.  **Provision a Fly Volume**:
-    Create a volume for your application (if not done during initial launch steps). This volume will persist data across deployments and machine restarts.
-    ```bash
-    fly volumes create <your_volume_name> --region <your_region> --size <size_gb> --app <your_app_name>
-    ```
-    For example:
+*   **Volume Creation (if not already done):**
     ```bash
     fly volumes create ols_data --region arn --size 1 --app ols-viikkopelit
     ```
-    It's recommended to use the same region as your application. A 1GB volume is usually sufficient for this application.
-
-3.  **Configure `fly.toml` to Mount the Volume**:
-    Edit your `fly.toml` file to mount the created volume to the `/data` path inside your container. Add or verify the `[mounts]` section:
-    ```toml
-    # fly.toml
-    app = "your-ols-app-name" # e.g., ols-viikkopelit
-    # ... other configurations ...
-
-    [mounts]
-      source = "ols_data"          # Name of the volume you created
-      destination = "/data"         # Path inside the container where the volume will be available
-                                    # The app expects its files in /data/app_files/ on this volume
-    ```
-
-4.  **Deploy**: After configuring `fly.toml`, deploy your application:
+*   **Secrets:**
     ```bash
+    fly secrets set API_ACCESS_KEY="YOUR_SHARED_API_KEY" -a ols-viikkopelit
+    fly secrets set ADMIN_APP_DATA_URL="https://ols-viikkopelit-admin.fly.dev/api/internal/latest-games-data" -a ols-viikkopelit
+    ```
+    (Replace `YOUR_SHARED_API_KEY` with the actual key, e.g., `VILLIKISSA_VIEKAIKKIEN_RUUAT2342`)
+*   **Deployment:**
+    ```bash
+    # From the project root directory
     fly deploy
     ```
-    Fly.io will attempt to attach the volume to a new machine. If a machine already exists, it might need to be replaced, or you might need to ensure only one machine is running for the volume to attach correctly (`fly scale count app=1`).
 
-5.  **Seeding Initial Data (e.g., `extracted_games_output.json`)**:
-    If you have a pre-existing `extracted_games_output.json` (or other necessary files) locally that you want to use as a starting point on the volume:
-    *   First, ensure the application has run at least once on Fly.io or manually create the target directory structure if needed. The scripts are designed to create `downloaded_pdfs` and `app_files` inside `/data/` if they don't exist.
-    *   Use `fly sftp shell` to upload files:
-        ```bash
-        fly sftp shell --app your-app-name
-        ```
-    *   Inside the SFTP shell:
-        ```sftp
-        # Navigate to the directory where the app stores its persistent files
-        cd /data/app_files
+**2. `ols-viikkopelit-admin` (Admin & Scraping App)**
 
-        # Upload your local file to the current directory on the volume
-        # Assuming your local file is in ./persistent_app_files/extracted_games_output.json
-        put ./persistent_app_files/extracted_games_output.json extracted_games_output.json
+*   **App Name on Fly.io**: `ols-viikkopelit-admin` (or your chosen name)
+*   **Location in Repository**: `admin_app/` subdirectory
+*   **Configuration File**: `admin_app/fly.toml`
+*   **First-time Launch (if not already done for this app name):**
+    ```bash
+    # From the admin_app directory (/path/to/ols-viikkopelit/admin_app)
+    fly launch --name ols-viikkopelit-admin --region arn --no-deploy 
+    # Follow prompts. It should detect admin_app/Dockerfile. Review admin_app/fly.toml.
+    # --no-deploy is useful to set up volume and secrets before first deploy.
+    ```
+*   **Volume Creation (if not already done):**
+    ```bash
+    fly volumes create ols_admin_data --region arn --size 1 --app ols-viikkopelit-admin
+    ```
+*   **Secrets:**
+    ```bash
+    # For the API endpoint it serves
+    fly secrets set API_ACCESS_KEY="YOUR_SHARED_API_KEY" -a ols-viikkopelit-admin 
+    # Consider adding secrets to protect its dashboard, e.g., BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD
+    ```
+*   **Deployment:**
+    ```bash
+    # From the admin_app directory
+    cd admin_app
+    fly deploy
+    cd .. # Return to project root
+    ```
 
-        # You can also upload other files, like a specific PDF to downloaded_pdfs
-        # cd ../downloaded_pdfs
-        # put ./local_pdfs/some_initial.pdf some_initial.pdf
+**General Fly.io Notes:**
+*   Both `fly.toml` files are configured for `auto_stop_machines = true` and `min_machines_running = 0` for cost-efficiency.
+*   Health checks (`/health` endpoint) are configured for both apps.
+*   Check logs with `fly logs -a <app-name>`.
+*   Ensure the `[mounts]` section in each `fly.toml` correctly points to its respective volume name (`ols_data` or `ols_admin_data`) and mounts to `/data`.
 
-        exit
-        ```
-    *   After seeding data, you might need to restart your application for it to pick up the new files: `fly apps restart your-app-name` or trigger a new deployment.
+## Persistent Data Storage with Fly.io Volumes
 
-Now, when your application runs the update process:
-- PDFs will be downloaded to `/data/app_files/downloaded_pdfs/` on the volume.
-- `parsed_pdf_data.json` will be at `/data/app_files/parsed_pdf_data.json` on the volume.
-- `extracted_games_output.json` will be at `/data/app_files/extracted_games_output.json` on the volume, and the application will read from this persistent location.
+Both applications leverage Fly.io Volumes for persistent data storage, crucial for maintaining data across deployments and machine restarts.
 
-This ensures that your schedule data survives container restarts and deployments.
+*   **`ols-viikkopelit` (Main Viewer App):**
+    *   **Volume Name:** `ols_data` (or as configured in its `fly.toml`)
+    *   **Mount Point:** `/data` (as defined in its `fly.toml`)
+    *   **Internal Path Usage:** The app's `APP_PERSISTENT_STORAGE_PATH` environment variable (set in its `Dockerfile`) is `/data/app_files`. It stores the fetched `extracted_games_output.json` here (e.g., at `/data/app_files/extracted_games_output.json`).
+
+*   **`ols-viikkopelit-admin` (Admin & Scraping App):**
+    *   **Volume Name:** `ols_admin_data` (or as configured in `admin_app/fly.toml`)
+    *   **Mount Point:** `/data` (as defined in `admin_app/fly.toml`)
+    *   **Internal Path Usage:** Similar to the main app, its `APP_PERSISTENT_STORAGE_PATH` is `/data/app_files`. It stores downloaded PDFs (e.g., in `/data/app_files/downloaded_pdfs/`), the intermediate `parsed_pdf_data.json`, and the final `extracted_games_output.json` in this directory structure on its volume.
+
+This separation of volumes ensures that each app manages its own persistent data independently.
 
 ## Admin Page and Manual Updates
 

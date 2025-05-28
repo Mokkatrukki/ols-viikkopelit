@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refresh Game Data</title>
+    <link rel="stylesheet" href="/css/style.css"> <!-- Assuming your main app's CSS -->
+</head>
+<body class="bg-gray-100 text-gray-800 p-8">
+    <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-xl font-bold mb-4">Refresh Game Data from Storage</h1>
+
+        <% if (locals.message) { %>
+            <div class="mb-4 p-3 rounded-md 
+                        <% if (String(locals.message).startsWith('Failed')) { %> 
+                            bg-red-100 border border-red-400 text-red-700 
+                        <% } else { %> 
+                            bg-green-100 border border-green-400 text-green-700 
+                        <% } %>">
+                <p><%= locals.message %></p>
+            </div>
+        <% } %>
+
+        <p class="mb-2">Current Schedule Date: <strong><%= locals.scheduleDate || 'Not available' %></strong></p>
+        <p class="mb-4">Current Source File: <strong><%= locals.scheduleFile || 'Not available' %></strong></p>
+
+        <form action="/admin/refresh-action" method="POST">
+            <button type="submit"
+                    class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Reload Data from Shared Storage
+            </button>
+        </form>
+        
+        <p class="mt-4 text-sm text-gray-600">
+            This will reload <code>extracted_games_output.json</code> from the shared persistent storage.
+            To generate a new version of this file, use the <a href="http://ols-viikkopelit-admin.fly.dev" target="_blank" class="text-blue-500 hover:underline">Admin Scraper App</a> (you'll need its correct URL once deployed).
+        </p>
+    </div>
+</body>
+</html>

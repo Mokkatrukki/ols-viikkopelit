@@ -1,41 +1,6 @@
 # Use an official Node.js LTS image (e.g., Node 18 or 20)
 FROM node:18-slim
 
-# Set environment variable for Puppeteer to use installed Chromium and skip download
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
-    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-
-# Install necessary dependencies for Puppeteer (Debian-based)
-# Including fonts needed for rendering PDFs correctly, if applicable
-RUN apt-get update && apt-get install -y \
-    chromium \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdbus-1-3 \
-    libdrm2 \
-    libgbm1 \
-    libgtk-3-0 \
-    libnspr4 \
-    libnss3 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxext6 \
-    libxfixes3 \
-    libxrandr2 \
-    libasound2 \
-    libpangocairo-1.0-0 \
-    libxshmfence1 \
-    libgconf-2-4 \
-    libfontconfig1 \
-    libxss1 \
-    ca-certificates \
-    fonts-liberation \
-    xdg-utils \
-    --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
-
 # Set working directory
 WORKDIR /usr/src/app
 

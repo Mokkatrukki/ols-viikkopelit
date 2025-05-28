@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OLS Viikkopelit - Admin</title>
+    <link rel="stylesheet" href="/css/style.css"> <!- Output from Tailwind ->
+</head>
+<body class="bg-gray-100 text-gray-800 p-8">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-6 text-center">OLS Viikkopelit - Admin Control Panel</h1>
+
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-3">Update Game Data</h2>
+            <p class="text-gray-600 mb-4">
+                Click the button below to fetch the latest game schedule PDF from the OLS website, 
+                process it, and update the <code>extracted_games_output.json</code> file in the shared storage.
+                This process can take a few moments.
+            </p>
+            <form action="/trigger-full-update" method="POST">
+                <button type="submit" 
+                        class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
+                    Trigger Full Data Update
+                </button>
+            </form>
+        </div>
+
+        <% if (locals.message) { %>
+            <div class="mt-6 p-4 rounded-md 
+                        <% if (message.startsWith('Error')) { %> 
+                            bg-red-100 border border-red-400 text-red-700 
+                        <% } else { %> 
+                            bg-green-100 border border-green-400 text-green-700 
+                        <% } %>">
+                <p class="font-semibold">Status:</p>
+                <p><%= message %></p>
+            </div>
+        <% } %>
+
+        <div class="mt-8 text-center">
+            <p class="text-sm text-gray-500">
+                The main application (ols-viikkopelit) will read the updated data from shared storage. 
+                You may need to use its 'Refresh Data' function to see immediate changes.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

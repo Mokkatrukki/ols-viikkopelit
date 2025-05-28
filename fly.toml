@@ -1,33 +1,39 @@
-# fly.toml app configuration file generated for ols-viikkopelit on 2025-05-16T14:22:49+03:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
+# fly.toml app configuration for ols-viikkopelit
+# Optimized for performance and cost
 
 app = 'ols-viikkopelit'
 primary_region = 'arn'
 
 [build]
+  dockerfile = "Dockerfile"
 
-# Set default machine count for the 'app' process group
+[deploy]
+  strategy = "immediate"  # Faster deployments
+
 [processes]
   app = ""
 
 [http_service]
   internal_port = 3002
   force_https = true
-  auto_stop_machines = 'stop'
+  auto_stop_machines = true  # Allow instance to sleep when idle
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 0    # Allow all instances to sleep when idle
+  min_idle_count = 1          # Keep at least 1 instance ready when scaling down
   processes = ['app']
+  
+  # Keep the instance running for at least 30 minutes after the last request
+  min_idle_time = "30m"
 
+
+# VM configuration
 [[vm]]
-  memory = '1024mb'
-  cpu_kind = 'shared'
+  memory = "512mb"     # Reduced memory for cost savings
+  cpu_kind = "shared"  # Shared CPU is more cost-effective
   cpus = 1
-  # Add this to explicitly tie this VM config to the 'app' process group defined above
   processes = ["app"]
 
 # Mount the persistent volume
 [mounts]
-  source = "ols_data"      # This is the NAME of the volume you just created
-  destination = "/data"    # This is where it will be mounted inside the container
+  source = "ols_data"      # Volume for persistent storage
+  destination = "/data"    # Mount point in container

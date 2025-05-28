@@ -48,7 +48,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
-import { runUpdater, UpdateResult, expectedReleaseDatesStrings, parseDMYStringToDate, formatDateToDMY } from './updateLatestPdf.js';
+import axios from 'axios'; // Added for making HTTP requests
 
 // Define the GameInfo interface (can be moved to a shared types file later)
 interface GameInfo {
@@ -174,6 +174,7 @@ interface ExtractedData {
 let allGames: GameInfo[] = [];
 let documentDate: string | null = null;
 let sourceFile: string | null = null; // To store the source PDF filename
+let cachedGroupedTeams: GroupedTeamEntry[] = [];
 
 // Function to load or reload game data
 function loadGameData() {
@@ -190,6 +191,7 @@ function loadGameData() {
             allGames = [];
             documentDate = null;
             sourceFile = null;
+            cachedGroupedTeams = [];
             return; // Exit early if file doesn't exist
         }
 
@@ -198,8 +200,9 @@ function loadGameData() {
         allGames = parsedData.games || []; // Ensure games is an array
         documentDate = parsedData.documentDate;
         sourceFile = parsedData.sourceFile || null; // Load source file if available
-
-        console.log(`Successfully loaded ${allGames.length} games.`);
+        cachedGroupedTeams = getGroupedTeams(allGames);
+        console.log('Game data and grouped teams reloaded successfully.');
+        console.log(`Loaded ${allGames.length} games.`);
         if (documentDate) {
             console.log(`Document date: ${documentDate}`);
         }
@@ -212,7 +215,8 @@ function loadGameData() {
         allGames = [];
         documentDate = null;
         sourceFile = null;
-        console.log('Proceeding with empty game data.');
+        cachedGroupedTeams = [];
+        console.error('Failed to load game data:', error);
     }
 }
 
@@ -229,209 +233,86 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req: Request, res: Response) => {
-  const groupedTeams = getGroupedTeams(allGames);
-  res.render('index', { 
-    documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : (sourceFile ? ' (' + sourceFile + ')' : '')}`,
-    groupedTeams, 
-    selectedTeam: null, 
-    gamesForTeam: [], 
-    fieldMapData 
-  });
-});
-
-// Admin page route
-app.get('/admin', (req: Request, res: Response) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const expectedDates = expectedReleaseDatesStrings.map(s => parseDMYStringToDate(s)).filter(d => d !== null) as Date[];
-    
-    let nextExpectedDate: Date | null = null;
-    for (const date of expectedDates.sort((a, b) => a.getTime() - b.getTime())) {
-        if (date >= today) {
-            nextExpectedDate = date;
-            break;
-        }
-    }
-    if (!nextExpectedDate && expectedDates.length > 0) { // If all are in the past, show the last one as "last known"
-        nextExpectedDate = expectedDates[expectedDates.length - 1];
-    }
-
-    // Message from a previous update attempt will be handled by client-side JS if it makes the call
-    // Or if the page is loaded directly with a query param (e.g. after an error that reloads page from server-side redirect)
-    let statusMessage = req.query.updateMessage as string || null; 
-
-    res.render('admin', {
-        scheduleDate: documentDate, 
-        scheduleFile: sourceFile, 
-        nextExpectedDateFormatted: nextExpectedDate ? formatDateToDMY(nextExpectedDate) : "N/A",
-        todayFormatted: formatDateToDMY(today),
-        initialUpdateMessage: statusMessage, // Pass any initial message for direct loads
-        // For client-side updates, we'll also need the current data available to JS
-        currentScheduleDataForClient: {
-            scheduleDate: documentDate,
-            scheduleFile: sourceFile
-        }
+    res.render('index', {
+        documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : (sourceFile ? ' (' + sourceFile + ')' : '')}`,
+        groupedTeams: cachedGroupedTeams, // Use cached version
+        selectedTeam: null,
+        gamesForTeam: [],
+        fieldMapData
     });
 });
 
-// Trigger PDF update endpoint (for manual updates from admin page)
-// Now returns JSON instead of redirecting
-app.post('/trigger-pdf-update', async (req: Request, res: Response): Promise<void> => {
-    console.log('Received request to update PDF schedule via /trigger-pdf-update (manual).');
-    try {
-        const result: UpdateResult = await runUpdater(documentDate); 
-        console.log('Manual runUpdater completed. Result:', result);
-
-        let newScheduleDate = documentDate;
-        let newSourceFile = sourceFile;
-
-        if (result.status === 'updated') {
-            loadGameData(); // Reload data only if an update occurred
-            newScheduleDate = documentDate; // an global variables that loadGameData updates
-            newSourceFile = sourceFile; // an global variables that loadGameData updates
-            console.log('Game data reloaded due to manual update.');
-        }
-        
-        res.status(200).json({ 
-            status: result.status, 
-            message: result.message, 
-            // Send back the potentially updated schedule info
-            updatedScheduleDate: newScheduleDate, 
-            updatedSourceFile: newSourceFile
-        });
-        return;
-
-    } catch (error: any) { 
-        console.error('Error during manual PDF update process triggered by endpoint:', error);
-        const errorMessage = `Failed to update PDF: ${error.message || 'Unknown error'}`;
-        res.status(500).json({ 
-            status: 'error', 
-            message: errorMessage, 
-            updatedScheduleDate: documentDate, // Send current data on error
-            updatedSourceFile: sourceFile 
-        });
-        return;
-    }
+// Admin page to refresh data from storage
+app.get('/admin', (req: Request, res: Response) => {
+    // This page should have a form/button that POSTs to /admin/refresh-action
+    // Trying to render 'admin.ejs'. Ensure this file exists in 'views' or change to 'ops-refresh-data.ejs'.
+    res.render('ops-refresh-data', {
+        message: req.query.message || null,
+        scheduleDate: documentDate,
+        scheduleFile: sourceFile
+    });
 });
 
-// Force re-process current PDF endpoint (for when extraction logic has been updated)
-app.post('/force-reprocess-current-pdf', async (req: Request, res: Response): Promise<void> => {
-    console.log('Received request to force re-process current PDF via /force-reprocess-current-pdf.');
-    
-    if (!sourceFile) {
-        const errorMessage = 'No current PDF file to re-process. Please update schedule first.';
-        console.log(errorMessage);
-        res.status(400).json({ 
-            status: 'error', 
-            message: errorMessage,
-            updatedScheduleDate: documentDate,
-            updatedSourceFile: sourceFile
-        });
-        return;
-    }
-
+app.post('/admin/refresh-action', async (req: Request, res: Response) => {
+    console.log('Received request to refresh game data by fetching from admin service.');
     try {
-        // Find the current PDF file in the downloaded_pdfs directory
-        const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
-        const PDF_DOWNLOAD_DIR = path.join(PERSISTENT_STORAGE_BASE_PATH, 'downloaded_pdfs');
-        const currentPdfPath = path.join(PDF_DOWNLOAD_DIR, sourceFile);
-        
-        // Check if the file exists
-        if (!fs.existsSync(currentPdfPath)) {
-            const errorMessage = `Current PDF file not found at ${currentPdfPath}. Cannot re-process.`;
-            console.error(errorMessage);
-            res.status(404).json({ 
-                status: 'error', 
-                message: errorMessage,
-                updatedScheduleDate: documentDate,
-                updatedSourceFile: sourceFile
-            });
-            return;
+        const adminAppDataUrl = process.env.ADMIN_APP_DATA_URL;
+        const apiKey = process.env.API_ACCESS_KEY;
+
+        if (!adminAppDataUrl || !apiKey) {
+            console.error('ADMIN_APP_DATA_URL or API_ACCESS_KEY is not set in environment variables.');
+            // Using redirect with query parameter for consistency with the original success case
+            return res.redirect('/admin?message=Failed to refresh: Admin app connection details are not configured.');
         }
 
-        console.log(`Force re-processing ${currentPdfPath}...`);
-        const processCommand = `npm run process-pdf -- "${currentPdfPath}"`;
-        
-        await new Promise<void>((resolve, reject) => {
-            exec(processCommand, (error: any, stdout: string, stderr: string) => {
-                if (error) {
-                    console.error(`Error re-processing PDF: ${error.message}`);
-                    console.error(`Stdout: ${stdout}`);
-                    console.error(`Stderr: ${stderr}`);
-                    reject(error);
-                    return;
-                }
-                if (stderr) {
-                    console.warn(`Stderr while re-processing PDF (normal for pdf2json): ${stderr}`);
-                }
-                console.log(`PDF re-processing script stdout: ${stdout}`);
-                console.log('PDF re-processed successfully.');
-                resolve();
+        let newDataPayload: string;
+        try {
+            console.log(`Fetching latest data from admin app: ${adminAppDataUrl}`);
+            const response = await axios.get(adminAppDataUrl, {
+                headers: {
+                    'X-API-Key': apiKey
+                },
+                timeout: 15000 // 15 second timeout for the API call
             });
-        });
 
-        // Reload the game data after re-processing
-        loadGameData();
-        console.log('Game data reloaded after force re-processing.');
+            if (typeof response.data === 'object' && response.data !== null) {
+                newDataPayload = JSON.stringify(response.data, null, 2);
+            } else if (typeof response.data === 'string') {
+                newDataPayload = response.data;
+            } else {
+                // Fallback for other types (e.g., number, boolean) or if response.data is null/undefined
+                console.warn('Admin app response data was not an object or string, converting to string:', response.data);
+                newDataPayload = String(response.data || ''); // Ensure it's a string, default to empty if null/undefined
+            }
+            console.log('Successfully fetched data from admin app.');
 
-        const successMessage = `Successfully re-processed ${sourceFile} with updated extraction logic.`;
-        res.status(200).json({ 
-            status: 'reprocessed', 
-            message: successMessage,
-            updatedScheduleDate: documentDate,
-            updatedSourceFile: sourceFile
-        });
-        return;
-
-    } catch (error: any) { 
-        console.error('Error during force re-processing:', error);
-        const errorMessage = `Failed to re-process PDF: ${error.message || 'Unknown error'}`;
-        res.status(500).json({ 
-            status: 'error', 
-            message: errorMessage,
-            updatedScheduleDate: documentDate,
-            updatedSourceFile: sourceFile
-        });
-        return;
-    }
-});
-
-// New endpoint for scheduled updates (e.g., via cron job)
-app.post('/execute-scheduled-update', async (req: Request, res: Response): Promise<void> => {
-    console.log('Received request for scheduled PDF update via /execute-scheduled-update.');
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
-
-    // Check if it's Monday (dayOfWeek === 1)
-    if (dayOfWeek !== 1) {
-        const message = `Skipping scheduled update: Today is not Monday (Day: ${dayOfWeek}). Scheduled updates run only on Mondays.`;
-        console.log(message);
-        // Send a specific status that indicates skipping, but not an error for the cron job
-        res.status(200).send({ status: 'skipped_not_monday', message }); 
-        return;
-    }
-
-    console.log('Proceeding with scheduled update as it is Monday.');
-    try {
-        const result: UpdateResult = await runUpdater(documentDate);
-        console.log('Scheduled runUpdater completed. Result:', result);
-
-        if (result.status === 'updated') {
-            loadGameData();
-            console.log('Game data reloaded due to scheduled update.');
+        } catch (fetchError: any) {
+            console.error('Error fetching data from admin app:', fetchError.message);
+            let errorDetail = fetchError.message;
+            if (fetchError.response) {
+                errorDetail += ` (Status: ${fetchError.response.status} - Data: ${JSON.stringify(fetchError.response.data)})`;
+            }
+            return res.redirect(`/admin?message=Failed to fetch new data from admin service: ${encodeURIComponent(String(errorDetail))}`);
         }
-        
-        // For a cron job, a JSON response is usually more helpful than a redirect
-        res.status(200).send({ status: result.status, message: result.message, newScheduleDate: result.newScheduleDate, newSourceFile: result.newSourceFile });
-        return;
 
-    } catch (error: any) { // Catch errors from runUpdater
-        console.error('Error during scheduled PDF update process:', error);
-        const errorMessage = `Failed to execute scheduled PDF update: ${error.message || 'Unknown error'}`;
-        // Explicitly return the response
-        res.status(500).send({ status: 'error', message: errorMessage });
-        return;
+        try {
+            const dataDir = path.dirname(jsonDataPath);
+            if (!fs.existsSync(dataDir)) {
+                fs.mkdirSync(dataDir, { recursive: true });
+            }
+            fs.writeFileSync(jsonDataPath, newDataPayload, 'utf-8');
+            console.log(`New data successfully written to ${jsonDataPath}`);
+
+            loadGameData(); // This will update global documentDate and sourceFile
+
+            res.redirect('/admin?message=Data refreshed successfully from admin service and reloaded.');
+        } catch (writeError: any) {
+            console.error(`Error writing new data to ${jsonDataPath}:`, writeError.message);
+            return res.redirect(`/admin?message=Failed to save new data locally: ${encodeURIComponent(String(writeError.message || 'Unknown write error'))}`);
+        }
+    } catch (error: any) { // General catch block for the async route handler
+        console.error('Error in /admin/refresh-action route:', error.message);
+        res.redirect(`/admin?message=Error during refresh process: ${encodeURIComponent(String(error.message || 'Unknown refresh error'))}`);
     }
 });
 
@@ -471,9 +352,12 @@ app.get('/team/:teamName', (req: Request, res: Response) => {
     }
   }
 
-  const groupedTeams = getGroupedTeams(allGames);
+  res.render('index', { documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : ''}`, groupedTeams: cachedGroupedTeams, selectedTeam: teamName, gamesForTeam, fieldMapData });
+});
 
-  res.render('index', { documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : ''}`, groupedTeams, selectedTeam: teamName, gamesForTeam, fieldMapData });
+// Health check endpoint for Fly.io
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).send('OK');
 });
 
 app.listen(PORT, () => {
