@@ -84,8 +84,9 @@ async function generateGamesSummary() {
         
         sortedGames.forEach(game => {
           // Format as requested: time - team1 vs team2
+          const team1Display = game.team1 ? game.team1 : "No opponent";
           const team2Display = game.team2 ? game.team2 : "No opponent";
-          summaryText += `${game.time} - ${game.team1} vs ${team2Display}\n`;
+          summaryText += `${game.time} - ${team1Display} vs ${team2Display}\n`;
         });
         
         summaryText += '\n';
