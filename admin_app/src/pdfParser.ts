@@ -30,8 +30,36 @@ async function ensureOutputDirectoryExists() {
     }
 }
 
-// Use default constructor for full JSON output
-const pdfParser = new PDFParser();
+// Create PDF parser with proper configuration based on pdf2json documentation
+// @ts-ignore - The second parameter should be verbosity level according to docs
+const pdfParser = new PDFParser(null, 1); // Second parameter is verbosity level
+
+// Configure additional options
+pdfParser.on('readable', meta => {
+  console.log('PDF Metadata:', meta);
+  // Check if the PDF is in landscape orientation
+  const isLandscape = meta && meta.Width && meta.Height && meta.Width > meta.Height;
+  console.log(`PDF orientation detected: ${isLandscape ? 'Landscape' : 'Portrait'}`);
+});
+
+// We won't override loadPDF since it's causing TypeScript errors
+// Instead, we'll use the configuration options available in the library
+
+// Set additional options if available in this version of pdf2json
+try {
+  // @ts-ignore - These properties might not be in the type definitions
+  if (typeof pdfParser.configurationOption === 'object') {
+    // @ts-ignore - Using documented options
+    pdfParser.configurationOption = {
+      detectOrientation: true,       // Enable orientation detection
+      verbosity: 1,                 // Detailed logs but not too verbose
+      disableCombineTextItems: false // Preserve text positioning
+    };
+    console.log('PDF parser configuration set successfully');
+  }
+} catch (error) {
+  console.warn('Could not set PDF parser configuration options:', error);
+}
 
 pdfParser.on('pdfParser_dataError', (errData: any) => {
   console.error(`Error parsing PDF: ${pdfFilePath}`);
