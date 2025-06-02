@@ -11,7 +11,8 @@
     "dev": "npm run build:css -- --watch & tsc --watch & node --watch dist/admin_app.js",
     "update-data": "node --loader ts-node/esm src/updateLatestPdf.ts",
     "parse-pdf": "node --loader ts-node/esm src/pdfParser.ts",
-    "extract-data": "node --loader ts-node/esm src/dataExtractor.ts"
+    "extract-data": "node --loader ts-node/esm src/dataExtractor.ts",
+    "generate-summary": "node --loader ts-node/esm src/generateGamesSummary.ts"
   },
   "keywords": [],
   "author": "",

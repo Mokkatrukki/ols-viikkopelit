@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { runUpdater, UpdateResult } from './updateLatestPdf.js';
+import { generateDataSummary, checkDataIssues } from './gameDataExtractor.js';
 import fs from 'fs/promises'; // Using promises API for fs
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,7 +14,7 @@ const PORT = process.env.PORT || 3003;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views')); // Point to admin_app/views
 
-const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || path.join(__dirname, '../../../persistent_app_files'); // Adjust path for admin_app's location relative to root for local dev
+const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || path.join(__dirname, '../persistent_app_files'); // Path to admin_app/persistent_app_files for local dev
 const EXTRACTED_GAMES_OUTPUT_PATH = path.join(PERSISTENT_STORAGE_BASE_PATH, 'extracted_games_output.json');
 app.use(express.static(path.join(__dirname, '../public'))); // Serve static files from admin_app/public
 app.use(express.urlencoded({ extended: true })); // For parsing form data
@@ -21,6 +22,28 @@ app.use(express.urlencoded({ extended: true })); // For parsing form data
 // Admin dashboard page
 app.get('/', (req: Request, res: Response) => {
     res.render('admin_dashboard', { message: null });
+});
+
+// Data check page
+app.get('/check-data', async (req: Request, res: Response) => {
+    try {
+        const summary = await generateDataSummary(PERSISTENT_STORAGE_BASE_PATH);
+        const issues = await checkDataIssues(PERSISTENT_STORAGE_BASE_PATH);
+        
+        res.render('data_check', {
+            documentDate: summary.documentDate,
+            totalGames: summary.totalGames,
+            totalFields: summary.totalFields,
+            fieldSummaries: summary.fieldSummaries,
+            issues: issues
+        });
+    } catch (error) {
+        console.error('Error generating data summary:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        res.status(500).render('admin_dashboard', { 
+            message: `Error checking data: ${errorMessage}` 
+        });
+    }
 });
 
 // Endpoint to trigger the data update process

@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { runUpdater } from './updateLatestPdf.js';
+import { generateDataSummary, checkDataIssues } from './gameDataExtractor.js';
 import fs from 'fs/promises'; // Using promises API for fs
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,13 +10,34 @@ const app = express();
 const PORT = process.env.PORT || 3003;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views')); // Point to admin_app/views
-const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || path.join(__dirname, '../../../persistent_app_files'); // Adjust path for admin_app's location relative to root for local dev
+const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || path.join(__dirname, '../persistent_app_files'); // Path to admin_app/persistent_app_files for local dev
 const EXTRACTED_GAMES_OUTPUT_PATH = path.join(PERSISTENT_STORAGE_BASE_PATH, 'extracted_games_output.json');
 app.use(express.static(path.join(__dirname, '../public'))); // Serve static files from admin_app/public
 app.use(express.urlencoded({ extended: true })); // For parsing form data
 // Admin dashboard page
 app.get('/', (req, res) => {
     res.render('admin_dashboard', { message: null });
+});
+// Data check page
+app.get('/check-data', async (req, res) => {
+    try {
+        const summary = await generateDataSummary(PERSISTENT_STORAGE_BASE_PATH);
+        const issues = await checkDataIssues(PERSISTENT_STORAGE_BASE_PATH);
+        res.render('data_check', {
+            documentDate: summary.documentDate,
+            totalGames: summary.totalGames,
+            totalFields: summary.totalFields,
+            fieldSummaries: summary.fieldSummaries,
+            issues: issues
+        });
+    }
+    catch (error) {
+        console.error('Error generating data summary:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        res.status(500).render('admin_dashboard', {
+            message: `Error checking data: ${errorMessage}`
+        });
+    }
 });
 // Endpoint to trigger the data update process
 app.post('/trigger-full-update', async (req, res) => {
@@ -45,6 +67,46 @@ app.post('/trigger-full-update', async (req, res) => {
         console.error('Error during data update process:', error);
         const errorMessage = error instanceof Error ? error.message : String(error);
         res.status(500).render('admin_dashboard', { message: `Error during update: ${errorMessage}` });
+    }
+});
+// API Endpoint to serve the latest games data
+const API_ACCESS_KEY = process.env.API_ACCESS_KEY;
+if (!API_ACCESS_KEY) {
+    console.warn('WARNING: API_ACCESS_KEY environment variable is not set. API endpoint will not be secure.');
+}
+app.get('/api/internal/latest-games-data', async (req, res) => {
+    const providedApiKey = req.headers['x-api-key'];
+    if (!API_ACCESS_KEY || API_ACCESS_KEY === 'SUPER_SECRET_ADMIN_KEY_PLACEHOLDER_NEVER_USE_IN_PROD') {
+        // Log a warning if the key is not set or is the default placeholder, but allow access for local dev if not set.
+        // In a real production scenario with a set key, this check would be stricter.
+        if (process.env.NODE_ENV === 'production' && (!API_ACCESS_KEY || API_ACCESS_KEY === 'SUPER_SECRET_ADMIN_KEY_PLACEHOLDER_NEVER_USE_IN_PROD')) {
+            console.error('API_ACCESS_KEY is not set or is insecure in production. Denying API access.');
+            return res.status(500).send('API not configured securely.');
+        }
+        if (process.env.NODE_ENV === 'production' && providedApiKey !== API_ACCESS_KEY) {
+            console.warn('Invalid or missing API key attempt in production.');
+            return res.status(403).send('Forbidden: Invalid API Key');
+        }
+    }
+    else if (providedApiKey !== API_ACCESS_KEY) {
+        console.warn(`Attempt to access API with invalid key: ${providedApiKey}`);
+        return res.status(403).send('Forbidden: Invalid API Key');
+    }
+    try {
+        const fileContent = await fs.readFile(EXTRACTED_GAMES_OUTPUT_PATH, 'utf-8');
+        // const jsonData = JSON.parse(fileContent); // No need to parse, send raw content
+        res.setHeader('Content-Type', 'application/json');
+        res.send(fileContent);
+    }
+    catch (error) {
+        if (error.code === 'ENOENT') {
+            console.error('Error serving latest games data: extracted_games_output.json not found.');
+            return res.status(404).send('Not Found: Games data file does not exist.');
+        }
+        else {
+            console.error('Error reading games data file for API:', error);
+            return res.status(500).send('Internal Server Error');
+        }
     }
 });
 app.listen(PORT, () => {

@@ -25,6 +25,18 @@
             </form>
         </div>
 
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-3">Check Game Data</h2>
+            <p class="text-gray-600 mb-4">
+                View a detailed summary of all extracted game data organized by field. This view helps identify
+                missing games, scheduling conflicts, and other potential issues with the data.
+            </p>
+            <a href="/check-data" 
+               class="block w-full bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out text-center">
+                View Data Summary
+            </a>
+        </div>
+
         <% if (locals.message) { %>
             <div class="mt-6 p-4 rounded-md 
                         <% if (message.startsWith('Error')) { %> 
