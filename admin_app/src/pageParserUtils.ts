@@ -79,23 +79,38 @@ export function detectFieldNamesOnLine(
 
   const potentialFieldElements = line.map((el, idx) => {
     const text = el.text.trim();
+    const normalizedText = text.toUpperCase(); // Normalize for easier matching
+
+    // Regex for GARAM MASALA fields like GARAM MASALA 1A, GARAM MASALA 2D, etc.
+    const isGaramMasalaType = /GARAM\s*MASALA\s*[0-9][A-D]/.test(normalizedText);
+    if (normalizedText.includes("GARAM MASALA") && /[0-9][A-D]/.test(normalizedText.substr(normalizedText.indexOf("MASALA")))) {
+      debugLog(`[DEBUG GARAM REGEX] Text: "${text}", Normalized: "${normalizedText}", isGaramMasalaType: ${isGaramMasalaType}`);
+    }
+    // Regex for HEPA - HALLI fields like HEPA - HALLI A, HEPA-HALLI D, etc.
+    const isHepaHalliType = /HEPA\s*-\s*HALLI\s*[A-D]/.test(normalizedText);
+    // Regex for HEINÄPÄÄN TEKONURMI, optionally followed by A, B, C, or D
+    const isHeinapaaTekonurmiType = /HEINÄPÄÄN\s*TEKONURMI(\s*[A-D])?/.test(normalizedText);
+    // Regex for NURMI fields, assuming a similar pattern to GARAM MASALA
+    const isNurmiType = /NURMI\s*[0-9][A-D]/.test(normalizedText);
+
+    // Fallback for generic GARAM MASALA name if specific lettered/numbered version isn't matched
+    const isGenericGaramMasala = !isGaramMasalaType && normalizedText.includes("GARAM MASALA");
+    // Fallback for generic HEPA - HALLI name
+    const isGenericHepaHalli = !isHepaHalliType && normalizedText.includes("HEPA") && normalizedText.includes("HALLI");
+    // Fallback for generic HEINÄPÄÄN TEKONURMI name
+    const isGenericHeinapaa = !isHeinapaaTekonurmiType && normalizedText.includes("HEINÄPÄÄN TEKONURMI");
+
     const isFieldName = (
-      text.includes("GARAM MASALA") ||
-      /GARAM\s*MASALA\s*[0-9][A-D]/i.test(text) ||
-      text.includes("MASALA 1B") ||
-      text.includes("HEINÄPÄÄN TEKONURMI") ||
-      text.includes("HEPA - HALLI") ||
-      text.includes("GARAM 2A") ||
-      text.includes("GARAM 2B") ||
-      text.includes("GARAM 2C") ||
-      text.includes("GARAM 2D") ||
-      text.includes("NURMI 4A") ||
-      text.includes("NURMI 4B") ||
-      text.includes("NURMI 4C") ||
-      text.includes("NURMI 4D")
+        isGaramMasalaType ||
+        isHepaHalliType ||
+        isHeinapaaTekonurmiType ||
+        isNurmiType ||
+        isGenericGaramMasala ||
+        isGenericHepaHalli ||
+        isGenericHeinapaa
     );
 
-    if (text.includes("1B") || text.includes("MASALA")) {
+    if (normalizedText.includes("1B") || normalizedText.includes("MASALA")) {
       debugLog(`Potential field name candidate: "${text}" at x:${el.x.toFixed(2)}`);
       if (text.includes("GARAM MASALA 1B")) {
         debugLog(`EXACT MATCH for GARAM MASALA 1B found!`);
@@ -199,11 +214,17 @@ export function detectFieldNamesOnLine(
             const baseFieldName = fieldText.slice(0, -1); 
             const expectedPairName = baseFieldName + pairLetter;
             debugLog(`Detected ${fieldText}, looking for adjacent field ${expectedPairName} (additional check)`);
+            if (expectedPairName.includes("GARAM MASALA 1D") || expectedPairName.includes("GARAM MASALA 2B")) {
+              debugLog(`[DEBUG ADJACENT PAIR SEARCH] Seeking: ${expectedPairName}`);
+            }
 
             const potentialPairElements = line.filter(el => {
                 if (el === currentFieldEl) return false;
                 if (el.x <= currentFieldEl.x) return false;
                 const text = el.text.trim();
+                if (expectedPairName.includes("GARAM MASALA 1D") || expectedPairName.includes("GARAM MASALA 2B")) {
+                  debugLog(`[DEBUG ADJACENT PAIR CHECKING] Expected: "${expectedPairName}", Checking element text: "${text}"`);
+                }
                 return (
                     text.includes(expectedPairName) || 
                     text.includes(pairLetter) || 
@@ -248,7 +269,7 @@ export function initializeFieldBlocks(
 
   if (rightFieldEl) {
     // If a right field element exists, header elements for the right block should be to its right or aligned with it.
-    rightHeaderElements = headerLine.filter(el => el.x >= rightFieldEl.x).sort((a,b) => a.x - b.x);
+    rightHeaderElements = headerLine.filter(el => el.x >= (rightFieldEl.x - 0.2)).sort((a,b) => a.x - b.x); // Added tolerance
   } else {
     // If no specific right field element, use midpoint as a fallback (less precise)
     rightHeaderElements = headerLine.filter(el => el.x >= midPointX).sort((a,b) => a.x - b.x);
@@ -307,7 +328,7 @@ export function extractGamesFromLineForBlock(
                                  .sort((a,b) => a.x - b.x);
   } else { // Right block
     // Elements are to the right of blockStartX
-    relevantElements = lineElements.filter(el => el.x >= blockStartX)
+    relevantElements = lineElements.filter(el => el.x >= (blockStartX - 0.2)) // Added tolerance
                                  .sort((a,b) => a.x - b.x);
   }
 

@@ -1,8 +1,8 @@
 # Games Summary
-Generated on: 6/3/2025, 9:20:56 AM
+Generated on: 6/3/2025, 9:31:08 AM
 
-Total games found: 84
-Total fields found: 12
+Total games found: 104
+Total fields found: 16
 
 ## GARAM MASALA 1A
 
@@ -21,6 +21,12 @@ Total fields found: 12
 ### 2018 VP - 3 v 3 ( mv + 2 )
 
 16.45 - 17.00 - No opponent vs No opponent
+17.05 - 17.20 - OLS Portugali 18 Sporting vs OLS Hollanti 18 Feyenoord
+17.25 - 17.40 - OLS Portugali 18 Sporting vs OLS Ruotsi 18 Hammarby
+17.45 - 18.00 - No opponent vs No opponent
+18.05 - 18.20 - ONS T2017 Valkoinen vs OLS Portugali 18 Sporting
+18.25 - 18.40 - OLS Belgia 18 Genk vs OLS Portugali 18 Sporting
+18.45 - 19.00 - No opponent vs No opponent
 
 ## GARAM MASALA 1C
 
@@ -34,6 +40,18 @@ Total fields found: 12
 18.25 - 18.40 - OLS Espanja 18 Real Madrid vs ONS T2017 Musta
 18.45 - 19.00 - No opponent vs No opponent
 
+## GARAM MASALA 1D
+
+### 2018 VP - 3 v 3 ( mv + 2 )
+
+16.45 - 17.00 - No opponent vs No opponent
+17.05 - 17.20 - OLS Espanja 18 Real Madrid vs OLS Kreikka 18 Olympiakos
+17.25 - 17.40 - ONS T2017 Musta vs OLS Ruotsi 18 Örebro
+17.45 - 18.00 - ONS T2017 Musta vs OLS Portugali 18 Braga
+18.05 - 18.20 - No opponent vs No opponent
+18.25 - 18.40 - OLS Ruotsi 18 Örebro vs OLS Portugali 18 Braga
+18.45 - 19.00 - No opponent vs No opponent
+
 ## GARAM MASALA 2A
 
 ### 2018 EP - 3 v 3 ( mv + 2 )
@@ -44,6 +62,18 @@ Total fields found: 12
 17.45 - 18.00 - OLS Espanja 18 Sevilla vs OLS Kreikka 18 AEK
 18.05 - 18.20 - No opponent vs No opponent
 18.25 - 18.40 - OLS Belgia 18 Anderlecht vs OLS Kreikka 18 AEK
+18.45 - 19.00 - No opponent vs No opponent
+
+## GARAM MASALA 2B
+
+### 2018 EP - 3 v 3 ( mv + 2 )
+
+16.45 - 17.00 - No opponent vs No opponent
+17.05 - 17.20 - OLS Belgia 18 Anderlecht vs OLS Hollanti 18 Ajax
+17.25 - 17.40 - OLS Kreikka 18 AEK vs OLS Ruotsi 18 AIK
+17.45 - 18.00 - OLS Hollanti 18 Ajax vs OLS Ruotsi 18 AIK
+18.05 - 18.20 - OLS Hollanti 18 Ajax vs ONS T2017 Punainen
+18.25 - 18.40 - OLS Espanja 18 Sevilla vs OLS Ruotsi 18 AIK
 18.45 - 19.00 - No opponent vs No opponent
 
 ## GARAM MASALA 2C
@@ -118,33 +148,43 @@ Total fields found: 12
 18.50 - 19.10 - Iin Urheilijat 16 Musta vs OLS Belgia 16 Brugge
 19.15 - 19.35 - No opponent vs No opponent
 
+## HEPA -  HALLI C
+
+### 2016 1 - 4 v 4 ( mv + 3 )
+
+16.45 - 17.05 - OLS Ruotsi 16 AIK vs OLS Hollanti 16 Ajax
+17.10 - 17.30 - OLS Ruotsi 16 AIK vs OLS Belgia 16 Anderlecht
+17.35 - 17.55 - No opponent vs No opponent
+18.00 - 18.20 - OLS Ruotsi 16 AIK vs OLS Portugali 16 Porto
+18.25 - 18.45 - OLS Belgia 16 Anderlecht vs OLS Portugali 16 Porto
+
 ## HEPA - HALLI A
 
 ### 2016 3 - 4 v 4 ( mv + 3 )
 
 16.45 - 17.05 - OLS Hollanti 16 Feyenoord vs OsPa P1617 Sininen
-16.45 - 17.05 - OLS Ruotsi 16 AIK vs OLS Hollanti 16 Ajax
 17.10 - 17.30 - OLS Hollanti 16 Feyenoord vs KKP 16 Valkoinen
-17.10 - 17.30 - OLS Ruotsi 16 AIK vs OLS Belgia 16 Anderlecht
-17.35 - 17.55 - No opponent vs No opponent
 17.35 - 17.55 - No opponent vs No opponent
 18.00 - 18.20 - OLS Kreikka 16 PAOK vs KKP 16 Valkoinen
-18.00 - 18.20 - OLS Ruotsi 16 AIK vs OLS Portugali 16 Porto
 18.25 - 18.45 - OsPa P1617 Sininen vs OLS Kreikka 16 PAOK
-18.25 - 18.45 - OLS Belgia 16 Anderlecht vs OLS Portugali 16 Porto
 
 ## HEPA - HALLI B
 
 ### 2016 3 - 4 v 4 ( mv + 3 )
 
 16.45 - 17.05 - OLS Portugali 16 Benfica vs OLS Kreikka 16 PAOK
-16.45 - 17.05 - OLS Portugali 16 Porto vs OLS Kreikka 16 AEK
 17.10 - 17.30 - OsPa P1617 Sininen vs OLS Portugali 16 Benfica
-17.10 - 17.30 - OLS Portugali 16 Porto vs OLS Hollanti 16 Ajax
-17.35 - 17.55 - No opponent vs No opponent
 17.35 - 17.55 - No opponent vs No opponent
 18.00 - 18.20 - OLS Hollanti 16 Feyenoord vs OLS Portugali 16 Benfica
-18.00 - 18.20 - OLS Belgia 16 Anderlecht vs OLS Kreikka 16 AEK
 18.25 - 18.45 - KKP 16 Valkoinen vs OLS Portugali 16 Benfica
+
+## HEPA- HALLI D
+
+### 2016 1 - 4 v 4 ( mv + 3 )
+
+16.45 - 17.05 - OLS Portugali 16 Porto vs OLS Kreikka 16 AEK
+17.10 - 17.30 - OLS Portugali 16 Porto vs OLS Hollanti 16 Ajax
+17.35 - 17.55 - No opponent vs No opponent
+18.00 - 18.20 - OLS Belgia 16 Anderlecht vs OLS Kreikka 16 AEK
 18.25 - 18.45 - OLS Hollanti 16 Ajax vs OLS Kreikka 16 AEK
 
