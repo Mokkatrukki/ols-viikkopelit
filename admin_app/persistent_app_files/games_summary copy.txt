@@ -1,7 +1,7 @@
 # Games Summary
-Generated on: 6/3/2025, 9:20:56 AM
+Generated on: 6/2/2025, 11:54:43 PM
 
-Total games found: 84
+Total games found: 90
 Total fields found: 12
 
 ## GARAM MASALA 1A
@@ -21,6 +21,12 @@ Total fields found: 12
 ### 2018 VP - 3 v 3 ( mv + 2 )
 
 16.45 - 17.00 - No opponent vs No opponent
+17.05 - 17.20 - OLS Portugali 18 Sporting vs OLS Hollanti 18 Feyenoord
+17.25 - 17.40 - OLS Portugali 18 Sporting vs OLS Ruotsi 18 Hammarby
+17.45 - 18.00 - No opponent vs No opponent
+18.05 - 18.20 - ONS T2017 Valkoinen vs OLS Portugali 18 Sporting
+18.25 - 18.40 - OLS Belgia 18 Genk vs OLS Portugali 18 Sporting
+18.45 - 19.00 - No opponent vs No opponent
 
 ## GARAM MASALA 1C
 
