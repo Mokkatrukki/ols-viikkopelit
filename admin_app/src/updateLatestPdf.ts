@@ -75,7 +75,7 @@ export interface UpdateResult {
     newSourceFile?: string | null;
 }
 
-async function runUpdater(currentLoadedScheduleDateString: string | null): Promise<UpdateResult> {
+async function runUpdater(currentLoadedScheduleDateString: string | null, forceUpdate: boolean = false): Promise<UpdateResult> {
     console.log(`Starting PDF update process. Current schedule date from app: ${currentLoadedScheduleDateString}`);
     let browser;
 
@@ -189,10 +189,14 @@ async function runUpdater(currentLoadedScheduleDateString: string | null): Promi
         
         console.log(`Latest PDF on website: \"${selectedPdfLink.text}\" from ${selectedPdfLink.href} (Date: ${formatDateToDMY(latestPdfDateOnWebsite)})`);
 
-        if (currentLoadedScheduleDateObj && latestPdfDateOnWebsite <= currentLoadedScheduleDateObj) {
+        if (!forceUpdate && currentLoadedScheduleDateObj && latestPdfDateOnWebsite <= currentLoadedScheduleDateObj) {
             const message = `The latest PDF on the website (${formatDateToDMY(latestPdfDateOnWebsite)}) is not newer than the current schedule (${formatDateToDMY(currentLoadedScheduleDateObj)}).`;
             console.log(message);
             return { status: 'no-newer-on-website', message, newScheduleDate: currentLoadedScheduleDateString, newSourceFile: null /* App still has old one */ };
+        }
+        
+        if (forceUpdate && currentLoadedScheduleDateObj && latestPdfDateOnWebsite <= currentLoadedScheduleDateObj) {
+            console.log(`Force update enabled. Proceeding with update even though the PDF date (${formatDateToDMY(latestPdfDateOnWebsite)}) is not newer than the current schedule (${formatDateToDMY(currentLoadedScheduleDateObj)}).`);
         }
 
         const pdfUrl = new URL(selectedPdfLink.href, TARGET_URL);

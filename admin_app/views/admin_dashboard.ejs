@@ -18,6 +18,12 @@
                 This process can take a few moments.
             </p>
             <form action="/trigger-full-update" method="POST">
+                <div class="mb-4 flex items-center">
+                    <input type="checkbox" id="forceUpdate" name="forceUpdate" class="mr-2">
+                    <label for="forceUpdate" class="text-sm text-gray-700">
+                        Force update (reprocess current PDF even if date hasn't changed)
+                    </label>
+                </div>
                 <button type="submit" 
                         class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
                     Trigger Full Data Update

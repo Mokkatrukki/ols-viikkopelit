@@ -48,7 +48,8 @@ app.get('/check-data', async (req: Request, res: Response) => {
 
 // Endpoint to trigger the data update process
 app.post('/trigger-full-update', async (req: Request, res: Response) => {
-    console.log('Received request to trigger full data update.');
+    const forceUpdate = req.body.forceUpdate === 'on';
+    console.log(`Received request to trigger full data update. Force update: ${forceUpdate}`);
     try {
         let currentScheduleDateString: string | null = null;
         try {
@@ -65,7 +66,7 @@ app.post('/trigger-full-update', async (req: Request, res: Response) => {
             // Proceed with null currentScheduleDateString if file doesn't exist or is invalid
         }
 
-        const result: UpdateResult = await runUpdater(currentScheduleDateString);
+        const result: UpdateResult = await runUpdater(currentScheduleDateString, forceUpdate);
         console.log('Update process finished:', result);
         res.render('admin_dashboard', { message: `Update result: ${result.status} - ${result.message}. New schedule date: ${result.newScheduleDate || 'N/A'}` });
     } catch (error) {
