@@ -159,6 +159,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// Health check endpoint for Fly.io
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
+});
+
 const PORT = process.env.PORT || 3002;
 
 const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';

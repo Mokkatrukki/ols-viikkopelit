@@ -7,6 +7,10 @@ import fs from 'fs/promises'; // Using promises API for fs
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
+// Health check endpoint for Fly.io
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
+});
 const PORT = process.env.PORT || 3003;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views')); // Point to admin_app/views

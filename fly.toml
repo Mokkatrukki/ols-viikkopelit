@@ -22,8 +22,6 @@ primary_region = 'arn'
   processes = ['app']
 
   [[http_service.checks]]
-    type = "http"
-    port = 3002 # Explicitly setting port, ensure this matches internal_port
     path = "/health"
     interval = "15s"
     timeout = "3s"
