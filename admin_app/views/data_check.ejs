@@ -43,7 +43,8 @@
                     Schedule Date: <span class="font-semibold"><%= documentDate %></span>
                 </p>
                 <p class="text-gray-600">
-                    Total Games: <span class="font-semibold"><%= totalGames %></span> | 
+                    Active Games: <span class="font-semibold"><%= activeGames %></span> |
+                    Total Scheduled Slots: <span class="font-semibold"><%= totalScheduledSlots %></span> <% if (typeof missingTeamGamesCount !== 'undefined' && missingTeamGamesCount > 0) { %>(<%= missingTeamGamesCount %> with no team info)<% } %> |
                     Total Fields: <span class="font-semibold"><%= totalFields %></span>
                 </p>
             </div>

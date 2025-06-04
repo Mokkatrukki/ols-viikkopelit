@@ -3,6 +3,7 @@ import path from 'path';
 /**
  * Generate a summary of all games organized by field
  * @param persistentStoragePath Path to the persistent storage directory
+ * @param filterType Optional filter to apply to the games list (e.g., 'removeNoOpponent')
  * @returns Object containing the game summary data
  */
 /**
@@ -33,14 +34,24 @@ async function findExtractedGamesFile(basePath) {
     }
     throw new Error('Could not find extracted_games_output.json in any of the expected locations');
 }
-export async function generateDataSummary(persistentStoragePath) {
+export async function generateDataSummary(persistentStoragePath, filterType) {
     try {
         // Find the extracted games file
         const extractedGamesPath = await findExtractedGamesFile(persistentStoragePath);
         // Read the extracted games data
         const rawData = await fs.readFile(extractedGamesPath, 'utf8');
         const parsedData = JSON.parse(rawData);
-        const games = parsedData.games || [];
+        let games = parsedData.games || []; // Make games mutable for filtering
+        // Apply filter if specified
+        if (filterType === 'removeNoOpponent') {
+            games = games.filter(game => {
+                // A game is considered 'no opponent vs no opponent' if both team1 and team2 are effectively empty.
+                // An empty team is represented by !game.team1 or an empty string.
+                const team1Exists = game.team1 && game.team1.trim() !== '';
+                const team2Exists = game.team2 && game.team2.trim() !== '';
+                return team1Exists || team2Exists; // Keep game if at least one team exists
+            });
+        }
         // Group games by field, deduplicating by time slot
         const gamesByField = {};
         const gameKeys = new Set(); // Track unique field+time combinations
@@ -115,10 +126,12 @@ export async function checkDataIssues(persistentStoragePath) {
         const parsedData = JSON.parse(rawData);
         const games = parsedData.games || [];
         const issues = [];
+        let missingTeamGamesCount = 0;
         // Check for empty team slots
         const emptyTeamGames = games.filter(game => !game.team1 || !game.team2);
-        if (emptyTeamGames.length > 0) {
-            issues.push(`Found ${emptyTeamGames.length} games with missing team information`);
+        missingTeamGamesCount = emptyTeamGames.length;
+        if (missingTeamGamesCount > 0) {
+            issues.push(`Found ${missingTeamGamesCount} games with missing team information`);
         }
         // Check for duplicate games (same teams, same time, same field)
         const gameSignatures = new Set();
@@ -161,7 +174,7 @@ export async function checkDataIssues(persistentStoragePath) {
         if (overlappingGames.length > 0) {
             issues.push(`Found ${overlappingGames.length} time slots with potentially too many games scheduled`);
         }
-        return issues;
+        return { issues, missingTeamGamesCount };
     }
     catch (error) {
         console.error('Error checking data issues:', error);

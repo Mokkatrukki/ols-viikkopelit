@@ -32,16 +32,27 @@ app.get('/', (req: Request, res: Response) => {
 
 // Data check page
 app.get('/check-data', async (req: Request, res: Response) => {
+    const filterType = req.query.filter === 'removeNoOpponent' ? 'removeNoOpponent' : null;
+    let viewTitle = 'OLS Viikkopelit - Data Check';
+    if (filterType === 'removeNoOpponent') {
+      viewTitle = 'OLS Viikkopelit - Data Check (Filtered: No Opponent vs No Opponent Removed)';
+    }
     try {
-        const summary = await generateDataSummary(PERSISTENT_STORAGE_BASE_PATH);
-        const issues = await checkDataIssues(PERSISTENT_STORAGE_BASE_PATH);
+        const summary = await generateDataSummary(PERSISTENT_STORAGE_BASE_PATH, filterType);
+        const dataCheckResult = await checkDataIssues(PERSISTENT_STORAGE_BASE_PATH);
         
+        const totalScheduledSlots = summary.totalGames;
+        const activeGames = totalScheduledSlots - dataCheckResult.missingTeamGamesCount;
+
         res.render('data_check', {
+            viewTitle,
             documentDate: summary.documentDate,
-            totalGames: summary.totalGames,
+            activeGames: activeGames,
+            totalScheduledSlots: totalScheduledSlots,
+            missingTeamGamesCount: dataCheckResult.missingTeamGamesCount,
             totalFields: summary.totalFields,
             fieldSummaries: summary.fieldSummaries,
-            issues: issues
+            issues: dataCheckResult.issues
         });
     } catch (error) {
         console.error('Error generating data summary:', error);
