@@ -117,11 +117,23 @@
                         <% // Display field map for this game %>
                         <% 
                         const currentFieldKey = game.field.toUpperCase();
-                        const imageName = fieldMapData[currentFieldKey];
+                        const imageName = fieldMapData[currentFieldKey]; 
                         if (imageName) { 
+                            const nameWithoutExt = imageName.substring(0, imageName.lastIndexOf('.'));
+                            const extension = imageName.substring(imageName.lastIndexOf('.'));
                         %>
                             <div class="mt-4 border border-slate-300 rounded-lg overflow-hidden shadow">
-                                <img src="<%= imageName %>" alt="Kenttäkartta - <%= game.field %>" class="block w-full h-auto">
+                                <img 
+                                    src="<%= `${nameWithoutExt}-504w${extension}` %>" 
+                                    srcset="<%= `${nameWithoutExt}-336w${extension}` %> 336w,
+                                            <%= `${nameWithoutExt}-504w${extension}` %> 504w,
+                                            <%= `${nameWithoutExt}-672w${extension}` %> 672w"
+                                    sizes="(max-width: 336px) 100vw, 336px" 
+                                    alt="Kenttäkartta - <%= game.field %>" 
+                                    class="block w-full h-auto"
+                                    loading="lazy"
+                                    width="336" 
+                                    height="505"> 
                             </div>
                         <% } %>
                     </div>
