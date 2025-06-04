@@ -1,3 +1,5 @@
+import 'dotenv/config'; // Load .env file variables
+
 process.on('uncaughtException', (err, origin) => {
   console.error('------------------------------------');
   console.error('UNCAUGHT EXCEPTION!');

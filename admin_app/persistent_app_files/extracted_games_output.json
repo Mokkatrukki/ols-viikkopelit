@@ -1,182 +1,128 @@
 {
-  "documentDate": "29.5.2025",
+  "documentDate": "5.6.2025",
   "games": [
     {
       "field": "GARAM MASALA 1A",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2020 / 2019 EP",
-      "time": "15.05 - 15.25",
-      "team1": "OLS Belgia 20 Anderlecht",
-      "team2": "OLS Kreikka 20 AEK"
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
+      "time": "16.45 - 17.00",
+      "team1": "",
+      "team2": ""
     },
     {
       "field": "GARAM MASALA 1B",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2020 / 2019 EP",
-      "time": "15.05 - 15.25",
-      "team1": "OLS Belgia 20 Brugge",
-      "team2": "OLS Kreikka 20 Olympiakos"
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
+      "time": "16.45 - 17.00",
+      "team1": "",
+      "team2": ""
     },
     {
       "field": "GARAM MASALA 1A",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2020 / 2019 EP",
-      "time": "15.30 - 15.50",
-      "team1": "OLS Belgia 20 Anderlecht",
-      "team2": "OLS Hollanti 20 Ajax"
-    },
-    {
-      "field": "GARAM MASALA 1B",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2020 / 2019 EP",
-      "time": "15.30 - 15.50",
-      "team1": "OLS Belgia 20 Brugge",
-      "team2": "OLS Hollanti 20 PSV"
-    },
-    {
-      "field": "GARAM MASALA 1A",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2020 / 2019 EP",
-      "time": "15.55 - 16.15",
-      "team1": "KKP - Nappulat 20 Sininen",
-      "team2": "OLS Kreikka 20 AEK"
-    },
-    {
-      "field": "GARAM MASALA 1B",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2020 / 2019 EP",
-      "time": "15.55 - 16.15",
-      "team1": "OLS Ruotsi 20 Hammarby",
-      "team2": "OLS Kreikka 20 Olympiakos"
-    },
-    {
-      "field": "GARAM MASALA 1A",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2020 / 2019 EP",
-      "time": "16.20 - 16.40",
-      "team1": "KKP - Nappulat 20 Sininen",
-      "team2": "OLS Hollanti 20 Ajax"
-    },
-    {
-      "field": "GARAM MASALA 1B",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2020 / 2019 EP",
-      "time": "16.20 - 16.40",
-      "team1": "OLS Ruotsi 20 Hammarby",
-      "team2": "OLS Hollanti 20 PSV"
-    },
-    {
-      "field": "GARAM MASALA 1A",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2019 VP",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
       "time": "17.05 - 17.20",
-      "team1": "OLS Belgia 19 Anderlecht",
-      "team2": "OLS Ruotsi 19 Malmö"
+      "team1": "ONS T2017 Valkoinen",
+      "team2": "OLS Ruotsi 18 Hammarby"
     },
     {
       "field": "GARAM MASALA 1B",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2019 VP",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
       "time": "17.05 - 17.20",
-      "team1": "OLS Kreikka 19 AEK",
-      "team2": "OLS Belgia 19 Brugge"
+      "team1": "OLS Portugali 18 Sporting",
+      "team2": "OLS Hollanti 18 Feyenoord"
     },
     {
       "field": "GARAM MASALA 1A",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2019 VP",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
       "time": "17.25 - 17.40",
-      "team1": "OLS Belgia 19 Anderlecht",
-      "team2": "OLS Ruotsi 19 AIK"
+      "team1": "ONS T2017 Valkoinen",
+      "team2": "OLS Belgia 18 Genk"
     },
     {
       "field": "GARAM MASALA 1B",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2019 VP",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
       "time": "17.25 - 17.40",
-      "team1": "OLS Kreikka 19 AEK",
-      "team2": "OLS Ruotsi 19 Malmö"
+      "team1": "OLS Portugali 18 Sporting",
+      "team2": "OLS Ruotsi 18 Hammarby"
     },
     {
       "field": "GARAM MASALA 1A",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2020 / 2019 EP",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
       "time": "17.45 - 18.00",
       "team1": "",
       "team2": ""
     },
     {
       "field": "GARAM MASALA 1B",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2019 VP",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
       "time": "17.45 - 18.00",
-      "team1": "OLS Ruotsi 19 AIK",
-      "team2": "OLS Belgia 19 Brugge"
-    },
-    {
-      "field": "GARAM MASALA 1A",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2019 VP",
-      "time": "18.05 - 18.20",
-      "team1": "OLS Belgia 19 Anderlecht",
-      "team2": "OLS Kreikka 19 AEK"
-    },
-    {
-      "field": "GARAM MASALA 1B",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2019 VP",
-      "time": "18.05 - 18.20",
-      "team1": "OLS Ruotsi 19 Malmö",
-      "team2": "OLS Belgia 19 Brugge"
-    },
-    {
-      "field": "GARAM MASALA 1A",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2019 VP",
-      "time": "18.25 - 18.40",
-      "team1": "OLS Ruotsi AIK",
-      "team2": "OLS Kreikka 19 AEK"
-    },
-    {
-      "field": "GARAM MASALA 1B",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2020 / 2019 EP",
-      "time": "18.25 - 18.40",
       "team1": "",
       "team2": ""
     },
     {
       "field": "GARAM MASALA 1A",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2020 / 2019 EP",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
+      "time": "18.05 - 18.20",
+      "team1": "OLS Hollanti 18 Feyenoord",
+      "team2": "OLS Belgia 18 Genk"
+    },
+    {
+      "field": "GARAM MASALA 1B",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
+      "time": "18.05 - 18.20",
+      "team1": "ONS T2017 Valkoinen",
+      "team2": "OLS Portugali 18 Sporting"
+    },
+    {
+      "field": "GARAM MASALA 1A",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
+      "time": "18.25 - 18.40",
+      "team1": "OLS Ruotsi 18 Hammarby",
+      "team2": "OLS Hollanti 18 Feyenoord"
+    },
+    {
+      "field": "GARAM MASALA 1B",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
+      "time": "18.25 - 18.40",
+      "team1": "OLS Belgia 18 Genk",
+      "team2": "OLS Portugali 18 Sporting"
+    },
+    {
+      "field": "GARAM MASALA 1A",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
       "time": "18.45 - 19.00",
       "team1": "",
       "team2": ""
     },
     {
       "field": "GARAM MASALA 1B",
-      "gameDuration": "20 min / 15 min",
-      "gameType": "4 v 4 ( mv + 3 ) / 3 v 3 ( mv + 2 ) ",
-      "year": "2020 / 2019 EP",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
       "time": "18.45 - 19.00",
       "team1": "",
       "team2": ""
@@ -185,106 +131,16 @@
       "field": "GARAM MASALA 1C",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "15.05 - 15.20",
-      "team1": "OLS Belgia 19 Genk",
-      "team2": "OLS Ruotsi 19 Hammarby"
-    },
-    {
-      "field": "GARAM MASALA 1D",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2020 / 2019 EP",
-      "time": "15.05 - 15.20",
-      "team1": "KKP - Nappulat 20 Valkoinen",
-      "team2": "OLS Hollanti 19 Ajax"
-    },
-    {
-      "field": "GARAM MASALA 1C",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "15.25 - 15.40",
-      "team1": "OLS Belgia 19 Genk",
-      "team2": "OLS Ruotsi 20 AIK"
-    },
-    {
-      "field": "GARAM MASALA 1D",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "15.25 - 15.40",
-      "team1": "OLS Kreikka 19 Olympiakos",
-      "team2": "OLS Hollanti 19 PSV"
-    },
-    {
-      "field": "GARAM MASALA 1C",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2020 / 2019 EP",
-      "time": "15.45 - 16.00",
-      "team1": "KKP - Nappulat 20 Valkoinen",
-      "team2": "OLS Ruotsi 19 Hammarby"
-    },
-    {
-      "field": "GARAM MASALA 1D",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "15.45 - 16.00",
-      "team1": "OLS Kreikka 19 Olympiakos",
-      "team2": "OLS Hollanti 19 AJax"
-    },
-    {
-      "field": "GARAM MASALA 1C",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "16.05 - 16.20",
-      "team1": "OLS Hollanti 19 PSV",
-      "team2": "OLS Ruotsi 20 AIK"
-    },
-    {
-      "field": "GARAM MASALA 1D",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "16.05 - 16.20",
-      "team1": "OLS Ruotsi 19 Hammarby",
-      "team2": "OLS Hollanti 19 Ajax"
-    },
-    {
-      "field": "GARAM MASALA 1C",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "16.25 - 16.40",
-      "team1": "OLS Belgia 19 Genk",
-      "team2": "KKP - Nappulat 20 Valkoinen"
-    },
-    {
-      "field": "GARAM MASALA 1D",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "16.25 - 16.40",
-      "team1": "OLS Kreikka 19 Olympiakos",
-      "team2": "OLS Ruotsi 20 AIK"
-    },
-    {
-      "field": "GARAM MASALA 1C",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
+      "year": "2018 VP",
       "time": "16.45 - 17.00",
-      "team1": "OLS Belgia 19 Genk",
-      "team2": "OLS Hollanti 19 PSV"
+      "team1": "",
+      "team2": ""
     },
     {
       "field": "GARAM MASALA 1D",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
+      "year": "2018 VP",
       "time": "16.45 - 17.00",
       "team1": "",
       "team2": ""
@@ -293,53 +149,71 @@
       "field": "GARAM MASALA 1C",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
+      "year": "2018 VP",
       "time": "17.05 - 17.20",
-      "team1": "",
-      "team2": ""
+      "team1": "OsPa T17/18",
+      "team2": "OLS Portugali 18 Braga"
     },
     {
       "field": "GARAM MASALA 1D",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
+      "year": "2018 VP",
       "time": "17.05 - 17.20",
-      "team1": "",
-      "team2": ""
+      "team1": "OLS Espanja 18 Real Madrid",
+      "team2": "OLS Kreikka 18 Olympiakos"
     },
     {
       "field": "GARAM MASALA 1C",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
+      "year": "2018 VP",
       "time": "17.25 - 17.40",
-      "team1": "",
-      "team2": ""
+      "team1": "OsPa T17/18",
+      "team2": "OLS Espanja 18 Real Madrid"
     },
     {
       "field": "GARAM MASALA 1D",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
+      "year": "2018 VP",
       "time": "17.25 - 17.40",
-      "team1": "",
-      "team2": ""
+      "team1": "ONS T2017 Musta",
+      "team2": "OLS Ruotsi 18 Örebro"
     },
     {
       "field": "GARAM MASALA 1C",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
+      "year": "2018 VP",
       "time": "17.45 - 18.00",
-      "team1": "",
-      "team2": ""
+      "team1": "OLS Kreikka 18 Olympiakos",
+      "team2": "OLS Ruotsi 18 Örebro"
     },
     {
       "field": "GARAM MASALA 1D",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
+      "year": "2018 VP",
       "time": "17.45 - 18.00",
+      "team1": "ONS T2017 Musta",
+      "team2": "OLS Portugali 18 Braga"
+    },
+    {
+      "field": "GARAM MASALA 1C",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
+      "time": "18.05 - 18.20",
+      "team1": "OsPa T17/18",
+      "team2": "OLS Kreikka 18 Olympiakos"
+    },
+    {
+      "field": "GARAM MASALA 1D",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 VP",
+      "time": "18.05 - 18.20",
       "team1": "",
       "team2": ""
     },
@@ -347,116 +221,26 @@
       "field": "GARAM MASALA 1C",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2017 A",
-      "time": "15.05 - 15.25",
-      "team1": "OLS Hollanti 17 Feyenoord",
-      "team2": "OLS Belgia 17 Brugge"
+      "year": "2018 VP",
+      "time": "18.25 - 18.40",
+      "team1": "OLS Espanja 18 Real Madrid",
+      "team2": "ONS T2017 Musta"
     },
     {
       "field": "GARAM MASALA 1D",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2017 A",
-      "time": "15.05 - 15.25",
-      "team1": "OLS Ruotsi 17 Hammarby",
-      "team2": "OLS Kreikka 17 PAOK"
+      "year": "2018 VP",
+      "time": "18.25 - 18.40",
+      "team1": "OLS Ruotsi 18 Örebro",
+      "team2": "OLS Portugali 18 Braga"
     },
     {
       "field": "GARAM MASALA 1C",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2017 A",
-      "time": "15.30 - 15.50",
-      "team1": "OLS Hollanti 17 Feyenoord",
-      "team2": "KKP P8 Musta"
-    },
-    {
-      "field": "GARAM MASALA 1D",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2017 A",
-      "time": "15.30 - 15.50",
-      "team1": "OLS Espanja 17 Barcelona",
-      "team2": "OLS Portugali 17 Benfica"
-    },
-    {
-      "field": "GARAM MASALA 1C",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2017 A",
-      "time": "15.55 - 16.15",
-      "team1": "OLS Ruotsi 17 Hammarby",
-      "team2": "OLS Belgia 17 Brugge"
-    },
-    {
-      "field": "GARAM MASALA 1D",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2017 A",
-      "time": "15.55 - 16.15",
-      "team1": "OLS Espanja 17 Barcelona",
-      "team2": "OLS Kreikka 17 PAOK"
-    },
-    {
-      "field": "GARAM MASALA 1C",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2017 A",
-      "time": "16.20 - 16.40",
-      "team1": "OLS Portugali 17 Benfica",
-      "team2": "KKP P8 Musta"
-    },
-    {
-      "field": "GARAM MASALA 1D",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2017 A",
-      "time": "16.20 - 16.40",
-      "team1": "OLS Belgia 17 Brugge",
-      "team2": "OLS Kreikka 17 PAOK"
-    },
-    {
-      "field": "GARAM MASALA 1C",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2017 A",
-      "time": "16.45 - 17.05",
-      "team1": "OLS Ruotsi 17 Hammarby",
-      "team2": "OLS Hollanti 17 Feyenoord"
-    },
-    {
-      "field": "GARAM MASALA 1D",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2017 A",
-      "time": "16.45 - 17.05",
-      "team1": "OLS Espanja 17 Barcelona",
-      "team2": "KKP P8 Musta"
-    },
-    {
-      "field": "GARAM MASALA 1C",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2017 A",
-      "time": "17.10 - 17.30",
-      "team1": "OLS Portugali 17 Benfica",
-      "team2": "OLS Hollanti 17 Feyenoord"
-    },
-    {
-      "field": "GARAM MASALA 1D",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "17.10 - 17.30",
-      "team1": "",
-      "team2": ""
-    },
-    {
-      "field": "GARAM MASALA 1C",
-      "gameDuration": "15 min",
-      "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "17.35 - 17.55",
+      "year": "2018 VP",
+      "time": "18.45 - 19.00",
       "team1": "",
       "team2": ""
     },
@@ -464,425 +248,695 @@
       "field": "GARAM MASALA 1D",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "17.35 - 17.55",
+      "year": "2018 VP",
+      "time": "18.45 - 19.00",
       "team1": "",
       "team2": ""
     },
     {
-      "field": "GARAM MASALA 1C",
+      "field": "GARAM MASALA 2A",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "18.00 - 18.20",
+      "year": "2018 EP",
+      "time": "16.45 - 17.00",
       "team1": "",
       "team2": ""
     },
     {
-      "field": "GARAM MASALA 1D",
+      "field": "GARAM MASALA 2B",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "18.00 - 18.20",
+      "year": "2018 EP",
+      "time": "16.45 - 17.00",
       "team1": "",
       "team2": ""
     },
     {
-      "field": "GARAM MASALA 1C",
+      "field": "GARAM MASALA 2A",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "18.25 - 18.45",
-      "team1": "",
-      "team2": ""
+      "year": "2018 EP",
+      "time": "17.05 - 17.20",
+      "team1": "ONS T2017 Punainen",
+      "team2": "OLS Espanja 18 Sevilla"
     },
     {
-      "field": "GARAM MASALA 1D",
+      "field": "GARAM MASALA 2B",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "18.25 - 18.45",
-      "team1": "",
-      "team2": ""
+      "year": "2018 EP",
+      "time": "17.05 - 17.20",
+      "team1": "OLS Belgia 18 Anderlecht",
+      "team2": "OLS Hollanti 18 Ajax"
     },
     {
-      "field": "GARAM MASALA 1C",
+      "field": "GARAM MASALA 2A",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "18.50 - 19.10",
-      "team1": "",
-      "team2": ""
+      "year": "2018 EP",
+      "time": "17.25 - 17.40",
+      "team1": "ONS T2017 Punainen",
+      "team2": "OLS Belgia 18 Anderlecht"
     },
     {
-      "field": "GARAM MASALA 1D",
+      "field": "GARAM MASALA 2B",
       "gameDuration": "15 min",
       "gameType": "3 v 3 ( mv + 2 )",
-      "year": "2019 VP",
-      "time": "18.50 - 19.10",
+      "year": "2018 EP",
+      "time": "17.25 - 17.40",
+      "team1": "OLS Kreikka 18 AEK",
+      "team2": "OLS Ruotsi 18 AIK"
+    },
+    {
+      "field": "GARAM MASALA 2A",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "17.45 - 18.00",
+      "team1": "OLS Espanja 18 Sevilla",
+      "team2": "OLS Kreikka 18 AEK"
+    },
+    {
+      "field": "GARAM MASALA 2B",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "17.45 - 18.00",
+      "team1": "OLS Hollanti 18 Ajax",
+      "team2": "OLS Ruotsi 18 AIK"
+    },
+    {
+      "field": "GARAM MASALA 2A",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "18.05 - 18.20",
       "team1": "",
       "team2": ""
     },
     {
-      "field": "NURMI 4A",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "15.05 - 15.25",
-      "team1": "OLS Kreikka 17 Olympiakos",
-      "team2": "OLS Belgia 17 Genk"
-    },
-    {
-      "field": "NURMI 4B",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "15.05 - 15.25",
-      "team1": "OLS Ruotsi 17 Malmö",
-      "team2": "KKP T9 Pantterit"
-    },
-    {
-      "field": "NURMI 4A",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "15.30 - 15.50",
-      "team1": "OLS Kreikka 17 Olympiakos",
-      "team2": "OLS Hollanti 17 PSV"
-    },
-    {
-      "field": "NURMI 4B",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "15.30 - 15.50",
-      "team1": "OLS Ruotsi 17 Malmö",
-      "team2": "OLS Belgia 17 Genk"
-    },
-    {
-      "field": "NURMI 4A",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "15.55 - 16.15",
-      "team1": "KKP T9 Pantterit",
-      "team2": "OLS Hollanti 17 PSV"
-    },
-    {
-      "field": "NURMI 4B",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "15.55 - 16.15",
-      "team1": "OLS Kreikka 17 Olympiakos",
-      "team2": "OLS Ruotsi 17 Malmö"
-    },
-    {
-      "field": "NURMI 4A",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "16.20 - 16.40",
-      "team1": "KKP P8 Sininen",
-      "team2": "OLS Espanja 17 Sevilla"
-    },
-    {
-      "field": "NURMI 4B",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "16.20 - 16.40",
-      "team1": "OLS Portugali 17 Porto",
+      "field": "GARAM MASALA 2B",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "18.05 - 18.20",
+      "team1": "OLS Hollanti 18 Ajax",
       "team2": "ONS T2017 Punainen"
     },
     {
-      "field": "NURMI 4A",
+      "field": "GARAM MASALA 2A",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "18.25 - 18.40",
+      "team1": "OLS Belgia 18 Anderlecht",
+      "team2": "OLS Kreikka 18 AEK"
+    },
+    {
+      "field": "GARAM MASALA 2B",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "18.25 - 18.40",
+      "team1": "OLS Espanja 18 Sevilla",
+      "team2": "OLS Ruotsi 18 AIK"
+    },
+    {
+      "field": "GARAM MASALA 2A",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "18.45 - 19.00",
+      "team1": "",
+      "team2": ""
+    },
+    {
+      "field": "GARAM MASALA 2B",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "18.45 - 19.00",
+      "team1": "",
+      "team2": ""
+    },
+    {
+      "field": "GARAM MASALA 2C",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "16.45 - 17.00",
+      "team1": "",
+      "team2": ""
+    },
+    {
+      "field": "GARAM MASALA 2D",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "16.45 - 17.00",
+      "team1": "",
+      "team2": ""
+    },
+    {
+      "field": "GARAM MASALA 2C",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "17.05 - 17.20",
+      "team1": "OLS Hollanti 18 PSV",
+      "team2": "OLS Espanja 18 Barcelona"
+    },
+    {
+      "field": "GARAM MASALA 2D",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "17.05 - 17.20",
+      "team1": "OLS Ruotsi 18 Malmö",
+      "team2": "OLS Belgia 18 Brugge"
+    },
+    {
+      "field": "GARAM MASALA 2C",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "17.25 - 17.40",
+      "team1": "OLS Hollanti 18 PSV",
+      "team2": "OLS Ruotsi 18 Malmö"
+    },
+    {
+      "field": "GARAM MASALA 2D",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "17.25 - 17.40",
+      "team1": "OLS Kreikka 18 Panathinaikos",
+      "team2": "OLS Portugali 18 Benfica"
+    },
+    {
+      "field": "GARAM MASALA 2C",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "17.45 - 18.00",
+      "team1": "OLS Kreikka 18 Panathinaikos",
+      "team2": "OLS Espanja 18 Barcelona"
+    },
+    {
+      "field": "GARAM MASALA 2D",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "17.45 - 18.00",
+      "team1": "OLS Belgia 18 Brugge",
+      "team2": "OLS Portugali 18 Benfica"
+    },
+    {
+      "field": "GARAM MASALA 2C",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "18.05 - 18.20",
+      "team1": "",
+      "team2": ""
+    },
+    {
+      "field": "GARAM MASALA 2D",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "18.05 - 18.20",
+      "team1": "OLS Belgia 18 Brugge",
+      "team2": "OLS Hollanti 18 PSV"
+    },
+    {
+      "field": "GARAM MASALA 2C",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "18.25 - 18.40",
+      "team1": "OLS Kreikka 18 Panathinaikos",
+      "team2": "OLS Ruotsi 18 Malmö"
+    },
+    {
+      "field": "GARAM MASALA 2D",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "18.25 - 18.40",
+      "team1": "OLS Espanja 18 Barcelona",
+      "team2": "OLS Portugali 18 Benfica"
+    },
+    {
+      "field": "GARAM MASALA 2C",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "18.45 - 19.00",
+      "team1": "",
+      "team2": ""
+    },
+    {
+      "field": "GARAM MASALA 2D",
+      "gameDuration": "15 min",
+      "gameType": "3 v 3 ( mv + 2 )",
+      "year": "2018 EP",
+      "time": "18.45 - 19.00",
+      "team1": "",
+      "team2": ""
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI A",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 2 & 3",
       "time": "16.45 - 17.05",
-      "team1": "KKP T9 Pantterit",
-      "team2": "OLS Belgia 17 Genk"
+      "team1": "ONS 16 Punainen",
+      "team2": "OLS Hollanti 16 PSV"
     },
     {
-      "field": "NURMI 4B",
+      "field": "HEINÄPÄÄN TEKONURMI B",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 2 & 3",
       "time": "16.45 - 17.05",
-      "team1": "OLS Hollanti 17 PSV",
-      "team2": "OLS Ruotsi 17 Malmö"
+      "team1": "OLS Ruotsi 16 Hammarby",
+      "team2": "OHF 15/16"
     },
     {
-      "field": "NURMI 4A",
+      "field": "HEINÄPÄÄN TEKONURMI A",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 2 & 3",
       "time": "17.10 - 17.30",
-      "team1": "ONS T2017 Punainen",
-      "team2": "OLS Espanja 17 Sevilla"
+      "team1": "ONS 16 Punainen",
+      "team2": "OLS Ruotsi 16 Hammarby"
     },
     {
-      "field": "NURMI 4B",
+      "field": "HEINÄPÄÄN TEKONURMI B",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 2 & 3",
       "time": "17.10 - 17.30",
-      "team1": "KKP P8 Sininen",
-      "team2": "OLS Portugali 17 Porto"
+      "team1": "OLS Hollanti 16 PSV",
+      "team2": "OHF 15/16"
     },
     {
-      "field": "NURMI 4A",
+      "field": "HEINÄPÄÄN TEKONURMI A",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 C",
+      "year": "2016 2 & 3",
       "time": "17.35 - 17.55",
-      "team1": "ONS T2017 Punainen",
-      "team2": "KKP P8 Sininen"
+      "team1": "OLS Kreikka 16 Aris",
+      "team2": "OLS Ruotsi 16 Malmö"
     },
     {
-      "field": "NURMI 4B",
+      "field": "HEINÄPÄÄN TEKONURMI B",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 2 & 3",
       "time": "17.35 - 17.55",
-      "team1": "OLS Espanja 17 Sevilla",
-      "team2": "OLS Portugali 17 Porto"
+      "team1": "OLS Belgia 16 Genk",
+      "team2": "Iin Urheilijat 16 Keltainen"
     },
     {
-      "field": "NURMI 4A",
+      "field": "HEINÄPÄÄN TEKONURMI A",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 C",
+      "year": "2016 2 & 3",
+      "time": "18.00 - 18.20",
+      "team1": "OLS Hollanti 16 PSV",
+      "team2": "OLS Ruotsi 16 Hammarby"
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI B",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2 & 3",
+      "time": "18.00 - 18.20",
+      "team1": "ONS 16 Punainen",
+      "team2": "OHF 15/16"
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI A",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2 & 3",
+      "time": "18.25 - 18.45",
+      "team1": "OLS Kreikka 16 Aris",
+      "team2": "OLS Belgia 16 Genk"
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI B",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2 & 3",
+      "time": "18.25 - 18.45",
+      "team1": "OLS Ruotsi 16 Malmö",
+      "team2": "Iin Urheilijat 16 Keltainen"
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI A",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2 & 3",
+      "time": "18.50 - 19.10",
+      "team1": "OLS Ruotsi 16 Malmö",
+      "team2": "OLS Belgia 16 Genk"
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI B",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2 & 3",
+      "time": "18.50 - 19.10",
+      "team1": "OLS Kreikka 16 Aris",
+      "team2": "Iin Urheilijat 16 Keltainen"
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI A",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2 & 3",
+      "time": "19.15 - 19.35",
+      "team1": "",
+      "team2": ""
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI B",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2 & 3",
+      "time": "19.15 - 19.35",
+      "team1": "",
+      "team2": ""
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI C",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2",
+      "time": "16.45 - 17.05",
+      "team1": "",
+      "team2": ""
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI D",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2",
+      "time": "16.45 - 17.05",
+      "team1": "",
+      "team2": ""
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI C",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2",
+      "time": "17.10 - 17.30",
+      "team1": "OLS Kreikka 16 Olympiakos",
+      "team2": "OsPa P1617 Valkoinen"
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI D",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2",
+      "time": "17.10 - 17.30",
+      "team1": "KKP 16 Sininen",
+      "team2": "OLS Belgia 16 Brugge"
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI C",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2",
+      "time": "17.35 - 17.55",
+      "team1": "OLS Kreikka 16 Olympiakos",
+      "team2": "Iin Urheilijat 16 Musta"
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI D",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2",
+      "time": "17.35 - 17.55",
+      "team1": "OsPa P1617 Valkoinen",
+      "team2": "OLS Belgia 16 Brugge"
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI C",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2",
       "time": "18.00 - 18.20",
       "team1": "",
       "team2": ""
     },
     {
-      "field": "NURMI 4B",
+      "field": "HEINÄPÄÄN TEKONURMI D",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 C",
+      "year": "2016 2",
       "time": "18.00 - 18.20",
       "team1": "",
       "team2": ""
     },
     {
-      "field": "NURMI 4A",
+      "field": "HEINÄPÄÄN TEKONURMI C",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 C",
+      "year": "2016 2",
       "time": "18.25 - 18.45",
-      "team1": "",
-      "team2": ""
+      "team1": "KKP 16 Sininen",
+      "team2": "Iin Urheilijat 16 Musta"
     },
     {
-      "field": "NURMI 4B",
+      "field": "HEINÄPÄÄN TEKONURMI D",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 C",
+      "year": "2016 2",
       "time": "18.25 - 18.45",
-      "team1": "",
-      "team2": ""
+      "team1": "OLS Kreikka 16 Olympiakos",
+      "team2": "OLS Belgia 16 Brugge"
     },
     {
-      "field": "NURMI 4A",
+      "field": "HEINÄPÄÄN TEKONURMI C",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 C",
+      "year": "2016 2",
       "time": "18.50 - 19.10",
-      "team1": "",
-      "team2": ""
+      "team1": "KKP 16 Sininen",
+      "team2": "OsPa P1617 Valkoinen"
     },
     {
-      "field": "NURMI 4B",
+      "field": "HEINÄPÄÄN TEKONURMI D",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 C",
+      "year": "2016 2",
       "time": "18.50 - 19.10",
+      "team1": "Iin Urheilijat 16 Musta",
+      "team2": "OLS Belgia 16 Brugge"
+    },
+    {
+      "field": "HEINÄPÄÄN TEKONURMI C",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 2",
+      "time": "19.15 - 19.35",
       "team1": "",
       "team2": ""
     },
     {
-      "field": "NURMI 4C",
+      "field": "HEINÄPÄÄN TEKONURMI D",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "15.05 - 15.25",
-      "team1": "OLS Kreikka 17 AEK",
-      "team2": "OLS Belgia 17 Anderlecht"
-    },
-    {
-      "field": "NURMI 4D",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "15.05 - 15.25",
-      "team1": "OLS Ruotsi 17 AIK",
-      "team2": "OLS Hollanti 17 Ajax"
-    },
-    {
-      "field": "NURMI 4C",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "15.30 - 15.50",
-      "team1": "OLS Kreikka 17 AEK",
-      "team2": "KKP P8 Keltainen"
-    },
-    {
-      "field": "NURMI 4D",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "15.30 - 15.50",
-      "team1": "OLS Ruotsi 17 AIK",
-      "team2": "OLS Belgia 17 Anderlecht"
-    },
-    {
-      "field": "NURMI 4C",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "15.55 - 16.15",
+      "year": "2016 2",
+      "time": "19.15 - 19.35",
       "team1": "",
       "team2": ""
     },
     {
-      "field": "NURMI 4D",
+      "field": "HEPA - HALLI A",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "15.55 - 16.15",
-      "team1": "",
-      "team2": ""
-    },
-    {
-      "field": "NURMI 4C",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "16.20 - 16.40",
-      "team1": "OLS Hollanti 17 Ajax",
-      "team2": "KKP P8 Keltainen"
-    },
-    {
-      "field": "NURMI 4D",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "16.20 - 16.40",
-      "team1": "OLS Kreikka 17 AEK",
-      "team2": "OLS Ruotsi 17 AIK"
-    },
-    {
-      "field": "NURMI 4C",
-      "gameDuration": "20 min",
-      "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 3",
       "time": "16.45 - 17.05",
-      "team1": "OLS Hollanti 17 Ajax",
-      "team2": "OLS Belgia 17 Anderlecht"
+      "team1": "OLS Hollanti 16 Feyenoord",
+      "team2": "OsPa P1617 Sininen"
     },
     {
-      "field": "NURMI 4D",
+      "field": "HEPA - HALLI B",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 3",
       "time": "16.45 - 17.05",
-      "team1": "KKP P8 Keltainen",
-      "team2": "OLS Ruotsi 17 AIK"
+      "team1": "OLS Portugali 16 Benfica",
+      "team2": "OLS Kreikka 16 PAOK"
     },
     {
-      "field": "NURMI 4C",
+      "field": "HEPA - HALLI A",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 3",
       "time": "17.10 - 17.30",
-      "team1": "",
-      "team2": ""
+      "team1": "OLS Hollanti 16 Feyenoord",
+      "team2": "KKP 16 Valkoinen"
     },
     {
-      "field": "NURMI 4D",
+      "field": "HEPA - HALLI B",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 3",
       "time": "17.10 - 17.30",
-      "team1": "",
-      "team2": ""
+      "team1": "OsPa P1617 Sininen",
+      "team2": "OLS Portugali 16 Benfica"
     },
     {
-      "field": "NURMI 4C",
+      "field": "HEPA - HALLI A",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 3",
       "time": "17.35 - 17.55",
       "team1": "",
       "team2": ""
     },
     {
-      "field": "NURMI 4D",
+      "field": "HEPA - HALLI B",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 3",
       "time": "17.35 - 17.55",
       "team1": "",
       "team2": ""
     },
     {
-      "field": "NURMI 4C",
+      "field": "HEPA - HALLI A",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 3",
       "time": "18.00 - 18.20",
-      "team1": "",
-      "team2": ""
+      "team1": "OLS Kreikka 16 PAOK",
+      "team2": "KKP 16 Valkoinen"
     },
     {
-      "field": "NURMI 4D",
+      "field": "HEPA - HALLI B",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 3",
       "time": "18.00 - 18.20",
-      "team1": "",
-      "team2": ""
+      "team1": "OLS Hollanti 16 Feyenoord",
+      "team2": "OLS Portugali 16 Benfica"
     },
     {
-      "field": "NURMI 4C",
+      "field": "HEPA - HALLI A",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 3",
       "time": "18.25 - 18.45",
-      "team1": "",
-      "team2": ""
+      "team1": "OsPa P1617 Sininen",
+      "team2": "OLS Kreikka 16 PAOK"
     },
     {
-      "field": "NURMI 4D",
+      "field": "HEPA - HALLI B",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
+      "year": "2016 3",
       "time": "18.25 - 18.45",
+      "team1": "KKP 16 Valkoinen",
+      "team2": "OLS Portugali 16 Benfica"
+    },
+    {
+      "field": "HEPA -  HALLI C",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 1",
+      "time": "16.45 - 17.05",
+      "team1": "OLS Ruotsi 16 AIK",
+      "team2": "OLS Hollanti 16 Ajax"
+    },
+    {
+      "field": "HEPA- HALLI D",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 1",
+      "time": "16.45 - 17.05",
+      "team1": "OLS Portugali 16 Porto",
+      "team2": "OLS Kreikka 16 AEK"
+    },
+    {
+      "field": "HEPA -  HALLI C",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 1",
+      "time": "17.10 - 17.30",
+      "team1": "OLS Ruotsi 16 AIK",
+      "team2": "OLS Belgia 16 Anderlecht"
+    },
+    {
+      "field": "HEPA- HALLI D",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 1",
+      "time": "17.10 - 17.30",
+      "team1": "OLS Portugali 16 Porto",
+      "team2": "OLS Hollanti 16 Ajax"
+    },
+    {
+      "field": "HEPA -  HALLI C",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 1",
+      "time": "17.35 - 17.55",
       "team1": "",
       "team2": ""
     },
     {
-      "field": "NURMI 4C",
+      "field": "HEPA- HALLI D",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "18.50 - 19.10",
+      "year": "2016 1",
+      "time": "17.35 - 17.55",
       "team1": "",
       "team2": ""
     },
     {
-      "field": "NURMI 4D",
+      "field": "HEPA -  HALLI C",
       "gameDuration": "20 min",
       "gameType": "4 v 4 ( mv + 3 )",
-      "year": "2017 A",
-      "time": "18.50 - 19.10",
-      "team1": "",
-      "team2": ""
+      "year": "2016 1",
+      "time": "18.00 - 18.20",
+      "team1": "OLS Ruotsi 16 AIK",
+      "team2": "OLS Portugali 16 Porto"
+    },
+    {
+      "field": "HEPA- HALLI D",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 1",
+      "time": "18.00 - 18.20",
+      "team1": "OLS Belgia 16 Anderlecht",
+      "team2": "OLS Kreikka 16 AEK"
+    },
+    {
+      "field": "HEPA -  HALLI C",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 1",
+      "time": "18.25 - 18.45",
+      "team1": "OLS Belgia 16 Anderlecht",
+      "team2": "OLS Portugali 16 Porto"
+    },
+    {
+      "field": "HEPA- HALLI D",
+      "gameDuration": "20 min",
+      "gameType": "4 v 4 ( mv + 3 )",
+      "year": "2016 1",
+      "time": "18.25 - 18.45",
+      "team1": "OLS Hollanti 16 Ajax",
+      "team2": "OLS Kreikka 16 AEK"
     }
   ],
-  "sourceFile": "Viikkopelit_29_5_2025.pdf"
+  "sourceFile": "Viikkopelit_5_6_2025.pdf"
 }

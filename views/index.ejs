@@ -116,8 +116,9 @@
 
                         <% // Display field map for this game %>
                         <% 
-                        const currentFieldKey = game.field.toUpperCase();
-                        const imageName = fieldMapData[currentFieldKey]; 
+                        let rawFieldKey = game.field.toUpperCase();
+                        const normalizedFieldKey = rawFieldKey.replace(/\s+/g, ' ').trim().replace(/\s*-\s*/g, ' - ');
+                        const imageName = fieldMapData[normalizedFieldKey]; 
                         if (imageName) { 
                             const nameWithoutExt = imageName.substring(0, imageName.lastIndexOf('.'));
                             const extension = imageName.substring(imageName.lastIndexOf('.'));
