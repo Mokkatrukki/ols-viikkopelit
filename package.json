@@ -9,7 +9,7 @@
         "dev": "npm run build:css & node --loader ts-node/esm src/app.ts",
         "start:server": "node --loader ts-node/esm src/app.ts",
         "build": "tsc && npm run build:css:once",
-        "build:css:once": "tailwindcss -i ./src/input.css -o ./public/css/style.css",
+        "build:css:once": "tailwindcss -i ./src/input.css -o ./public/css/style.css && ./node_modules/.bin/csso ./public/css/style.css -o ./public/css/style.min.css",
         "build:css": "tailwindcss -i ./src/input.css -o ./public/css/style.css --watch"
     },
     "keywords": [],
@@ -26,6 +26,7 @@
         "@types/express": "^5.0.1",
         "@types/node": "^20.12.12",
         "autoprefixer": "^10.4.21",
+        "csso-cli": "^4.0.2",
         "postcss": "^8.5.3",
         "tailwindcss": "^3.4.0",
         "ts-node": "^10.9.2",
