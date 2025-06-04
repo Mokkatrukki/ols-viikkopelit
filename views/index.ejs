@@ -120,17 +120,23 @@
                         const normalizedFieldKey = rawFieldKey.replace(/\s+/g, ' ').trim().replace(/\s*-\s*/g, ' - ');
                         const originalPngImageName = fieldMapData[normalizedFieldKey]; 
                         if (originalPngImageName) { 
-                            const webpImageName = originalPngImageName.replace(/\.png$/i, '.webp');
+                            const nameWithoutExt = originalPngImageName.substring(0, originalPngImageName.lastIndexOf('.'));
+                            const webpExtension = ".webp";
                         %>
                             <div class="mt-4 border border-slate-300 rounded-lg overflow-hidden shadow">
                                 <picture>
-                                    <source srcset="<%= webpImageName %>" type="image/webp">
+                                    <source 
+                                        srcset="<%= `${nameWithoutExt}-336w${webpExtension}` %> 336w,
+                                                <%= `${nameWithoutExt}-504w${webpExtension}` %> 504w,
+                                                <%= `${nameWithoutExt}-672w${webpExtension}` %> 672w"
+                                        sizes="(max-width: 336px) 100vw, 336px" 
+                                        type="image/webp">
                                     <img 
                                         src="<%= originalPngImageName %>" 
                                         alt="Kenttäkartta - <%= game.field %>" 
                                         class="block w-full h-auto"
-                                        width="310" 
-                                        height="466">
+                                        width="336" 
+                                        height="508">
                                 </picture>
                             </div>
                         <% } %>
