@@ -118,23 +118,20 @@
                         <% 
                         let rawFieldKey = game.field.toUpperCase();
                         const normalizedFieldKey = rawFieldKey.replace(/\s+/g, ' ').trim().replace(/\s*-\s*/g, ' - ');
-                        const imageName = fieldMapData[normalizedFieldKey]; 
-                        if (imageName) { 
-                            const nameWithoutExt = imageName.substring(0, imageName.lastIndexOf('.'));
-                            const extension = imageName.substring(imageName.lastIndexOf('.'));
+                        const originalPngImageName = fieldMapData[normalizedFieldKey]; 
+                        if (originalPngImageName) { 
+                            const webpImageName = originalPngImageName.replace(/\.png$/i, '.webp');
                         %>
                             <div class="mt-4 border border-slate-300 rounded-lg overflow-hidden shadow">
-                                <img 
-                                    src="<%= `${nameWithoutExt}-504w${extension}` %>" 
-                                    srcset="<%= `${nameWithoutExt}-336w${extension}` %> 336w,
-                                            <%= `${nameWithoutExt}-504w${extension}` %> 504w,
-                                            <%= `${nameWithoutExt}-672w${extension}` %> 672w"
-                                    sizes="(max-width: 336px) 100vw, 336px" 
-                                    alt="Kenttäkartta - <%= game.field %>" 
-                                    class="block w-full h-auto"
-                                    loading="lazy"
-                                    width="336" 
-                                    height="505"> 
+                                <picture>
+                                    <source srcset="<%= webpImageName %>" type="image/webp">
+                                    <img 
+                                        src="<%= originalPngImageName %>" 
+                                        alt="Kenttäkartta - <%= game.field %>" 
+                                        class="block w-full h-auto"
+                                        width="310" 
+                                        height="466">
+                                </picture>
                             </div>
                         <% } %>
                     </div>
