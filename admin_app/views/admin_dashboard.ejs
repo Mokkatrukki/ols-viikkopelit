@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OLS Viikkopelit - Admin</title>
+    <title>OLS Viikkopelit - Hallinta</title>
     <link rel="stylesheet" href="/css/style.css"> <!- Output from Tailwind ->
 </head>
 <body class="bg-gray-100 text-gray-800 p-8">
     <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h1 class="text-2xl font-bold mb-6 text-center">OLS Viikkopelit - Admin Control Panel</h1>
+        <h1 class="text-2xl font-bold mb-6 text-center"><a href="/" class="text-gray-800 hover:text-blue-600 transition-colors duration-150">OLS Viikkopelit - Hallintapaneeli</a></h1>
 
         <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Update Game Data</h2>
+            <h2 class="text-xl font-semibold mb-4">Päivitä Pelitiedot</h2>
 
             <!-- Tab Buttons -->
             <div class="mb-4 border-b border-gray-200">
@@ -19,12 +19,12 @@
                     <button type="button"
                             class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-blue-600 border-blue-500"
                             data-tab-target="#automaticUpdateTab" aria-current="page">
-                        Automatic Update
+                        Automaattinen Päivitys
                     </button>
                     <button type="button"
                             class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 border-transparent"
                             data-tab-target="#manualUploadTab">
-                        Manual Upload
+                        Manuaalinen Tuonti
                     </button>
                 </nav>
             </div>
@@ -40,7 +40,7 @@
                                 bg-blue-100 border border-blue-400 text-blue-700 
                             <% } %>"
                       role="alert">
-                    <p class="font-semibold">Status:</p>
+                    <p class="font-semibold">Tila:</p>
                     <p><%- message %></p>
                 </div>
             <% } %>
@@ -50,18 +50,18 @@
                 <!-- Automatic Update Tab Content -->
                 <div id="automaticUpdateTab" class="tab-content">
                     <p class="text-gray-600 mb-4">
-                        Fetch the latest game schedule PDF from the OLS website, process it, and update the <code>extracted_games_output.json</code> file.
+                        Hae uusin otteluohjelma PDF-muodossa OLS:n sivuilta, käsittele se ja päivitä tallennetut pelitiedot.
                     </p>
                     <form action="/trigger-full-update" method="POST">
                         <div class="mb-4 flex items-center">
                             <input type="checkbox" id="forceUpdate" name="forceUpdate" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                             <label for="forceUpdate" class="text-sm text-gray-700">
-                                Force update (reprocess current PDF even if date hasn't changed)
+                                Pakota päivitys (käsittele nykyinen PDF uudelleen, vaikka päivämäärä ei olisi muuttunut)
                             </label>
                         </div>
                         <button type="submit"
                                 class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
-                            Trigger Full Data Update
+                            Päivitä pelit
                         </button>
                     </form>
                 </div>
@@ -69,17 +69,17 @@
                 <!-- Manual Upload Tab Content (Initially Hidden) -->
                 <div id="manualUploadTab" class="tab-content hidden">
                      <p class="text-gray-600 mb-4">
-                        If automatic data fetching fails or you need to upload a specific PDF, use this form. Requires the upload password.
+                        Jos automaattinen tietojen haku epäonnistuu tai sinun tarvitsee ladata tietty PDF-tiedosto, käytä tätä lomaketta. Vaatii salasanan.
                     </p>
                     <form action="/admin/upload-pdf" method="POST" enctype="multipart/form-data">
                         <div class="mb-4">
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password:</label>
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Salasana:</label>
                             <input type="password" id="password" name="password" required
                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         </div>
 
                         <div class="mb-6">
-                            <label for="pdfFile" class="block text-sm font-medium text-gray-700 mb-1">PDF File:</label>
+                            <label for="pdfFile" class="block text-sm font-medium text-gray-700 mb-1">PDF-tiedosto:</label>
                             <input type="file" id="pdfFile" name="pdfFile" accept=".pdf" required
                                    class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none
                                           file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
@@ -89,7 +89,7 @@
 
                         <button type="submit"
                                 class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
-                            Upload & Process PDF
+                            Lataa ja Käsittele PDF
                         </button>
                     </form>
                 </div>
@@ -97,22 +97,21 @@
         </div>
 
         <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-3">Check Game Data</h2>
+            <h2 class="text-xl font-semibold mb-3">Tarkista Pelitiedot</h2>
             <p class="text-gray-600 mb-4">
-                View a detailed summary of all extracted game data organized by field. This view helps identify
-                missing games, scheduling conflicts, and other potential issues with the data.
+                Näytä yksityiskohtainen yhteenveto kaikista poimituista pelitiedoista kentittäin järjestettynä. Tämä näkymä auttaa tunnistamaan puuttuvat pelit, aikatauluristiriidat ja muut mahdolliset ongelmat tiedoissa.
             </p>
             <a href="/check-data" 
                class="block w-full bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out text-center">
-                View Data Summary
+                Näytä Tietojen Yhteenveto
             </a>
         </div>
 
 
         <div class="mt-8 text-center">
             <p class="text-sm text-gray-500">
-                The main application (ols-viikkopelit) will read the updated data from shared storage. 
-                You may need to use its 'Refresh Data' function to see immediate changes.
+                Pääsovellus (ols-viikkopelit) lukee päivitetyt tiedot jaetusta tallennustilasta. 
+                Sinun saattaa tarvita käyttää sen 'Päivitä Tiedot' -toimintoa nähdäksesi muutokset välittömästi.
             </p>
         </div>
     </div>

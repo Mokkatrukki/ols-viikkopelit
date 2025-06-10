@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OLS Viikkopelit - Data Check</title>
+    <title>OLS Viikkopelit - Tietojen Tarkistus</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
         /* Additional styles for tables */
@@ -33,25 +33,25 @@
     <div class="max-w-6xl mx-auto">
         <header class="bg-white p-6 rounded-lg shadow-md mb-6">
             <div class="flex justify-between items-center">
-                <h1 class="text-2xl font-bold">OLS Viikkopelit - Data Check</h1>
+                <h1 class="text-2xl font-bold">OLS Viikkopelit - Tietojen Tarkistus</h1>
                 <a href="/" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
-                    Back to Dashboard
+                    Takaisin Hallintapaneeliin
                 </a>
             </div>
             <div class="mt-4">
                 <p class="text-gray-600">
-                    Schedule Date: <span class="font-semibold"><%= documentDate %></span>
+                    Otteluohjelman Päivämäärä: <span class="font-semibold"><%= documentDate %></span>
                 </p>
                 <p class="text-gray-600">
-                    Active Games: <span class="font-semibold"><%= activeGames %></span> |
-                    Total Scheduled Slots: <span class="font-semibold"><%= totalScheduledSlots %></span> <% if (typeof missingTeamGamesCount !== 'undefined' && missingTeamGamesCount > 0) { %>(<%= missingTeamGamesCount %> with no team info)<% } %> |
-                    Total Fields: <span class="font-semibold"><%= totalFields %></span>
+                    Aktiivisia Pelejä: <span class="font-semibold"><%= activeGames %></span> |
+                    Varattuja Aikoja Yhteensä: <span class="font-semibold"><%= totalScheduledSlots %></span> <% if (typeof missingTeamGamesCount !== 'undefined' && missingTeamGamesCount > 0) { %>(<%= missingTeamGamesCount %> ilman joukkuetietoja)<% } %> |
+                    Kenttiä Yhteensä: <span class="font-semibold"><%= totalFields %></span>
                 </p>
             </div>
             
             <% if (issues && issues.length > 0) { %>
                 <div class="mt-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md">
-                    <h3 class="font-semibold mb-2">Potential Data Issues:</h3>
+                    <h3 class="font-semibold mb-2">Mahdolliset Ongelmat Tiedoissa:</h3>
                     <ul class="list-disc pl-5">
                         <% issues.forEach(issue => { %>
                             <li><%= issue %></li>
@@ -62,12 +62,12 @@
         </header>
         
         <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-            <h2 class="text-xl font-semibold mb-4">Field Summary</h2>
+            <h2 class="text-xl font-semibold mb-4">Kenttäkohtainen Yhteenveto</h2>
             
             <div class="mb-4">
-                <label for="fieldFilter" class="block text-sm font-medium text-gray-700 mb-1">Filter by Field:</label>
+                <label for="fieldFilter" class="block text-sm font-medium text-gray-700 mb-1">Suodata Kentän Mukaan:</label>
                 <select id="fieldFilter" class="w-full md:w-1/2 p-2 border border-gray-300 rounded-md">
-                    <option value="all">All Fields</option>
+                    <option value="all">Kaikki Kentät</option>
                     <% fieldSummaries.forEach(field => { %>
                         <option value="<%= field.fieldName %>"><%= field.fieldName %></option>
                     <% }); %>
@@ -89,10 +89,10 @@
                             <table class="game-table">
                                 <thead>
                                     <tr>
-                                        <th>Time</th>
-                                        <th>Team 1</th>
-                                        <th>Team 2</th>
-                                        <th>Duration</th>
+                                        <th>Aika</th>
+                                        <th>Joukkue 1</th>
+                                        <th>Joukkue 2</th>
+                                        <th>Kesto</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -100,10 +100,10 @@
                                         <tr>
                                             <td><%= game.time %></td>
                                             <td class="<%= !game.team1 ? 'empty-team' : '' %>">
-                                                <%= game.team1 || 'No team' %>
+                                                <%= game.team1 || 'Ei joukkuetta' %>
                                             </td>
                                             <td class="<%= !game.team2 ? 'empty-team' : '' %>">
-                                                <%= game.team2 || 'No team' %>
+                                                <%= game.team2 || 'Ei joukkuetta' %>
                                             </td>
                                             <td><%= game.gameDuration %></td>
                                         </tr>

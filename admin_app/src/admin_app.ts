@@ -37,9 +37,9 @@ app.get('/', (req: Request, res: Response) => {
 // Data check page
 app.get('/check-data', async (req: Request, res: Response) => {
     const filterType = req.query.filter === 'removeNoOpponent' ? 'removeNoOpponent' : null;
-    let viewTitle = 'OLS Viikkopelit - Data Check';
+    let viewTitle = 'OLS Viikkopelit - Tietojen tarkistus';
     if (filterType === 'removeNoOpponent') {
-      viewTitle = 'OLS Viikkopelit - Data Check (Filtered: No Opponent vs No Opponent Removed)';
+      viewTitle = 'OLS Viikkopelit - Tietojen tarkistus (Suodatettu: Ei vastustajaa vs Ei vastustajaa -ottelut poistettu)';
     }
     try {
         const summary = await generateDataSummary(PERSISTENT_STORAGE_BASE_PATH, filterType);
@@ -62,7 +62,7 @@ app.get('/check-data', async (req: Request, res: Response) => {
         console.error('Error generating data summary:', error);
         const errorMessage = error instanceof Error ? error.message : String(error);
         res.status(500).render('admin_dashboard', { 
-            message: `Error checking data: ${errorMessage}` 
+            message: `Virhe tarkistettaessa tietoja: ${errorMessage}` 
         });
     }
 });
@@ -89,11 +89,11 @@ app.post('/trigger-full-update', async (req: Request, res: Response) => {
 
         const result: UpdateResult = await runUpdater(currentScheduleDateString, forceUpdate);
         console.log('Update process finished:', result);
-        res.render('admin_dashboard', { message: `Update result: ${result.status} - ${result.message}. New schedule date: ${result.newScheduleDate || 'N/A'}` });
+        res.render('admin_dashboard', { message: `Päivityksen tulos: ${result.status} - ${result.message}. Uuden otteluohjelman päivämäärä: ${result.newScheduleDate || 'Ei saatavilla'}` });
     } catch (error) {
         console.error('Error during data update process:', error);
         const errorMessage = error instanceof Error ? error.message : String(error);
-        res.status(500).render('admin_dashboard', { message: `Error during update: ${errorMessage}` });
+        res.status(500).render('admin_dashboard', { message: `Virhe päivityksessä: ${errorMessage}` });
     }
 });
 
@@ -112,15 +112,15 @@ app.get('/api/internal/latest-games-data', async (req: Request, res: Response) =
         // In a real production scenario with a set key, this check would be stricter.
         if (process.env.NODE_ENV === 'production' && (!API_ACCESS_KEY || API_ACCESS_KEY === 'SUPER_SECRET_ADMIN_KEY_PLACEHOLDER_NEVER_USE_IN_PROD')) {
              console.error('API_ACCESS_KEY is not set or is insecure in production. Denying API access.');
-             return res.status(500).send('API not configured securely.');
+             return res.status(500).send('API-avainta ei ole asetettu turvallisesti.');
         }
         if (process.env.NODE_ENV === 'production' && providedApiKey !== API_ACCESS_KEY) {
             console.warn('Invalid or missing API key attempt in production.');
-            return res.status(403).send('Forbidden: Invalid API Key');
+            return res.status(403).send('Pääsy estetty: Virheellinen API-avain.');
         }
     } else if (providedApiKey !== API_ACCESS_KEY) {
         console.warn(`Attempt to access API with invalid key: ${providedApiKey}`);
-        return res.status(403).send('Forbidden: Invalid API Key');
+        return res.status(403).send('Pääsy estetty: Virheellinen API-avain.');
     }
 
     try {
@@ -131,10 +131,10 @@ app.get('/api/internal/latest-games-data', async (req: Request, res: Response) =
     } catch (error: any) {
         if (error.code === 'ENOENT') {
             console.error('Error serving latest games data: extracted_games_output.json not found.');
-            return res.status(404).send('Not Found: Games data file does not exist.');
+            return res.status(404).send('Ei löydy: Pelidataa sisältävää tiedostoa ei ole.');
         } else {
             console.error('Error reading games data file for API:', error);
-            return res.status(500).send('Internal Server Error');
+            return res.status(500).send('Sisäinen palvelinvirhe.');
         }
     }
 });

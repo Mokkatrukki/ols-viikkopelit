@@ -182,7 +182,7 @@ export async function checkDataIssues(persistentStoragePath: string): Promise<{ 
     const emptyTeamGames = games.filter(game => !game.team1 || !game.team2);
     missingTeamGamesCount = emptyTeamGames.length;
     if (missingTeamGamesCount > 0) {
-      issues.push(`Found ${missingTeamGamesCount} games with missing team information`);
+      issues.push(`Puuttuvia joukkuetietoja ${missingTeamGamesCount} pelissä`);
     }
     
     // Check for duplicate games (same teams, same time, same field)
