@@ -278,7 +278,7 @@
       "year": "2018 EP",
       "time": "17.05 - 17.20",
       "team1": "ONS T2017 Punainen",
-      "team2": "OLS Espanja 18 Sevilla"
+      "team2": "KKP P7"
     },
     {
       "field": "GARAM MASALA 2B",
@@ -313,7 +313,7 @@
       "gameType": "3 v 3 ( mv + 2 )",
       "year": "2018 EP",
       "time": "17.45 - 18.00",
-      "team1": "OLS Espanja 18 Sevilla",
+      "team1": "KKP P7",
       "team2": "OLS Kreikka 18 AEK"
     },
     {
@@ -358,7 +358,7 @@
       "gameType": "3 v 3 ( mv + 2 )",
       "year": "2018 EP",
       "time": "18.25 - 18.40",
-      "team1": "OLS Espanja 18 Sevilla",
+      "team1": "KKP P7",
       "team2": "OLS Ruotsi 18 AIK"
     },
     {
@@ -938,5 +938,5 @@
       "team2": "OLS Kreikka 16 AEK"
     }
   ],
-  "sourceFile": "1749514362550-627772562-Viikkopelit_5_6_2025.pdf"
+  "sourceFile": "Viikkopelit_5_6_2025.pdf"
 }

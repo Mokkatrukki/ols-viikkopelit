@@ -1,7 +1,8 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
+import fs from 'fs'; // For synchronous operations at startup
+import fsPromises from 'fs/promises'; // For asynchronous unlink
 import { exec } from 'child_process';
 import { fileURLToPath } from 'url';
 // --- Define __dirname for ES module scope ---
@@ -52,22 +53,18 @@ router.post('/upload-pdf', upload.single('pdfFile'), (req, res) => {
     const { password } = req.body;
     if (!UPLOAD_PASSWORD_ENV) {
         console.error('UPLOAD_PASSWORD environment variable is not set.');
-        // It's important to render the page again with the error
-        return res.status(500).render('admin_dashboard', {
-            message: 'Error: Server configuration error (password not set).'
-        });
+        const serverConfigError = encodeURIComponent('Error: Server configuration error (upload password not set).');
+        return res.status(500).redirect(`/?message=${serverConfigError}&type=error`);
     }
     if (password !== UPLOAD_PASSWORD_ENV) {
         console.warn('Failed PDF upload attempt: Incorrect password.');
-        return res.status(401).render('admin_dashboard', {
-            message: 'Error: Incorrect password.'
-        });
+        const noFileMessage = encodeURIComponent('No file uploaded or password incorrect.');
+        return res.redirect(`/?message=${noFileMessage}&type=error`);
     }
     if (!req.file) {
         console.warn('Failed PDF upload attempt: No file uploaded.');
-        return res.status(400).render('admin_dashboard', {
-            message: 'Error: No file selected for upload.'
-        });
+        const noFileMessage = encodeURIComponent('No file uploaded or password incorrect.');
+        return res.redirect(`/?message=${noFileMessage}&type=error`);
     }
     // Log successful upload
     const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -86,14 +83,13 @@ router.post('/upload-pdf', upload.single('pdfFile'), (req, res) => {
     console.log(`Processing ${storedFilePath} with 'npm run parse-pdf'...`);
     const projectRoot = path.join(__dirname, '../../'); // Navigate from admin_app/src/routes to admin_app/
     const processCommand = `npm run parse-pdf -- "${storedFilePath}"`;
-    exec(processCommand, { cwd: projectRoot }, (error, stdout, stderr) => {
+    exec(processCommand, { cwd: projectRoot }, async (error, stdout, stderr) => {
         if (error) {
             console.error(`Error processing manually uploaded PDF: ${error.message}`);
             console.error(`Stdout: ${stdout}`);
             console.error(`Stderr: ${stderr}`);
-            return res.status(500).render('admin_dashboard', {
-                message: `Error processing PDF '${originalFileName}': ${error.message}. Check server logs.`
-            });
+            const errorMessage = encodeURIComponent(`Error processing PDF '${originalFileName}': ${error.message}. Check server logs.`);
+            return res.redirect(`/?message=${errorMessage}&type=error`);
         }
         if (stderr) {
             // pdf2json often outputs to stderr even on success
@@ -101,15 +97,22 @@ router.post('/upload-pdf', upload.single('pdfFile'), (req, res) => {
         }
         console.log(`Manually uploaded PDF processing script stdout: ${stdout}`);
         console.log(`PDF '${originalFileName}' processed successfully after manual upload.`);
-        return res.render('admin_dashboard', {
-            message: `Success: File '${originalFileName}' uploaded and processed.`
-        });
+        // Attempt to delete the processed PDF file
+        try {
+            await fsPromises.unlink(storedFilePath); // storedFilePath is available from the outer scope
+            console.log(`Successfully deleted processed PDF: ${storedFilePath}`);
+        }
+        catch (deleteError) {
+            console.error(`Failed to delete processed PDF ${storedFilePath}:`, deleteError);
+            // Log the error, but proceed with success response for processing
+        }
+        const successMessage = encodeURIComponent(`Success: File '${originalFileName}' uploaded and processed.`);
+        return res.redirect(`/?message=${successMessage}&type=success`);
     });
 }, (error, req, res, next) => {
     // Multer error handling (e.g., file type, size limit)
     console.error('Multer error during PDF upload:', error.message);
-    return res.status(400).render('admin_dashboard', {
-        message: `Error: ${error.message}`
-    });
+    const uploadErrorMessage = encodeURIComponent(`Upload Error: ${error.message}`);
+    return res.redirect(`/?message=${uploadErrorMessage}&type=error`);
 });
 export default router;

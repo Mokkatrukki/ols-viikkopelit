@@ -22,14 +22,16 @@ app.use(express.static(path.join(__dirname, '../public'))); // Serve static file
 app.use(express.urlencoded({ extended: true })); // For parsing form data
 // Admin dashboard page
 app.get('/', (req, res) => {
-    res.render('admin_dashboard', { message: null });
+    const message = req.query.message || null;
+    const messageType = req.query.type || (message ? 'info' : null); // 'info', 'success', 'error'
+    res.render('admin_dashboard', { message, messageType });
 });
 // Data check page
 app.get('/check-data', async (req, res) => {
     const filterType = req.query.filter === 'removeNoOpponent' ? 'removeNoOpponent' : null;
-    let viewTitle = 'OLS Viikkopelit - Data Check';
+    let viewTitle = 'OLS Viikkopelit - Tietojen tarkistus';
     if (filterType === 'removeNoOpponent') {
-        viewTitle = 'OLS Viikkopelit - Data Check (Filtered: No Opponent vs No Opponent Removed)';
+        viewTitle = 'OLS Viikkopelit - Tietojen tarkistus (Suodatettu: Ei vastustajaa vs Ei vastustajaa -ottelut poistettu)';
     }
     try {
         const summary = await generateDataSummary(PERSISTENT_STORAGE_BASE_PATH, filterType);
@@ -51,7 +53,7 @@ app.get('/check-data', async (req, res) => {
         console.error('Error generating data summary:', error);
         const errorMessage = error instanceof Error ? error.message : String(error);
         res.status(500).render('admin_dashboard', {
-            message: `Error checking data: ${errorMessage}`
+            message: `Virhe tarkistettaessa tietoja: ${errorMessage}`
         });
     }
 });
@@ -78,12 +80,12 @@ app.post('/trigger-full-update', async (req, res) => {
         }
         const result = await runUpdater(currentScheduleDateString, forceUpdate);
         console.log('Update process finished:', result);
-        res.render('admin_dashboard', { message: `Update result: ${result.status} - ${result.message}. New schedule date: ${result.newScheduleDate || 'N/A'}` });
+        res.render('admin_dashboard', { message: `Päivityksen tulos: ${result.status} - ${result.message}. Uuden otteluohjelman päivämäärä: ${result.newScheduleDate || 'Ei saatavilla'}` });
     }
     catch (error) {
         console.error('Error during data update process:', error);
         const errorMessage = error instanceof Error ? error.message : String(error);
-        res.status(500).render('admin_dashboard', { message: `Error during update: ${errorMessage}` });
+        res.status(500).render('admin_dashboard', { message: `Virhe päivityksessä: ${errorMessage}` });
     }
 });
 // API Endpoint to serve the latest games data
@@ -98,16 +100,16 @@ app.get('/api/internal/latest-games-data', async (req, res) => {
         // In a real production scenario with a set key, this check would be stricter.
         if (process.env.NODE_ENV === 'production' && (!API_ACCESS_KEY || API_ACCESS_KEY === 'SUPER_SECRET_ADMIN_KEY_PLACEHOLDER_NEVER_USE_IN_PROD')) {
             console.error('API_ACCESS_KEY is not set or is insecure in production. Denying API access.');
-            return res.status(500).send('API not configured securely.');
+            return res.status(500).send('API-avainta ei ole asetettu turvallisesti.');
         }
         if (process.env.NODE_ENV === 'production' && providedApiKey !== API_ACCESS_KEY) {
             console.warn('Invalid or missing API key attempt in production.');
-            return res.status(403).send('Forbidden: Invalid API Key');
+            return res.status(403).send('Pääsy estetty: Virheellinen API-avain.');
         }
     }
     else if (providedApiKey !== API_ACCESS_KEY) {
         console.warn(`Attempt to access API with invalid key: ${providedApiKey}`);
-        return res.status(403).send('Forbidden: Invalid API Key');
+        return res.status(403).send('Pääsy estetty: Virheellinen API-avain.');
     }
     try {
         const fileContent = await fs.readFile(EXTRACTED_GAMES_OUTPUT_PATH, 'utf-8');
@@ -118,11 +120,11 @@ app.get('/api/internal/latest-games-data', async (req, res) => {
     catch (error) {
         if (error.code === 'ENOENT') {
             console.error('Error serving latest games data: extracted_games_output.json not found.');
-            return res.status(404).send('Not Found: Games data file does not exist.');
+            return res.status(404).send('Ei löydy: Pelidataa sisältävää tiedostoa ei ole.');
         }
         else {
             console.error('Error reading games data file for API:', error);
-            return res.status(500).send('Internal Server Error');
+            return res.status(500).send('Sisäinen palvelinvirhe.');
         }
     }
 });
