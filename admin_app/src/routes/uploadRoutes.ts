@@ -1,7 +1,8 @@
 import express, { Router, Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
+import fs from 'fs'; // For synchronous operations at startup
+import fsPromises from 'fs/promises'; // For asynchronous unlink
 import { exec } from 'child_process';
 import { fileURLToPath } from 'url';
 
@@ -95,7 +96,7 @@ router.post('/upload-pdf', upload.single('pdfFile'), (req: Request, res: Respons
     const projectRoot = path.join(__dirname, '../../'); // Navigate from admin_app/src/routes to admin_app/
     const processCommand = `npm run parse-pdf -- "${storedFilePath}"`;
 
-    exec(processCommand, { cwd: projectRoot }, (error, stdout, stderr) => {
+    exec(processCommand, { cwd: projectRoot }, async (error, stdout, stderr) => {
         if (error) {
             console.error(`Error processing manually uploaded PDF: ${error.message}`);
             console.error(`Stdout: ${stdout}`);
@@ -109,6 +110,15 @@ router.post('/upload-pdf', upload.single('pdfFile'), (req: Request, res: Respons
         }
         console.log(`Manually uploaded PDF processing script stdout: ${stdout}`);
         console.log(`PDF '${originalFileName}' processed successfully after manual upload.`);
+
+        // Attempt to delete the processed PDF file
+        try {
+            await fsPromises.unlink(storedFilePath); // storedFilePath is available from the outer scope
+            console.log(`Successfully deleted processed PDF: ${storedFilePath}`);
+        } catch (deleteError) {
+            console.error(`Failed to delete processed PDF ${storedFilePath}:`, deleteError);
+            // Log the error, but proceed with success response for processing
+        }
 
         const successMessage = encodeURIComponent(`Success: File '${originalFileName}' uploaded and processed.`);
         return res.redirect(`/?message=${successMessage}&type=success`);
