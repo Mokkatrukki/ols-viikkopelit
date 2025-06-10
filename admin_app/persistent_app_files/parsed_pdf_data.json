@@ -1,5 +1,5 @@
 {
-  "sourcePdfFile": "persistent_app_files/downloaded_pdfs/Viikkopelit_5_6_2025.pdf",
+  "sourcePdfFile": "/Users/leo.vainio/projects/ols-viikkopelit/admin_app/persistent_app_files/uploaded_pdfs/1749514362550-627772562-Viikkopelit_5_6_2025.pdf",
   "Transcoder": "pdf2json@3.1.5 [https://github.com/modesty/pdf2json]",
   "Meta": {
     "PDFFormatVersion": "1.7",

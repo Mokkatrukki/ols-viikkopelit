@@ -11,24 +11,73 @@
         <h1 class="text-2xl font-bold mb-6 text-center">OLS Viikkopelit - Admin Control Panel</h1>
 
         <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-3">Update Game Data</h2>
-            <p class="text-gray-600 mb-4">
-                Click the button below to fetch the latest game schedule PDF from the OLS website, 
-                process it, and update the <code>extracted_games_output.json</code> file in the shared storage.
-                This process can take a few moments.
-            </p>
-            <form action="/trigger-full-update" method="POST">
-                <div class="mb-4 flex items-center">
-                    <input type="checkbox" id="forceUpdate" name="forceUpdate" class="mr-2">
-                    <label for="forceUpdate" class="text-sm text-gray-700">
-                        Force update (reprocess current PDF even if date hasn't changed)
-                    </label>
+            <h2 class="text-xl font-semibold mb-4">Update Game Data</h2>
+
+            <!-- Tab Buttons -->
+            <div class="mb-4 border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button type="button"
+                            class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-blue-600 border-blue-500"
+                            data-tab-target="#automaticUpdateTab" aria-current="page">
+                        Automatic Update
+                    </button>
+                    <button type="button"
+                            class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 border-transparent"
+                            data-tab-target="#manualUploadTab">
+                        Manual Upload
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content Panels -->
+            <div>
+                <!-- Automatic Update Tab Content -->
+                <div id="automaticUpdateTab" class="tab-content">
+                    <p class="text-gray-600 mb-4">
+                        Fetch the latest game schedule PDF from the OLS website, process it, and update the <code>extracted_games_output.json</code> file.
+                    </p>
+                    <form action="/trigger-full-update" method="POST">
+                        <div class="mb-4 flex items-center">
+                            <input type="checkbox" id="forceUpdate" name="forceUpdate" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                            <label for="forceUpdate" class="text-sm text-gray-700">
+                                Force update (reprocess current PDF even if date hasn't changed)
+                            </label>
+                        </div>
+                        <button type="submit"
+                                class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
+                            Trigger Full Data Update
+                        </button>
+                    </form>
                 </div>
-                <button type="submit" 
-                        class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
-                    Trigger Full Data Update
-                </button>
-            </form>
+
+                <!-- Manual Upload Tab Content (Initially Hidden) -->
+                <div id="manualUploadTab" class="tab-content hidden">
+                     <p class="text-gray-600 mb-4">
+                        If automatic data fetching fails or you need to upload a specific PDF, use this form. Requires the upload password.
+                    </p>
+                    <form action="/admin/upload-pdf" method="POST" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password:</label>
+                            <input type="password" id="password" name="password" required
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+
+                        <div class="mb-6">
+                            <label for="pdfFile" class="block text-sm font-medium text-gray-700 mb-1">PDF File:</label>
+                            <input type="file" id="pdfFile" name="pdfFile" accept=".pdf" required
+                                   class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none
+                                          file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
+                                          file:text-sm file:font-bold file:bg-blue-500 file:text-white
+                                          hover:file:bg-blue-700 file:transition file:duration-150 file:ease-in-out">
+                        </div>
+
+                        <button type="submit"
+                                class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
+                            Upload & Process PDF
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <div class="mb-8">
@@ -42,6 +91,8 @@
                 View Data Summary
             </a>
         </div>
+
+
 
         <% if (locals.message) { %>
             <div class="mt-6 p-4 rounded-md 
@@ -62,5 +113,39 @@
             </p>
         </div>
     </div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetTab = button.dataset.tabTarget;
+
+                // Deactivate all buttons and hide all content
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('text-blue-600', 'border-blue-500');
+                    btn.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'border-transparent');
+                    btn.removeAttribute('aria-current');
+                });
+                tabContents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // Activate clicked button and show its content
+                button.classList.add('text-blue-600', 'border-blue-500');
+                button.classList.remove('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'border-transparent');
+                button.setAttribute('aria-current', 'page');
+                
+                if (targetTab) {
+                    const activeContent = document.querySelector(targetTab);
+                    if (activeContent) {
+                        activeContent.classList.remove('hidden');
+                    }
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>

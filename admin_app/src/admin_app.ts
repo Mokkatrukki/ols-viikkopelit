@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { runUpdater, UpdateResult } from './updateLatestPdf.js';
 import { generateDataSummary, checkDataIssues } from './gameDataExtractor.js';
 import fs from 'fs/promises'; // Using promises API for fs
+import uploadRoutes from './routes/uploadRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -135,6 +136,9 @@ app.get('/api/internal/latest-games-data', async (req: Request, res: Response) =
         }
     }
 });
+
+// Mount the upload routes
+app.use('/admin', uploadRoutes);
 
 app.listen(PORT, () => {
     console.log(`Admin app server running on http://localhost:${PORT}`);
