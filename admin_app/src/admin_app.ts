@@ -29,7 +29,9 @@ app.use(express.urlencoded({ extended: true })); // For parsing form data
 
 // Admin dashboard page
 app.get('/', (req: Request, res: Response) => {
-    res.render('admin_dashboard', { message: null });
+    const message = req.query.message as string || null;
+    const messageType = req.query.type as string || (message ? 'info' : null); // 'info', 'success', 'error'
+    res.render('admin_dashboard', { message, messageType });
 });
 
 // Data check page

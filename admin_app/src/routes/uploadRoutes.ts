@@ -59,24 +59,20 @@ router.post('/upload-pdf', upload.single('pdfFile'), (req: Request, res: Respons
 
     if (!UPLOAD_PASSWORD_ENV) {
         console.error('UPLOAD_PASSWORD environment variable is not set.');
-        // It's important to render the page again with the error
-        return res.status(500).render('admin_dashboard', { 
-            message: 'Error: Server configuration error (password not set).' 
-        });
+        const serverConfigError = encodeURIComponent('Error: Server configuration error (upload password not set).');
+        return res.status(500).redirect(`/?message=${serverConfigError}&type=error`);
     }
 
     if (password !== UPLOAD_PASSWORD_ENV) {
         console.warn('Failed PDF upload attempt: Incorrect password.');
-        return res.status(401).render('admin_dashboard', { 
-            message: 'Error: Incorrect password.' 
-        });
+        const noFileMessage = encodeURIComponent('No file uploaded or password incorrect.');
+        return res.redirect(`/?message=${noFileMessage}&type=error`);
     }
 
     if (!req.file) {
         console.warn('Failed PDF upload attempt: No file uploaded.');
-        return res.status(400).render('admin_dashboard', { 
-            message: 'Error: No file selected for upload.' 
-        });
+        const noFileMessage = encodeURIComponent('No file uploaded or password incorrect.');
+        return res.redirect(`/?message=${noFileMessage}&type=error`);
     }
 
     // Log successful upload
@@ -104,9 +100,8 @@ router.post('/upload-pdf', upload.single('pdfFile'), (req: Request, res: Respons
             console.error(`Error processing manually uploaded PDF: ${error.message}`);
             console.error(`Stdout: ${stdout}`);
             console.error(`Stderr: ${stderr}`);
-            return res.status(500).render('admin_dashboard', {
-                message: `Error processing PDF '${originalFileName}': ${error.message}. Check server logs.`
-            });
+            const errorMessage = encodeURIComponent(`Error processing PDF '${originalFileName}': ${error.message}. Check server logs.`);
+            return res.redirect(`/?message=${errorMessage}&type=error`);
         }
         if (stderr) {
             // pdf2json often outputs to stderr even on success
@@ -115,17 +110,15 @@ router.post('/upload-pdf', upload.single('pdfFile'), (req: Request, res: Respons
         console.log(`Manually uploaded PDF processing script stdout: ${stdout}`);
         console.log(`PDF '${originalFileName}' processed successfully after manual upload.`);
 
-        return res.render('admin_dashboard', {
-            message: `Success: File '${originalFileName}' uploaded and processed.`
-        });
+        const successMessage = encodeURIComponent(`Success: File '${originalFileName}' uploaded and processed.`);
+        return res.redirect(`/?message=${successMessage}&type=success`);
     });
 
 }, (error: Error, req: Request, res: Response, next: express.NextFunction) => {
     // Multer error handling (e.g., file type, size limit)
     console.error('Multer error during PDF upload:', error.message);
-    return res.status(400).render('admin_dashboard', { 
-        message: `Error: ${error.message}` 
-    });
+    const uploadErrorMessage = encodeURIComponent(`Upload Error: ${error.message}`);
+    return res.redirect(`/?message=${uploadErrorMessage}&type=error`);
 });
 
 export default router;

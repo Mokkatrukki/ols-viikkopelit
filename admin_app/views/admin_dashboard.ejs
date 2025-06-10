@@ -29,6 +29,22 @@
                 </nav>
             </div>
 
+            <!-- Status Message Display -->
+            <% if (locals.message && locals.messageType) { %>
+                <div class="my-4 p-4 rounded-md 
+                            <% if (messageType === 'error') { %> 
+                                bg-red-100 border border-red-400 text-red-700 
+                            <% } else if (messageType === 'success') { %> 
+                                bg-green-100 border border-green-400 text-green-700 
+                            <% } else { %> 
+                                bg-blue-100 border border-blue-400 text-blue-700 
+                            <% } %>"
+                      role="alert">
+                    <p class="font-semibold">Status:</p>
+                    <p><%- message %></p>
+                </div>
+            <% } %>
+
             <!-- Tab Content Panels -->
             <div>
                 <!-- Automatic Update Tab Content -->
@@ -92,19 +108,6 @@
             </a>
         </div>
 
-
-
-        <% if (locals.message) { %>
-            <div class="mt-6 p-4 rounded-md 
-                        <% if (message.startsWith('Error')) { %> 
-                            bg-red-100 border border-red-400 text-red-700 
-                        <% } else { %> 
-                            bg-green-100 border border-green-400 text-green-700 
-                        <% } %>">
-                <p class="font-semibold">Status:</p>
-                <p><%= message %></p>
-            </div>
-        <% } %>
 
         <div class="mt-8 text-center">
             <p class="text-sm text-gray-500">
