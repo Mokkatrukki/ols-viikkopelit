@@ -270,31 +270,18 @@ debugLog, pageWidth // For more context if needed, though primarily midPointX is
         }
         if (time.trim()) {
             const inferredYear = inferYearFromTeams(team1, team2);
-            let finalYear = inferredYear || blockInfo.year;
-            let fieldName = blockInfo.name;
-            // GARAM MASALA 1A/1B reassignment logic
-            if (isLeftBlock && blockInfo.name === "GARAM MASALA 1A" && otherBlockInfo && otherBlockInfo.name === "GARAM MASALA 1B") {
-                const midPointBetweenFields = (blockInfo.startX + otherBlockInfo.startX) / 2;
-                if (timeElement.x > midPointBetweenFields) {
-                    fieldName = otherBlockInfo.name; // Reassign to 1B
-                    finalYear = inferredYear || otherBlockInfo.year; // Use 1B's header year if no inference
-                    debugLog(`Reassigned game from ${blockInfo.name} to ${fieldName} based on TIME coordinate: ${time}, x=${timeElement.x.toFixed(2)}, mid=${midPointBetweenFields.toFixed(2)}`);
-                }
-                else if (team1Element && team1Element.x > midPointBetweenFields) {
-                    fieldName = otherBlockInfo.name;
-                    finalYear = inferredYear || otherBlockInfo.year;
-                    debugLog(`Reassigned game from ${blockInfo.name} to ${fieldName} based on TEAM1 coordinate: ${time}, x=${team1Element.x.toFixed(2)}, mid=${midPointBetweenFields.toFixed(2)}`);
-                }
-                else if (team2Element && team2Element.x > midPointBetweenFields) {
-                    fieldName = otherBlockInfo.name;
-                    finalYear = inferredYear || otherBlockInfo.year;
-                    debugLog(`Reassigned game from ${blockInfo.name} to ${fieldName} based on TEAM2 coordinate: ${time}, x=${team2Element.x.toFixed(2)}, mid=${midPointBetweenFields.toFixed(2)}`);
-                }
-            }
+            // Ensure game attributes are consistently from the current blockInfo
+            const fieldName = blockInfo.name;
+            const gameDuration = blockInfo.gameDuration;
+            const gameType = blockInfo.gameType;
+            const finalYear = inferredYear || blockInfo.year;
+            // The problematic GARAM MASALA 1A/1B reassignment logic has been removed.
+            // Games will now be attributed based on the blockInfo they are being processed for,
+            // assuming relevantElements are correctly filtered for that block.
             gamesOutput.push({
                 field: fieldName,
-                gameDuration: blockInfo.gameDuration, // This should be from the correct block after reassignment
-                gameType: blockInfo.gameType, // This should be from the correct block after reassignment
+                gameDuration: gameDuration,
+                gameType: gameType,
                 year: finalYear,
                 time,
                 team1,
