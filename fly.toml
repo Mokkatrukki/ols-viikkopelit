@@ -5,7 +5,7 @@ app = 'ols-viikkopelit'
 primary_region = 'arn'
 
 [build]
-  dockerfile = "Dockerfile"
+  builder = "paketobuildpacks/builder:base"
 
 [deploy]
   strategy = "immediate"  # Faster deployments

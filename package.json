@@ -4,6 +4,9 @@
     "description": "",
     "main": "dist/app.js",
     "type": "module",
+    "engines": {
+        "node": ">=18.0.0"
+    },
     "scripts": {
         "start": "node dist/app.js",
         "dev": "npm run build:css & node --import \"data:text/javascript,import { register } from 'node:module'; import { pathToFileURL } from 'node:url'; register('ts-node/esm', pathToFileURL('./'));\" src/app.ts",
