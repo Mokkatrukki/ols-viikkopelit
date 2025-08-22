@@ -1,14 +1,14 @@
 # fly.toml app configuration for ols-viikkopelit
-# Optimized for performance and cost
+# 🚀 OPTIMIZED FOR MINIMAL COST + FAST PERFORMANCE
 
 app = 'ols-viikkopelit'
-primary_region = 'arn'
+primary_region = 'arn'  # Stockholm, Sweden - good pricing
 
 [build]
   dockerfile = "Dockerfile"
 
 [deploy]
-  strategy = "immediate"  # Faster deployments
+  strategy = "immediate"
 
 [processes]
   app = ""
@@ -16,35 +16,32 @@ primary_region = 'arn'
 [http_service]
   internal_port = 3002
   force_https = true
-  auto_stop_machines = true  # Keep machine running
-  auto_start_machines = true
-  min_machines_running = 0    # Keep at least 1 machine running at all times
+  auto_stop_machines = true   # Enable sleep mode for cost savings
+  auto_start_machines = true  # Wake up on requests
+  min_machines_running = 0    # Allow machine to sleep (COST SAVINGS!)
   processes = ['app']
 
   [[http_service.checks]]
     path = "/health"
-    interval = "15s"
+    interval = "30s"          # Less frequent checks to reduce overhead
     timeout = "3s"
-    grace_period = "10s"
+    grace_period = "5s"       # Faster grace period with optimized startup
     method = "GET"
 
   [[http_service.autostop]]
     kill_signal = "SIGINT"
     kill_timeout = "5s"
     min_machines_running = 0
-    autostop_timeout = "1h"
+    autostop_timeout = "5m"   # Sleep after 5 minutes of inactivity (MAJOR COST SAVINGS!)
 
-
-
-
-# VM configuration
+# 💰 OPTIMIZED VM CONFIGURATION - SMALLEST POSSIBLE
 [[vm]]
-  memory = "1024mb"     # Reduced memory for cost savings
-  cpu_kind = "shared"  # Shared CPU is more cost-effective
-  cpus = 1
+  memory = "256mb"           # SMALLEST: $2.02/month (was 1024mb = $5.92/month)
+  cpu_kind = "shared"        # Shared CPU is most cost-effective
+  cpus = 1                   # Single CPU sufficient for your workload
   processes = ["app"]
 
-# Mount the persistent volume
+# Mount the persistent volume (keep current 1GB)
 [mounts]
-  source = "ols_data"      # Volume for persistent storage
-  destination = "/data"    # Mount point in container
+  source = "ols_data"        # 1GB volume = $0.15/month
+  destination = "/data"
