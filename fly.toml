@@ -40,6 +40,7 @@ primary_region = 'arn'  # Stockholm, Sweden - good pricing
   cpu_kind = "shared"        # Shared CPU is most cost-effective
   cpus = 1                   # Single CPU sufficient for your workload
   processes = ["app"]
+  init = true                # Use Docker's built-in init (Tini) - ChatGPT optimization!
 
 # Mount the persistent volume (keep current 1GB)
 [mounts]

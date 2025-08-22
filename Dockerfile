@@ -1,77 +1,65 @@
-# 🚀 OPTIMIZED DOCKERFILE FOR MINIMAL SIZE & FAST COLD STARTS
-# Based on performance analysis principles - targeting <50MB final image
+# 🚀 ULTRA-OPTIMIZED + SECURITY-HARDENED DOCKERFILE
+# Combines performance optimizations + latest security patches
 
 # ===============================
 # STAGE 1: BUILD ENVIRONMENT 
 # ===============================
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS build
 
-# Install build tools needed for native dependencies
+# Native build tools for any transitive native deps (throwaway stage)
 RUN apk add --no-cache python3 make g++
 
-WORKDIR /build
+WORKDIR /app
 
-# Copy package files first (Docker layer caching)
+# Install dev deps for TypeScript/Tailwind/PostCSS build
 COPY package*.json ./
-
-# Install ALL dependencies (including devDependencies for build)
 RUN npm ci --include=dev
 
-# Copy source code
+# Copy source
+COPY tsconfig.json ./
 COPY src/ ./src/
 COPY views/ ./views/
 COPY public/ ./public/
-COPY tsconfig.json ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 
-# Build the application
+# Build: tsc + Tailwind + CSS minify (as in your scripts)
 RUN npm run build
 
-# ===============================
-# STAGE 2: PRODUCTION RUNTIME
-# ===============================
-FROM node:18-alpine AS production
+# Prune to production-only and drop cache (ChatGPT optimization!)
+RUN npm prune --omit=dev && npm cache clean --force
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
-
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S appuser -u 1001
+# ===============================
+# STAGE 2: TINY PRODUCTION RUNTIME
+# ===============================
+FROM node:22-alpine AS runtime
 
 WORKDIR /usr/src/app
 
-# Define persistent storage path
-ENV APP_PERSISTENT_STORAGE_PATH=/data/app_files
-ENV NODE_ENV=production
+# Environment variables
+ENV NODE_ENV=production \
+    APP_PERSISTENT_STORAGE_PATH=/data/app_files
 
-# Copy package.json for production dependencies only
-COPY package*.json ./
+# Copy app with correct ownership in one go (ChatGPT optimization!)
+COPY --chown=node:node --from=build /app/dist         ./dist
+COPY --chown=node:node --from=build /app/public       ./public
+COPY --chown=node:node --from=build /app/views        ./views
+COPY --chown=node:node --from=build /app/package*.json ./
+COPY --chown=node:node --from=build /app/node_modules ./node_modules
 
-# Install ONLY production dependencies (much smaller)
-RUN npm ci --only=production && \
-    npm cache clean --force
-
-# Copy built application from builder stage
-COPY --from=builder /build/dist/ ./dist/
-COPY --from=builder /build/public/ ./public/
-COPY --from=builder /build/views/ ./views/
-
-# Create data directory and set permissions
+# Create data directory as root, then switch to node user
 RUN mkdir -p /data/app_files && \
-    chown -R appuser:nodejs /usr/src/app /data/app_files
+    chown -R node:node /data/app_files
 
-# Switch to non-root user
-USER appuser
+# Switch to non-root user (using built-in 'node' user)
+USER node
 
 # Expose port
 EXPOSE 3002
 
-# Health check for faster startup detection
+# Modern healthcheck using Node's built-in fetch (ChatGPT optimization!)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3002/health || exit 1
+    CMD node -e "fetch('http://localhost:3002/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-# Use dumb-init for proper signal handling and faster shutdowns
-ENTRYPOINT ["dumb-init", "--"]
+# Use built-in init handling (no dumb-init needed)
 CMD ["node", "dist/app.js"] 
