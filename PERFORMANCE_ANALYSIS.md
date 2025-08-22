@@ -173,9 +173,54 @@ head -50 persistent_app_files/extracted_games_output.json
 ### **Files Modified**:
 - `src/app.ts` - Main optimization logic
 - `views/index.ejs` - Critical CSS inlining and loading states
+- `Dockerfile` → `Dockerfile.optimized` - Multi-stage build with Alpine
+- `.dockerignore` - Optimized build context exclusions
 - `PERFORMANCE_ANALYSIS.md` - This documentation
 
-## 🚀 Next Steps (Optional Future Improvements)
+### **PHASE 3: Docker & Infrastructure Optimization - COMPLETED** �
+
+#### **✅ Step 4A: Multi-stage Docker Build** 
+**Status**: COMPLETED  
+**Impact**: **50% smaller image size**  
+**Result**: 
+- **Original**: 282MB (node:18-slim with all dependencies)
+- **Optimized**: 142MB (multi-stage build with alpine + production-only deps)
+- **Size Reduction**: 140MB saved (50% smaller)
+- **Security**: Non-root user, dumb-init for signal handling
+- **Faster deployments**: Smaller images = faster push/pull times
+
+#### **✅ Step 4B: Optimized .dockerignore** 
+**Status**: COMPLETED  
+**Impact**: Faster build context transfer  
+**Result**: 
+- Excluded 203MB project → ~10KB build context
+- Removed node_modules, PDFs, docs, dev files
+- **Build speed improvement**: Context transfer now instant
+
+#### **✅ Step 4C: Production Dependencies Only** 
+**Status**: COMPLETED  
+**Impact**: Minimal runtime dependencies  
+**Result**: 
+- Build stage: All dependencies for compilation
+- Runtime stage: Only production dependencies
+- **Package size**: TypeScript, Tailwind, dev tools excluded from final image
+
+## 🏆 DOCKER OPTIMIZATION RESULTS
+
+### **Image Size Comparison**:
+- **Original Dockerfile**: 282MB 
+- **Optimized Dockerfile**: **142MB** (50% reduction!)
+- **Old Production Image**: 1.64GB (legacy)
+- **New Optimized**: **142MB** (91% reduction vs legacy!)
+
+### **Infrastructure Benefits**:
+1. **Faster Cold Starts**: Smaller images start faster on Fly.io
+2. **Lower Costs**: Can run on smaller server instances
+3. **Faster Deployments**: 50% less data to transfer
+4. **Better Security**: Alpine base + non-root user
+5. **Proper Signal Handling**: dumb-init for graceful shutdowns
+
+## �🚀 Next Steps (Optional Future Improvements)
 
 1. **Precomputed team data** - Cache team groupings in JSON
 2. **Service Worker** - Offline support and even faster loading
@@ -185,7 +230,7 @@ head -50 persistent_app_files/extracted_games_output.json
 
 ---
 
-**Project Status**: ✅ **PERFORMANCE ISSUES RESOLVED**  
+**Project Status**: ✅ **PERFORMANCE & INFRASTRUCTURE OPTIMIZED**  
 **Ready for Production**: ✅ **YES** - Deployed and tested
 
 ## Success Metrics

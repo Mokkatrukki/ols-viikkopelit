@@ -1,36 +1,76 @@
-node_modules
-npm-debug.log
-Dockerfile
-.dockerignore
-.git
+# 🚀 OPTIMIZED .dockerignore - Exclude unnecessary files for minimal build context
+
+# Dependencies (installed in container)
+node_modules/
+npm-debug.log*
+
+# Build outputs (built inside container)
+dist/
+
+# Development files
+*.log
+*.env.local
+*.env.development
+.env.test
+.env.production
+
+# Version control
+.git/
 .gitignore
 
-# Large files that slow down build context transfer
-**/*.pdf
-*.pdf
-
-# Persistent app files (these should be in mounted volumes, not in image)
-persistent_app_files/
-admin_app/persistent_app_files/
-
-# Build artifacts and temp files
-dist/
-*.log
-.env
-.env.local
-
-# IDE and editor files
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS generated files
+# OS files
 .DS_Store
 Thumbs.db
 
-# Input PDF and intermediate JSON files
-# If Viikkopelit_*.pdf and parsed_pdf_data.json are only build-time artifacts
-# and not needed by the running app, they can be ignored.
-# extracted_games_output.json is needed by the app, so it should NOT be ignored.
+# Test files
+test/
+tests/
+*.test.js
+*.test.ts
+coverage/
+
+# Documentation (not needed in runtime)
+README.md
+PERFORMANCE_ANALYSIS.md
+plan.md
+docs/
+
+# Scripts (keep essential ones but exclude dev scripts)
+set-always-on.sh
+set-sleep-mode.sh
+
+# Fly.io configs (not needed in container)
+fly.toml
+
+# Admin app (separate container)
+admin_app/
+
+# Large PDF files (should be in mounted volumes)
+**/*.pdf
+*.pdf
+persistent_app_files/downloaded_pdfs/
+
+# Persistent app files (mounted volumes in production)
+persistent_app_files/
+admin_app/persistent_app_files/
+
+# Large development assets that aren't needed in production
+public/images/*.png
+public/images/*-original.*
+
+# Temporary files
+tmp/
+temp/
+
+# Build artifacts that get regenerated
 parsed_pdf_data.json
+
+# Docker files (prevent recursion)
+Dockerfile*
+.dockerignore
