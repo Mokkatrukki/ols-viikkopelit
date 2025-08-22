@@ -1,25 +1,12 @@
 // admin_app/src/pageParserUtils.ts
 // ----- Utility Functions (moved or new) -----
 /**
- * Infer year from team names.
- * @param team1 First team name.
- * @param team2 Second team name.
- * @returns Inferred year string or null.
+ * This function is deprecated - we should always use the year from PDF headers instead of inferring.
+ * The PDF contains the correct year/league information (like "2017 1", "2017 2", "2017 A", "2019 VP", etc.)
+ * @deprecated Use blockInfo.year directly instead
  */
 export function inferYearFromTeams(team1, team2) {
-    const teams = [team1, team2].filter(t => t && t.trim()); // Ensure t is not null before calling trim
-    for (const team of teams) {
-        // Look for year patterns in team names
-        if (team.includes(' 17 ')) {
-            return '2017 A'; // Default to A, could be A/B/C
-        }
-        if (team.includes(' 19 ')) {
-            return '2019 VP';
-        }
-        if (team.includes(' 20 ')) {
-            return '2020 / 2019 EP';
-        }
-    }
+    // Always return null to force using the header data
     return null;
 }
 // Further helper functions (detectFieldNamesOnLine, initializeFieldBlocks, etc.) will be added here.
@@ -269,15 +256,12 @@ debugLog, pageWidth // For more context if needed, though primarily midPointX is
             team2 = team2Element.text;
         }
         if (time.trim()) {
-            const inferredYear = inferYearFromTeams(team1, team2);
-            // Ensure game attributes are consistently from the current blockInfo
+            // Always use the year from the PDF header data, which contains the correct league/division info
+            // like "2017 1", "2017 2", "2017 A", "2019 VP", "2019 EP", etc.
             const fieldName = blockInfo.name;
             const gameDuration = blockInfo.gameDuration;
             const gameType = blockInfo.gameType;
-            const finalYear = inferredYear || blockInfo.year;
-            // The problematic GARAM MASALA 1A/1B reassignment logic has been removed.
-            // Games will now be attributed based on the blockInfo they are being processed for,
-            // assuming relevantElements are correctly filtered for that block.
+            const finalYear = blockInfo.year; // Use header year directly
             gamesOutput.push({
                 field: fieldName,
                 gameDuration: gameDuration,
@@ -288,7 +272,7 @@ debugLog, pageWidth // For more context if needed, though primarily midPointX is
                 team2
             });
             const blockLabel = isLeftBlock ? "L" : "R";
-            debugLog(`Game ${blockLabel} in ${fieldName}: ${time} | ${team1 || '---'} vs ${team2 || '---'} | Year: ${finalYear}${inferredYear ? ' (inferred)' : ' (header)'}`);
+            debugLog(`Game ${blockLabel} in ${fieldName}: ${time} | ${team1 || '---'} vs ${team2 || '---'} | Year: ${finalYear} (from header)`);
         }
     }
     return gamesOutput;

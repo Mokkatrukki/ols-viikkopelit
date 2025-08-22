@@ -4,12 +4,33 @@ Dockerfile
 .dockerignore
 .git
 .gitignore
-# dist is created during the Docker build, so it should not be ignored here if we copy '.'
-# However, if your build process relies on a pre-built dist, adjust accordingly.
-# For now, assuming 'npm run build' in Dockerfile handles it.
+
+# Large files that slow down build context transfer
+**/*.pdf
+*.pdf
+
+# Persistent app files (these should be in mounted volumes, not in image)
+persistent_app_files/
+admin_app/persistent_app_files/
+
+# Build artifacts and temp files
+dist/
+*.log
+.env
+.env.local
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
 
 # Input PDF and intermediate JSON files
 # If Viikkopelit_*.pdf and parsed_pdf_data.json are only build-time artifacts
 # and not needed by the running app, they can be ignored.
 # extracted_games_output.json is needed by the app, so it should NOT be ignored.
-parsed_pdf_data.json 
+parsed_pdf_data.json
