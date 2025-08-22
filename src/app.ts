@@ -93,35 +93,35 @@ function getGameStartTimeInMinutes(game: GameInfo): number {
     return NaN; // Should not happen with valid data
 }
 
-// Define fieldMapData here
-const fieldMapData: { [key: string]: string } = {
-    "HEINÄPÄÄN TEKONURMI A": '/images/tekonurmi_map_kentta_a.png',
-    "HEINÄPÄÄN TEKONURMI B": '/images/tekonurmi_map_kentta_b.png',
-    "HEINÄPÄÄN TEKONURMI C": '/images/tekonurmi_map_kentta_c.png',
-    "HEINÄPÄÄN TEKONURMI D": '/images/tekonurmi_map_kentta_d.png',
+// Define fieldMapData with image dimensions for responsive design
+const fieldMapData: { [key: string]: { src: string; width: number; height: number; } } = {
+    "HEINÄPÄÄN TEKONURMI A": { src: '/images/tekonurmi_map_kentta_a.png', width: 672, height: 1010 },
+    "HEINÄPÄÄN TEKONURMI B": { src: '/images/tekonurmi_map_kentta_b.png', width: 672, height: 1010 },
+    "HEINÄPÄÄN TEKONURMI C": { src: '/images/tekonurmi_map_kentta_c.png', width: 672, height: 1010 },
+    "HEINÄPÄÄN TEKONURMI D": { src: '/images/tekonurmi_map_kentta_d.png', width: 672, height: 1010 },
 
-    "GARAM MASALA 1A": '/images/garam_masala_map_kentta_1a.png',
-    "GARAM MASALA 1B": '/images/garam_masala_map_kentta_1b.png',
-    "GARAM MASALA 1C": '/images/garam_masala_map_kentta_1c.png',
-    "GARAM MASALA 1D": '/images/garam_masala_map_kentta_1d.png',
-    "GARAM MASALA 2A": '/images/garam_masala_map_kentta_2a.png',
-    "GARAM MASALA 2B": '/images/garam_masala_map_kentta_2b.png',
-    "GARAM MASALA 2C": '/images/garam_masala_map_kentta_2c.png',
-    "GARAM MASALA 2D": '/images/garam_masala_map_kentta_2d.png',
+    "GARAM MASALA 1A": { src: '/images/garam_masala_map_kentta_1a.png', width: 672, height: 1010 },
+    "GARAM MASALA 1B": { src: '/images/garam_masala_map_kentta_1b.png', width: 672, height: 1010 },
+    "GARAM MASALA 1C": { src: '/images/garam_masala_map_kentta_1c.png', width: 672, height: 1010 },
+    "GARAM MASALA 1D": { src: '/images/garam_masala_map_kentta_1d.png', width: 672, height: 1010 },
+    "GARAM MASALA 2A": { src: '/images/garam_masala_map_kentta_2a.png', width: 672, height: 1010 },
+    "GARAM MASALA 2B": { src: '/images/garam_masala_map_kentta_2b.png', width: 672, height: 1010 },
+    "GARAM MASALA 2C": { src: '/images/garam_masala_map_kentta_2c.png', width: 672, height: 1010 },
+    "GARAM MASALA 2D": { src: '/images/garam_masala_map_kentta_2d.png', width: 672, height: 1010 },
 
-    "GARAM 2A": '/images/garam_masala_map_kentta_2a.png',
-    "GARAM 2B": '/images/garam_masala_map_kentta_2b.png',
+    "GARAM 2A": { src: '/images/garam_masala_map_kentta_2a.png', width: 672, height: 1010 },
+    "GARAM 2B": { src: '/images/garam_masala_map_kentta_2b.png', width: 672, height: 1010 },
 
     // Add mappings for NURMI fields
-    "NURMI 4A": '/images/nurmi_map_kentta_4a.png',
-    "NURMI 4B": '/images/nurmi_map_kentta_4b.png',
-    "NURMI 4C": '/images/nurmi_map_kentta_4c.png',
-    "NURMI 4D": '/images/nurmi_map_kentta_4d.png',
+    "NURMI 4A": { src: '/images/nurmi_map_kentta_4a.png', width: 672, height: 1010 },
+    "NURMI 4B": { src: '/images/nurmi_map_kentta_4b.png', width: 672, height: 1010 },
+    "NURMI 4C": { src: '/images/nurmi_map_kentta_4c.png', width: 672, height: 1010 },
+    "NURMI 4D": { src: '/images/nurmi_map_kentta_4d.png', width: 672, height: 1010 },
 
-    "HEPA - HALLI A": '/images/heinapaan_halli_map_kentta_a.png',
-    "HEPA - HALLI B": '/images/heinapaan_halli_map_kentta_b.png',
-    "HEPA - HALLI C": '/images/heinapaan_halli_map_kentta_c.png',
-    "HEPA - HALLI D": '/images/heinapaan_halli_map_kentta_d.png'
+    "HEPA - HALLI A": { src: '/images/heinapaan_halli_map_kentta_a.png', width: 672, height: 444 },
+    "HEPA - HALLI B": { src: '/images/heinapaan_halli_map_kentta_b.png', width: 672, height: 444 },
+    "HEPA - HALLI C": { src: '/images/heinapaan_halli_map_kentta_c.png', width: 672, height: 444 },
+    "HEPA - HALLI D": { src: '/images/heinapaan_halli_map_kentta_d.png', width: 672, height: 444 }
 };
 
 // Helper function to get all unique teams and group them by extracted year

@@ -3,7 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, init        /* Prevent layout shifts */
+    <meta name="viewport" content="width=device-width, in        /* Responsive */
+        @media (min-width: 768px) {
+            .md\\:p-8 { padding: 2rem; }
+            .md\\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        }
+    </style> Prevent layout shifts */
         .image-container {
             aspect-ratio: 672 / 1010;
             background-color: #f1f5f9;
@@ -155,12 +160,6 @@
         .font-body {
             font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
-        
-        /* Prevent layout shifts by reserving space for images */
-        .image-container {
-            aspect-ratio: 672 / 1010;
-            background-color: #f1f5f9;
-        }
     </style>
 </head>
 
@@ -239,14 +238,17 @@
                         <% 
                         let rawFieldKey = game.field.toUpperCase();
                         const normalizedFieldKey = rawFieldKey.replace(/\s+/g, ' ').trim().replace(/\s*-\s*/g, ' - ');
-                        const originalPngImageName = fieldMapData[normalizedFieldKey]; 
-                        if (originalPngImageName) { 
+                        const fieldImageData = fieldMapData[normalizedFieldKey]; 
+                        if (fieldImageData) { 
+                            const originalPngImageName = fieldImageData.src;
+                            const imageWidth = fieldImageData.width;
+                            const imageHeight = fieldImageData.height;
                             const nameWithoutExt = originalPngImageName.substring(0, originalPngImageName.lastIndexOf('.'));
                             const webpExtension = ".webp";
                             // First image loads eagerly (for LCP), others lazy
                             const isFirstImage = index === 0;
                         %>
-                            <div class="mt-4 border border-slate-300 rounded-lg overflow-hidden shadow image-container">
+                            <div class="mt-4 border border-slate-300 rounded-lg overflow-hidden shadow" style="aspect-ratio: <%= imageWidth %>/<%= imageHeight %>; background-color: #f1f5f9;">
                                 <picture>
                                     <source 
                                         srcset="<%= `${nameWithoutExt}-336w${webpExtension}` %> 336w,
@@ -258,8 +260,8 @@
                                         src="<%= originalPngImageName %>" 
                                         alt="Kenttäkartta - <%= game.field %>" 
                                         class="block w-full h-auto object-contain"
-                                        width="672" 
-                                        height="1010"
+                                        width="<%= imageWidth %>" 
+                                        height="<%= imageHeight %>"
                                         <% if (isFirstImage) { %>
                                         loading="eager"
                                         fetchpriority="high"
