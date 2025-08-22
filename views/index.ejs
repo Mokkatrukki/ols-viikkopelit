@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, init        /* Prevent layout shifts */
+        .image-container {
+            aspect-ratio: 672 / 1010;
+            background-color: #f1f5f9;
+        }cale=1.0">
     <meta name="description" content="Seuraa OLSin viikkopelejä, milloin pelit alkavat, ja millä kentällä.">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <title>
@@ -21,7 +25,7 @@
             --tw-ring-color: rgb(59 130 246 / 0.5); --tw-ring-offset-shadow: 0 0 #0000;
             --tw-ring-shadow: 0 0 #0000; --tw-shadow: 0 0 #0000; --tw-shadow-colored: 0 0 #0000;
         }
-        body { margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; line-height: 1.5; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.5; }
         
         /* Layout classes */
         .min-h-screen { min-height: 100vh; }
@@ -88,8 +92,8 @@
         .font-bold { font-weight: 700; }
         .font-medium { font-weight: 500; }
         .font-semibold { font-weight: 600; }
-        .font-heading { font-family: 'Montserrat', ui-sans-serif, system-ui, sans-serif; }
-        .font-body { font-family: 'Open Sans', ui-sans-serif, system-ui, sans-serif; }
+        .font-heading { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        .font-body { font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
         
         /* Borders and shapes */
         .rounded-full { border-radius: 9999px; }
@@ -127,7 +131,7 @@
         
         /* Prevent layout shifts */
         .image-container {
-            aspect-ratio: 672 / 444;
+            aspect-ratio: 310 / 466;
             background-color: #f1f5f9;
         }
     </style>
@@ -136,24 +140,25 @@
     <link rel="preload" href="/css/style.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/css/style.min.css"></noscript>
     
-    <!-- Simplified Google Fonts loading -->
+    <!-- Non-blocking Google Fonts loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap"></noscript>
     <style>
         body {
-            font-family: 'Open Sans', sans-serif;
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
         h1, h2, h3, h4, h5, h6, .font-heading {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
         .font-body {
-            font-family: 'Open Sans', sans-serif;
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
         
         /* Prevent layout shifts by reserving space for images */
         .image-container {
-            aspect-ratio: 672 / 444;
+            aspect-ratio: 672 / 1010;
             background-color: #f1f5f9;
         }
     </style>
@@ -247,14 +252,14 @@
                                         srcset="<%= `${nameWithoutExt}-336w${webpExtension}` %> 336w,
                                                 <%= `${nameWithoutExt}-504w${webpExtension}` %> 504w,
                                                 <%= `${nameWithoutExt}-672w${webpExtension}` %> 672w"
-                                        sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw" 
+                                        sizes="(max-width: 480px) 100vw, (max-width: 768px) 80vw, 60vw" 
                                         type="image/webp">
                                     <img 
                                         src="<%= originalPngImageName %>" 
                                         alt="Kenttäkartta - <%= game.field %>" 
                                         class="block w-full h-auto object-contain"
                                         width="672" 
-                                        height="444"
+                                        height="1010"
                                         <% if (isFirstImage) { %>
                                         loading="eager"
                                         fetchpriority="high"
