@@ -183,9 +183,13 @@ let allGames: GameInfo[] = [];
 let documentDate: string | null = null;
 let sourceFile: string | null = null; // To store the source PDF filename
 let cachedGroupedTeams: GroupedTeamEntry[] = [];
+let dataLoaded = false; // Track if data is loaded
 
 // Function to load or reload game data
-function loadGameData() {
+async function loadGameData() {
+    const startTime = Date.now();
+    console.log('🔄 Starting loadGameData()...');
+    
     try {
         // Ensure the directory exists before trying to read (especially for first run)
         const dataDir = path.dirname(jsonDataPath);
@@ -200,15 +204,28 @@ function loadGameData() {
             documentDate = null;
             sourceFile = null;
             cachedGroupedTeams = [];
+            dataLoaded = true;
+            console.log(`⚡ loadGameData() completed in ${Date.now() - startTime}ms (no data file)`);
             return; // Exit early if file doesn't exist
         }
 
-        const fileContent = fs.readFileSync(jsonDataPath, 'utf-8');
+        const fileReadStart = Date.now();
+        const fileContent = await fs.promises.readFile(jsonDataPath, 'utf-8');
+        console.log(`📁 File read took ${Date.now() - fileReadStart}ms`);
+        
+        const parseStart = Date.now();
         const parsedData: ExtractedData = JSON.parse(fileContent);
+        console.log(`🔧 JSON parse took ${Date.now() - parseStart}ms`);
+        
         allGames = parsedData.games || []; // Ensure games is an array
         documentDate = parsedData.documentDate;
         sourceFile = parsedData.sourceFile || null; // Load source file if available
+        
+        const groupingStart = Date.now();
         cachedGroupedTeams = getGroupedTeams(allGames);
+        console.log(`👥 Team grouping took ${Date.now() - groupingStart}ms`);
+        
+        dataLoaded = true;
         console.log('Game data and grouped teams reloaded successfully.');
         console.log(`Loaded ${allGames.length} games.`);
         if (documentDate) {
@@ -217,6 +234,7 @@ function loadGameData() {
         if (sourceFile) {
             console.log(`Source PDF: ${sourceFile}`);
         }
+        console.log(`⚡ loadGameData() completed in ${Date.now() - startTime}ms (total)`);
     } catch (error) {
         console.error('Error reading or parsing game data:', error);
         // Don't exit, allow the app to run, maybe with a message on the page
@@ -224,29 +242,66 @@ function loadGameData() {
         documentDate = null;
         sourceFile = null;
         cachedGroupedTeams = [];
+        dataLoaded = true; // Mark as loaded even if failed, to prevent infinite loading
         console.error('Failed to load game data:', error);
+        console.log(`❌ loadGameData() failed after ${Date.now() - startTime}ms`);
     }
 }
 
-// Initial data load
-loadGameData();
+console.log('🚀 Starting OLS Viikkopelit application...');
+const appStartTime = Date.now();
+
+// Start async data load (don't wait for it)
+console.log('📊 Starting async game data load...');
+loadGameData().catch(error => {
+    console.error('� Async data loading failed:', error);
+});
 
 // Set view engine to EJS
+console.log('🎨 Setting up view engine and middleware...');
+const middlewareStart = Date.now();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views')); // Assuming views are in project_root/views
 
-// Serve static files (CSS, images, etc.)
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// Serve static files with caching headers
+app.use('/css', express.static(path.join(__dirname, '..', 'public', 'css'), {
+    maxAge: '1y', // Cache CSS for 1 year
+    immutable: true
+}));
+app.use('/images', express.static(path.join(__dirname, '..', 'public', 'images'), {
+    maxAge: '1y', // Cache images for 1 year
+    immutable: true
+}));
+// General static files with shorter cache
+app.use(express.static(path.join(__dirname, '..', 'public'), {
+    maxAge: process.env.NODE_ENV === 'production' ? '1d' : '5m' // 1 day in prod, 5 min in dev
+}));
+
 // Middleware to parse URL-encoded bodies (for form submissions)
 app.use(express.urlencoded({ extended: true }));
+console.log(`🎨 Middleware setup completed in ${Date.now() - middlewareStart}ms`);
 
 app.get('/', (req: Request, res: Response) => {
+    if (!dataLoaded) {
+        // Show loading state
+        res.render('index', {
+            documentTitle: 'OLS Viikkopelit - Loading...',
+            groupedTeams: [],
+            selectedTeam: null,
+            gamesForTeam: [],
+            fieldMapData,
+            loading: true
+        });
+        return;
+    }
+    
     res.render('index', {
         documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : (sourceFile ? ' (' + sourceFile + ')' : '')}`,
         groupedTeams: cachedGroupedTeams, // Use cached version
         selectedTeam: null,
         gamesForTeam: [],
-        fieldMapData
+        fieldMapData,
+        loading: false
     });
 });
 
@@ -311,7 +366,7 @@ app.post('/admin/refresh-action', async (req: Request, res: Response) => {
             fs.writeFileSync(jsonDataPath, newDataPayload, 'utf-8');
             console.log(`New data successfully written to ${jsonDataPath}`);
 
-            loadGameData(); // This will update global documentDate and sourceFile
+            await loadGameData(); // This will update global documentDate and sourceFile
 
             res.redirect('/admin?message=Data refreshed successfully from admin service and reloaded.');
         } catch (writeError: any) {
@@ -326,6 +381,20 @@ app.post('/admin/refresh-action', async (req: Request, res: Response) => {
 
 app.get('/team/:teamName', (req: Request, res: Response) => {
   const teamName = decodeURIComponent(req.params.teamName);
+  
+  if (!dataLoaded) {
+    // Show loading state
+    res.render('index', {
+      documentTitle: 'OLS Viikkopelit - Loading...',
+      groupedTeams: [],
+      selectedTeam: teamName,
+      gamesForTeam: [],
+      fieldMapData,
+      loading: true
+    });
+    return;
+  }
+  
   let gamesForTeam = allGames
     .filter(game => game.team1 === teamName || game.team2 === teamName)
     .map(game => {
@@ -360,14 +429,17 @@ app.get('/team/:teamName', (req: Request, res: Response) => {
     }
   }
 
-  res.render('index', { documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : ''}`, groupedTeams: cachedGroupedTeams, selectedTeam: teamName, gamesForTeam, fieldMapData });
-});
-
-// Health check endpoint for Fly.io
-app.get('/health', (req: Request, res: Response) => {
-  res.status(200).send('OK');
+  res.render('index', { 
+    documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : ''}`, 
+    groupedTeams: cachedGroupedTeams, 
+    selectedTeam: teamName, 
+    gamesForTeam, 
+    fieldMapData,
+    loading: false
+  });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+  console.log(`🌐 Server is running at http://localhost:${PORT}`);
+  console.log(`🏁 Total startup time: ${Date.now() - appStartTime}ms`);
 }); 
