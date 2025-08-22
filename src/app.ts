@@ -263,6 +263,36 @@ const middlewareStart = Date.now();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views')); // Assuming views are in project_root/views
 
+// Security headers middleware
+app.use((req: Request, res: Response, next) => {
+    // Content Security Policy
+    res.setHeader('Content-Security-Policy', 
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        "img-src 'self' data:; " +
+        "connect-src 'self';"
+    );
+    
+    // HTTP Strict Transport Security
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    
+    // Cross-Origin-Opener-Policy
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    
+    // X-Frame-Options (prevent clickjacking)
+    res.setHeader('X-Frame-Options', 'DENY');
+    
+    // X-Content-Type-Options
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    
+    // Referrer Policy
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    
+    next();
+});
+
 // Serve static files with caching headers
 app.use('/css', express.static(path.join(__dirname, '..', 'public', 'css'), {
     maxAge: '1y', // Cache CSS for 1 year

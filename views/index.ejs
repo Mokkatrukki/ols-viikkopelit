@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Seuraa OLSin viikkopelejä, milloin pelit alkavat, ja millä kentällä.">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <title>
         <%= documentTitle %>
     </title>
@@ -36,8 +37,10 @@
         .w-full { width: 100%; }
         .h-8 { height: 2rem; }
         .w-8 { width: 2rem; }
+        .h-auto { height: auto; }
         .block { display: block; }
         .inline-block { display: inline-block; }
+        .object-contain { object-fit: contain; }
         
         /* Spacing */
         .p-3 { padding: 0.75rem; }
@@ -121,44 +124,22 @@
             .md\\:p-8 { padding: 2rem; }
             .md\\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
         }
+        
+        /* Prevent layout shifts */
+        .image-container {
+            aspect-ratio: 672 / 444;
+            background-color: #f1f5f9;
+        }
     </style>
     
-    <!-- Only load external CSS for enhanced features (optional) -->
-    <link rel="preload" href="/css/style.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" media="print">
+    <!-- Load additional CSS asynchronously -->
+    <link rel="preload" href="/css/style.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/css/style.min.css"></noscript>
-    <link rel="preload" href="https://fonts.gstatic.com/s/montserrat/v30/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCuM70w-.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-    <link rel="preload" href="https://fonts.gstatic.com/s/opensans/v43/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0C4n.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-    <link rel="preload" href="https://fonts.gstatic.com/s/opensans/v43/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsgH1y4n.ttf" as="font" type="font/ttf" crossorigin="anonymous">
-    <style>
-      /* Montserrat Regular */
-      @font-face {
-        font-family: 'Montserrat';
-        font-style: normal;
-        font-weight: 700;
-        font-display: swap;
-        src: url(https://fonts.gstatic.com/s/montserrat/v30/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCuM70w-.ttf) format('truetype');
-      }
-      /* Open Sans Regular */
-      @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 400;
-        font-stretch: normal;
-        font-display: swap;
-        src: url(https://fonts.gstatic.com/s/opensans/v43/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0C4n.ttf) format('truetype');
-      }
-      /* Open Sans Semi-Bold */
-      @font-face {
-        font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 600;
-        font-stretch: normal;
-        font-display: swap;
-        src: url(https://fonts.gstatic.com/s/opensans/v43/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsgH1y4n.ttf) format('truetype');
-      }
-    </style>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap"></noscript>
+    
+    <!-- Simplified Google Fonts loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Open Sans', sans-serif;
@@ -168,6 +149,12 @@
         }
         .font-body {
             font-family: 'Open Sans', sans-serif;
+        }
+        
+        /* Prevent layout shifts by reserving space for images */
+        .image-container {
+            aspect-ratio: 672 / 444;
+            background-color: #f1f5f9;
         }
     </style>
 </head>
@@ -251,21 +238,30 @@
                         if (originalPngImageName) { 
                             const nameWithoutExt = originalPngImageName.substring(0, originalPngImageName.lastIndexOf('.'));
                             const webpExtension = ".webp";
+                            // First image loads eagerly (for LCP), others lazy
+                            const isFirstImage = index === 0;
                         %>
-                            <div class="mt-4 border border-slate-300 rounded-lg overflow-hidden shadow">
+                            <div class="mt-4 border border-slate-300 rounded-lg overflow-hidden shadow image-container">
                                 <picture>
                                     <source 
                                         srcset="<%= `${nameWithoutExt}-336w${webpExtension}` %> 336w,
                                                 <%= `${nameWithoutExt}-504w${webpExtension}` %> 504w,
                                                 <%= `${nameWithoutExt}-672w${webpExtension}` %> 672w"
-                                        sizes="(max-width: 336px) 100vw, 336px" 
+                                        sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw" 
                                         type="image/webp">
                                     <img 
                                         src="<%= originalPngImageName %>" 
                                         alt="Kenttäkartta - <%= game.field %>" 
-                                        class="block w-full h-auto"
-                                        width="336" 
-                                        height="508">
+                                        class="block w-full h-auto object-contain"
+                                        width="672" 
+                                        height="444"
+                                        <% if (isFirstImage) { %>
+                                        loading="eager"
+                                        fetchpriority="high"
+                                        <% } else { %>
+                                        loading="lazy"
+                                        <% } %>
+                                        decoding="async">
                                 </picture>
                             </div>
                         <% } %>
