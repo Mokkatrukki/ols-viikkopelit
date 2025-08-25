@@ -54,10 +54,7 @@ admin_app/
 # Large PDF files (should be in mounted volumes)
 **/*.pdf
 *.pdf
-persistent_app_files/downloaded_pdfs/
-
 # Persistent app files (mounted volumes in production)
-persistent_app_files/
 admin_app/persistent_app_files/
 
 # Large development assets that aren't needed in production
