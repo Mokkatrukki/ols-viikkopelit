@@ -3,11 +3,11 @@ import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { pipeline } from 'stream/promises';
+import { getDatabase } from './database.js';
 
 const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
 const PDF_DOWNLOAD_SUB_DIR = 'downloaded_pdfs';
 const PDF_DOWNLOAD_DIR = path.join(PERSISTENT_STORAGE_BASE_PATH, PDF_DOWNLOAD_SUB_DIR);
-const EXTRACTED_GAMES_OUTPUT_PATH = path.join(PERSISTENT_STORAGE_BASE_PATH, 'extracted_games_output.json');
 
 const TARGET_URL = 'https://ols.fi/jalkapallo/viikkopelit/';
 
@@ -229,13 +229,17 @@ async function runUpdater(currentLoadedScheduleDateString: string | null, forceU
         });
 
         // After successful processing, read the new documentDate and sourceFile
-        // to confirm and return to the caller.
+        // from the database to confirm and return to the caller.
         let newExtractedData: { documentDate: string | null, sourceFile?: string } = { documentDate: null };
         try {
-            const fileContent = await fs.promises.readFile(EXTRACTED_GAMES_OUTPUT_PATH, 'utf-8');
-            newExtractedData = JSON.parse(fileContent);
+            const db = await getDatabase();
+            const gameData = await db.exportGamesAsJSON();
+            newExtractedData = { 
+                documentDate: gameData.documentDate, 
+                sourceFile: pdfFileName 
+            };
         } catch (readError) {
-            console.error(`Error reading ${EXTRACTED_GAMES_OUTPUT_PATH} after update:`, readError);
+            console.error(`Error reading from database after update:`, readError);
             // Fallback or decide how to handle; for now, it means we can't confirm new date/file
         }
         

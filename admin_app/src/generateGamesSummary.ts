@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { getDatabase } from './database.js';
 
 // Define the game interface based on what we've seen
 interface Game {
@@ -16,8 +17,7 @@ interface Game {
 const persistentStoragePath = process.env.APP_PERSISTENT_STORAGE_PATH || 
   path.join(process.cwd(), 'persistent_app_files');
 
-// Input and output file paths
-const extractedGamesPath = path.join(persistentStoragePath, 'extracted_games_output.json');
+// Output file path
 const summaryOutputPath = path.join(persistentStoragePath, 'games_summary.txt');
 
 /**
@@ -25,14 +25,14 @@ const summaryOutputPath = path.join(persistentStoragePath, 'games_summary.txt');
  */
 async function generateGamesSummary() {
   try {
-    console.log(`Reading extracted games from: ${extractedGamesPath}`);
+    console.log(`Reading games from database...`);
     
-    // Read the extracted games data
-    const rawData = fs.readFileSync(extractedGamesPath, 'utf8');
-    const parsedData = JSON.parse(rawData);
+    // Read the games data from database
+    const db = await getDatabase();
+    const gameData = await db.exportGamesAsJSON();
     
-    // Extract the games array from the parsed data
-    const games: Game[] = parsedData.games || [];
+    // Extract the games array from the database data
+    const games: Game[] = gameData.games || [];
     
     console.log(`Found ${games.length} games in total`);
     

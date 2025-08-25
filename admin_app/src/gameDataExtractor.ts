@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { getDatabase } from './database.js';
 
 // Define the game interface based on the JSON structure
 interface Game {
@@ -28,41 +29,22 @@ interface FieldSummary {
 }
 
 /**
+ * Get games data from database
+ * @returns GameData object from database
+ */
+async function getGamesData(): Promise<GameData> {
+  const db = await getDatabase();
+  const gameData = await db.exportGamesAsJSON();
+  console.log(`Loaded ${gameData.games.length} games from database`);
+  return gameData;
+}
+
+/**
  * Generate a summary of all games organized by field
- * @param persistentStoragePath Path to the persistent storage directory
+ * @param persistentStoragePath Path to the persistent storage directory (kept for compatibility, not used)
  * @param filterType Optional filter to apply to the games list (e.g., 'removeNoOpponent')
  * @returns Object containing the game summary data
  */
-/**
- * Find the path to the extracted_games_output.json file by checking multiple possible locations
- * @param basePath The base path to start searching from
- * @returns The full path to the extracted_games_output.json file
- */
-async function findExtractedGamesFile(basePath: string): Promise<string> {
-  // List of possible locations to check in order
-  const possiblePaths = [
-    // Direct in the provided path
-    path.join(basePath, 'extracted_games_output.json'),
-    // In persistent_app_files subdirectory
-    path.join(basePath, 'persistent_app_files', 'extracted_games_output.json'),
-    // In /data (for production on Fly.io)
-    '/data/extracted_games_output.json',
-  ];
-  
-  // Try each path in order
-  for (const filePath of possiblePaths) {
-    try {
-      await fs.access(filePath);
-      console.log(`Found extracted games file at: ${filePath}`);
-      return filePath;
-    } catch (error) {
-      console.log(`File not found at: ${filePath}`);
-    }
-  }
-  
-  throw new Error('Could not find extracted_games_output.json in any of the expected locations');
-}
-
 export async function generateDataSummary(persistentStoragePath: string, filterType?: 'removeNoOpponent' | null): Promise<{
   documentDate: string;
   totalGames: number;
@@ -70,12 +52,8 @@ export async function generateDataSummary(persistentStoragePath: string, filterT
   fieldSummaries: FieldSummary[];
 }> {
   try {
-    // Find the extracted games file
-    const extractedGamesPath = await findExtractedGamesFile(persistentStoragePath);
-    
-    // Read the extracted games data
-    const rawData = await fs.readFile(extractedGamesPath, 'utf8');
-    const parsedData: GameData = JSON.parse(rawData);
+    // Get data from database
+    const parsedData = await getGamesData();
     let games = parsedData.games || []; // Make games mutable for filtering
 
     // Apply filter if specified
@@ -162,17 +140,13 @@ export async function generateDataSummary(persistentStoragePath: string, filterT
 
 /**
  * Checks for potential issues in the game data
- * @param persistentStoragePath Path to the persistent storage directory
+ * @param persistentStoragePath Path to the persistent storage directory (kept for compatibility, not used)
  * @returns Array of potential issues found in the data
  */
 export async function checkDataIssues(persistentStoragePath: string): Promise<{ issues: string[], missingTeamGamesCount: number }> {
   try {
-    // Find the extracted games file using the helper function
-    const extractedGamesPath = await findExtractedGamesFile(persistentStoragePath);
-    
-    // Read the extracted games data
-    const rawData = await fs.readFile(extractedGamesPath, 'utf8');
-    const parsedData: GameData = JSON.parse(rawData);
+    // Get data from database
+    const parsedData = await getGamesData();
     const games = parsedData.games || [];
     
     const issues: string[] = [];
