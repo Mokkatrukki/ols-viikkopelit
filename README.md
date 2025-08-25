@@ -23,12 +23,12 @@ This project consists of two web applications designed to parse, manage, and dis
 
 ## Architecture Overview
 
-The system uses a **shared database architecture** for optimal performance and simplicity:
+The system uses a **LiteFS distributed SQLite architecture** for optimal performance, scalability, and global distribution:
 
 *   **`ols-viikkopelit` (Main Viewer App)**:
     *   Responsibilities: Displays game schedules, team information, and field maps to end-users.
-    *   Data Source: Reads directly from shared SQLite database (real-time access).
-    *   Database Mode: **READ-ONLY** access to shared `games.db`.
+    *   Data Source: **LiteFS replica** - real-time synchronized read-only access to distributed database.
+    *   Database Mode: **READ-ONLY replica** with automatic sync from primary.
     *   URL: [https://ols-viikkopelit.fly.dev/](https://ols-viikkopelit.fly.dev/)
 
 *   **`ols-viikkopelit-admin` (Admin & Scraping App)**:
@@ -36,15 +36,24 @@ The system uses a **shared database architecture** for optimal performance and s
         *   Provides admin dashboard to trigger data updates.
         *   Uses Puppeteer to scrape the latest Viikkopelit PDF from the OLS website.
         *   Parses PDF using `pdf2json` and custom extraction logic.
-        *   Saves extracted game data directly to shared SQLite database (`games.db`).
-    *   Database Mode: **READ + WRITE** access to shared `games.db`.
+        *   Processes PDF data and writes to distributed database.
+    *   Data Source: **LiteFS primary** - handles all write operations and data processing.
+    *   Database Mode: **PRIMARY (READ + WRITE)** with automatic replication to replicas.
     *   URL: [https://ols-viikkopelit-admin.fly.dev/](https://ols-viikkopelit-admin.fly.dev/)
 
-**Simplified Data Flow:**
+**LiteFS Distributed Data Flow:**
 1. Administrator accesses `ols-viikkopelit-admin` dashboard and triggers update.
-2. Admin app scrapes PDF, processes it, and writes game data directly to shared `games.db`.
-3. Main app automatically sees updated data (no API calls or manual refresh needed).
-4. Users access updated schedules immediately at the main app.
+2. Admin app (primary) scrapes PDF, processes it, and writes to LiteFS database.
+3. **LiteFS automatically replicates** changes to all replica nodes in real-time.
+4. Main app (replica) instantly receives updated data with microsecond latency.
+5. Users access updated schedules immediately with global performance.
+
+**Key LiteFS Features:**
+- 🌍 **Geographic Distribution**: Deploy replicas in multiple Fly.io regions
+- ⚡ **Real-time Sync**: Changes propagate to replicas within milliseconds  
+- 🔄 **Automatic Failover**: Primary election if admin app goes down
+- 🏗️ **ACID Transactions**: Full SQLite consistency with distributed benefits
+- 📊 **Eventual Consistency**: Optimized for read-heavy workloads
 
 ## Features (Main Viewer App - `ols-viikkopelit`)
 
@@ -89,29 +98,54 @@ This application has been extensively optimized for performance, cost-effectiven
 
 ## 🔄 Recent Architecture Improvements
 
-**Shared Database Migration (August 2025)**
+**LiteFS Distributed Database Migration (August 2025)**
 
-We've migrated from a complex API-based architecture to a streamlined **shared SQLite database** approach:
+We've implemented a cutting-edge **LiteFS distributed SQLite** architecture that enables real-time database replication across multiple Fly.io regions:
 
-### **Before (API Architecture)**
-- ❌ Main app called admin app API for data
-- ❌ Two-step update process required
-- ❌ API authentication and error handling complexity
-- ❌ Network latency between apps
-- ❌ Manual refresh required in main app
+### **Before (Static Shared Database)**
+- ❌ Single database file shared between apps
+- ❌ No geographic distribution
+- ❌ Single point of failure
+- ❌ Limited scalability for global users
 
-### **After (Shared Database)**
-- ✅ **Direct database access** - no API calls needed
-- ✅ **Real-time updates** - changes appear instantly
-- ✅ **Single-step workflow** - update once, available everywhere
-- ✅ **Better performance** - microsecond SQLite queries
-- ✅ **Simplified maintenance** - one database, clear separation
+### **After (LiteFS Distributed Architecture)**
+- ✅ **Distributed SQLite replication** across regions
+- ✅ **Primary-replica clustering** with automatic failover
+- ✅ **Real-time synchronization** between admin (writer) and main (reader) apps
+- ✅ **Geographic distribution** for global performance
+- ✅ **Zero-downtime updates** with consistent reads
+
+### **LiteFS Implementation Details**
+- **Admin App (Primary)**: `ols-viikkopelit-admin` - Can read and write to database
+  - `candidate: true` - Eligible to become primary
+  - `promote: true` - Automatically becomes primary on startup
+  - Handles all write operations (PDF processing, data extraction)
+  
+- **Main App (Replica)**: `ols-viikkopelit` - Read-only access with real-time sync
+  - `candidate: false` - Read-only replica
+  - Automatically syncs from primary
+  - Serves game data to end users with microsecond latency
+
+### **Consul Clustering Setup**
+Both apps connect to the same Consul cluster for coordination:
+```yaml
+consul:
+  url: "${FLY_CONSUL_URL}"
+  key: "ols-viikkopelit-cluster/primary"
+```
+
+**Critical Configuration**: Both apps must have **identical** `FLY_CONSUL_URL` values:
+1. `fly consul attach -a ols-viikkopelit-admin` (generates Consul URL)
+2. Copy URL from admin app: `https://:token@consul-fra-6.fly-shared.net/cluster/`
+3. `fly secrets set FLY_CONSUL_URL="<exact-url>" -a ols-viikkopelit`
 
 ### **Migration Benefits**
-- **Performance**: Eliminated network calls, faster data access
-- **Reliability**: No API dependencies or timeouts
-- **Simplicity**: Cleaner code, easier debugging
-- **Cost**: Reduced complexity = lower maintenance overhead
+- **Global Performance**: Database replicas can be deployed in multiple regions
+- **High Availability**: Automatic primary failover if admin app goes down
+- **Consistency**: ACID transactions with eventual consistency for reads
+- **Scalability**: Add read replicas in any Fly.io region
+- **Reliability**: Distributed architecture eliminates single points of failure
+- **Cost Efficiency**: Maintains low costs while adding enterprise-grade features
 
 ## Tech Stack
 
@@ -290,7 +324,54 @@ HEALTHCHECK CMD node -e "fetch('http://localhost:3002/health')..."
 
 ## Deployment to Fly.io
 
-Both applications are deployed to Fly.io with **cost-optimized configurations** for minimal monthly expenses.
+Both applications are deployed to Fly.io with **cost-optimized configurations** and **LiteFS distributed database clustering**.
+
+### **🏗️ LiteFS Clustering Setup**
+
+The applications use LiteFS for distributed SQLite replication. **Critical setup requirement**: Both apps must connect to the same Consul cluster.
+
+**Step-by-Step LiteFS Configuration:**
+
+1. **Deploy Admin App (Primary) First:**
+   ```bash
+   cd admin_app
+   fly consul attach -a ols-viikkopelit-admin  # Creates Consul cluster
+   fly deploy -a ols-viikkopelit-admin
+   ```
+
+2. **Get Consul URL from Admin App:**
+   ```bash
+   fly ssh console -a ols-viikkopelit-admin
+   echo $FLY_CONSUL_URL  # Copy this entire URL
+   exit
+   ```
+
+3. **Configure Main App (Replica) with Same URL:**
+   ```bash
+   fly secrets set FLY_CONSUL_URL="<paste-exact-url-here>" -a ols-viikkopelit
+   fly deploy -a ols-viikkopelit
+   ```
+
+4. **Verify Clustering is Working:**
+   ```bash
+   # Check both apps have same Consul digest
+   fly secrets list -a ols-viikkopelit-admin
+   fly secrets list -a ols-viikkopelit
+   # Digests should be identical
+   
+   # Check logs for successful clustering
+   fly logs -a ols-viikkopelit-admin  # Should show "promoting to primary"
+   fly logs -a ols-viikkopelit        # Should show "connected to cluster"
+   ```
+
+**LiteFS Configuration Files:**
+- `admin_app/litefs.yml` - Primary configuration (`candidate: true`)
+- `litefs.yml` - Replica configuration (`candidate: false`)
+
+**⚠️ Common Issues:**
+- **Different Consul URLs**: Apps must have identical `FLY_CONSUL_URL` values
+- **Connection refused 127.0.0.1:8500**: Environment variable not properly set
+- **Check secrets digests**: Use `fly secrets list` to verify URLs match
 
 ### **💰 Cost-Optimized Fly.io Configuration**
 
