@@ -3,16 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, in        /* Responsive */
-        @media (min-width: 768px) {
-            .md\\:p-8 { padding: 2rem; }
-            .md\\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
-        }
-    </style> Prevent layout shifts */
-        .image-container {
-            aspect-ratio: 672 / 1010;
-            background-color: #f1f5f9;
-        }cale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Seuraa OLSin viikkopelejä, milloin pelit alkavat, ja millä kentällä.">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <title>
@@ -195,10 +186,25 @@
                 <p class="text-sm text-slate-600 mt-2">Palvelin käynnistyy, odota hetki.</p>
             </div>
             <script>
-                // Auto-refresh after 3 seconds
-                setTimeout(() => {
-                    window.location.reload();
-                }, 3000);
+                // Auto-refresh every 2 seconds until data loads
+                let retryCount = 0;
+                const maxRetries = 10;
+                
+                function checkForData() {
+                    if (retryCount < maxRetries) {
+                        retryCount++;
+                        console.log(`Retry attempt ${retryCount}/${maxRetries}`);
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        console.log('Max retries reached, stopping auto-refresh');
+                        document.querySelector('.text-center').innerHTML = 
+                            '<p class="text-red-600">Tietojen lataus epäonnistui. Yritä päivittää sivu manuaalisesti.</p>';
+                    }
+                }
+                
+                checkForData();
             </script>
         <% } else if (selectedTeam && gamesForTeam.length > 0) { %>
             <h2 class="text-2xl font-semibold text-green-800 mb-4 text-center font-heading">

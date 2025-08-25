@@ -311,7 +311,20 @@ app.use(express.static(path.join(__dirname, '..', 'public'), {
 app.use(express.urlencoded({ extended: true }));
 console.log(`🎨 Middleware setup completed in ${Date.now() - middlewareStart}ms`);
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/', async (req: Request, res: Response) => {
+    // If data is not loaded yet, try to load it quickly
+    if (!dataLoaded) {
+        try {
+            console.log('🔄 Data not loaded, attempting quick load...');
+            await Promise.race([
+                loadGameData(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
+            ]);
+        } catch (error) {
+            console.log('⚡ Quick load failed or timed out, showing loading state');
+        }
+    }
+    
     if (!dataLoaded) {
         // Show loading state
         res.render('index', {
@@ -409,8 +422,21 @@ app.post('/admin/refresh-action', async (req: Request, res: Response) => {
     }
 });
 
-app.get('/team/:teamName', (req: Request, res: Response) => {
+app.get('/team/:teamName', async (req: Request, res: Response) => {
   const teamName = decodeURIComponent(req.params.teamName);
+  
+  // If data is not loaded yet, try to load it quickly
+  if (!dataLoaded) {
+    try {
+      console.log('🔄 Data not loaded for team route, attempting quick load...');
+      await Promise.race([
+        loadGameData(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
+      ]);
+    } catch (error) {
+      console.log('⚡ Quick load failed or timed out for team route, showing loading state');
+    }
+  }
   
   if (!dataLoaded) {
     // Show loading state
