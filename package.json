@@ -19,13 +19,15 @@
         "axios": "^1.9.0",
         "dotenv": "^16.5.0",
         "ejs": "^3.1.10",
-        "express": "^5.1.0"
+        "express": "^5.1.0",
+        "sqlite3": "^5.1.7"
     },
     "devDependencies": {
         "@types/axios": "^0.9.36",
         "@types/ejs": "^3.1.5",
         "@types/express": "^5.0.1",
         "@types/node": "^20.12.12",
+        "@types/sqlite3": "^3.1.11",
         "autoprefixer": "^10.4.21",
         "csso-cli": "^4.0.2",
         "postcss": "^8.5.3",

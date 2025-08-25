@@ -86,7 +86,7 @@ The OLS Viikkopelit system is a **microservice architecture** consisting of two 
 - **Module**: `admin_app/src/admin_app.ts`
 - **Endpoint**: `/api/internal/latest-games-data`
 - **Security**: Protected by `API_ACCESS_KEY`
-- **Function**: Serves `extracted_games_output.json` to authorized clients
+- **Function**: Serves game data from SQLite database to authorized clients
 
 ### Phase 3: Data Consumption (Main Viewer App)
 
@@ -96,20 +96,20 @@ The OLS Viikkopelit system is a **microservice architecture** consisting of two 
 - **Action**: Click "Reload Data from Shared Storage" button
 - **File**: `src/app.ts` (Express route handler)
 
-#### Step 8: Data Fetching
+#### Step 8: Data Fetching & Database Storage
 - **Module**: `src/app.ts`
-- **Technology**: Axios HTTP client
+- **Technology**: Axios HTTP client, SQLite database
 - **Process**:
   1. Make authenticated API call to admin app
   2. Request URL: `https://ols-viikkopelit-admin.fly.dev/api/internal/latest-games-data`
   3. Include `API_ACCESS_KEY` in headers
-  4. Download `extracted_games_output.json`
-  5. Save to local persistent storage: `/data/app_files/extracted_games_output.json`
+  4. Receive game data from admin app's database
+  5. Save to local SQLite database: `/data/app_files/games.db`
 
 #### Step 9: Data Loading & Display
-- **Module**: `src/app.ts`
+- **Module**: `src/app.ts` with `src/database.ts`
 - **Process**:
-  1. Reload game data from local file
+  1. Load game data from local SQLite database
   2. Parse and structure for display
   3. Group teams by league/season year
   4. Update in-memory data structures
@@ -127,6 +127,7 @@ The OLS Viikkopelit system is a **microservice architecture** consisting of two 
 ### Backend Technologies
 - **Runtime**: Node.js 22 Alpine (LTS, zero vulnerabilities)
 - **Framework**: Express.js with TypeScript
+- **Database**: SQLite (via sqlite3) - both apps use local SQLite databases
 - **Template Engine**: EJS (Embedded JavaScript)
 - **Styling**: Tailwind CSS with critical CSS inlining
 - **HTTP Client**: Axios
@@ -172,6 +173,7 @@ The OLS Viikkopelit system is a **microservice architecture** consisting of two 
 ```
 ├── src/
 │   ├── app.ts              # Main Express server logic
+│   ├── database.ts         # SQLite database management
 │   └── input.css           # Tailwind CSS input
 ├── views/
 │   ├── index.ejs           # Main game display page
@@ -181,7 +183,7 @@ The OLS Viikkopelit system is a **microservice architecture** consisting of two 
 │   ├── css/style.css       # Compiled Tailwind CSS
 │   └── images/             # Field maps and responsive images
 ├── persistent_app_files/
-│   └── extracted_games_output.json # Local game data cache
+│   └── games.db            # Local SQLite database
 ├── Dockerfile              # Optimized container build
 └── fly.toml               # Fly.io deployment config
 ```
@@ -191,6 +193,7 @@ The OLS Viikkopelit system is a **microservice architecture** consisting of two 
 admin_app/
 ├── src/
 │   ├── admin_app.ts        # Express server & API endpoints
+│   ├── database.ts         # SQLite database management
 │   ├── updateLatestPdf.ts  # Puppeteer web scraping
 │   ├── pdfParser.ts        # PDF to JSON conversion
 │   ├── dataExtractor.ts    # Main data extraction logic
@@ -202,8 +205,8 @@ admin_app/
 │   └── admin_dashboard.ejs # Admin control interface
 ├── persistent_app_files/
 │   ├── downloaded_pdfs/    # Raw PDF storage
-│   ├── parsed_pdf_data.json # Intermediate parsed data
-│   └── extracted_games_output.json # Final structured data
+│   ├── games.db            # SQLite database with games and processing history
+│   └── games_summary.txt   # Human-readable summary
 ├── Dockerfile              # Puppeteer-enabled container
 └── fly.toml               # Fly.io deployment config
 ```

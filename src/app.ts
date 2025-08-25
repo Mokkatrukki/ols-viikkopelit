@@ -50,7 +50,11 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
-import axios from 'axios'; // Added for making HTTP requests
+import { getDatabase, Game, GameData } from './database.js'; // Import database functionality
+
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Define the GameInfo interface (can be moved to a shared types file later)
 interface GameInfo {
@@ -157,105 +161,14 @@ function getGroupedTeams(allGamesData: GameInfo[]): GroupedTeamEntry[] {
     return result;
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+// Initialize Express app and database
 const app = express();
+let database: any = null; // Database instance
 
-// Health check endpoint for Fly.io
-app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
-});
-
-const PORT = process.env.PORT || 3002;
-
-const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
-// Path to the JSON data
-const jsonDataPath = path.join(PERSISTENT_STORAGE_BASE_PATH, 'extracted_games_output.json');
-
-interface ExtractedData {
-  documentDate: string | null;
-  games: GameInfo[];
-  sourceFile?: string; // Optional: to store the name of the PDF it came from
-}
-
-let allGames: GameInfo[] = [];
-let documentDate: string | null = null;
-let sourceFile: string | null = null; // To store the source PDF filename
-let cachedGroupedTeams: GroupedTeamEntry[] = [];
-let dataLoaded = false; // Track if data is loaded
-
-// Function to load or reload game data
-async function loadGameData() {
-    const startTime = Date.now();
-    console.log('🔄 Starting loadGameData()...');
-    
-    try {
-        // Ensure the directory exists before trying to read (especially for first run)
-        const dataDir = path.dirname(jsonDataPath);
-        if (!fs.existsSync(dataDir)){
-            fs.mkdirSync(dataDir, { recursive: true });
-            console.log(`Created data directory: ${dataDir}`);
-        }
-
-        if (!fs.existsSync(jsonDataPath)) {
-            console.warn(`Data file not found at ${jsonDataPath}. App will start with empty data. Run updater to generate it.`);
-            allGames = [];
-            documentDate = null;
-            sourceFile = null;
-            cachedGroupedTeams = [];
-            dataLoaded = true;
-            console.log(`⚡ loadGameData() completed in ${Date.now() - startTime}ms (no data file)`);
-            return; // Exit early if file doesn't exist
-        }
-
-        const fileReadStart = Date.now();
-        const fileContent = await fs.promises.readFile(jsonDataPath, 'utf-8');
-        console.log(`📁 File read took ${Date.now() - fileReadStart}ms`);
-        
-        const parseStart = Date.now();
-        const parsedData: ExtractedData = JSON.parse(fileContent);
-        console.log(`🔧 JSON parse took ${Date.now() - parseStart}ms`);
-        
-        allGames = parsedData.games || []; // Ensure games is an array
-        documentDate = parsedData.documentDate;
-        sourceFile = parsedData.sourceFile || null; // Load source file if available
-        
-        const groupingStart = Date.now();
-        cachedGroupedTeams = getGroupedTeams(allGames);
-        console.log(`👥 Team grouping took ${Date.now() - groupingStart}ms`);
-        
-        dataLoaded = true;
-        console.log('Game data and grouped teams reloaded successfully.');
-        console.log(`Loaded ${allGames.length} games.`);
-        if (documentDate) {
-            console.log(`Document date: ${documentDate}`);
-        }
-        if (sourceFile) {
-            console.log(`Source PDF: ${sourceFile}`);
-        }
-        console.log(`⚡ loadGameData() completed in ${Date.now() - startTime}ms (total)`);
-    } catch (error) {
-        console.error('Error reading or parsing game data:', error);
-        // Don't exit, allow the app to run, maybe with a message on the page
-        allGames = [];
-        documentDate = null;
-        sourceFile = null;
-        cachedGroupedTeams = [];
-        dataLoaded = true; // Mark as loaded even if failed, to prevent infinite loading
-        console.error('Failed to load game data:', error);
-        console.log(`❌ loadGameData() failed after ${Date.now() - startTime}ms`);
-    }
-}
+// Note: All data now fetched directly from database on each request
 
 console.log('🚀 Starting OLS Viikkopelit application...');
 const appStartTime = Date.now();
-
-// Start async data load (don't wait for it)
-console.log('📊 Starting async game data load...');
-loadGameData().catch(error => {
-    console.error('� Async data loading failed:', error);
-});
 
 // Set view engine to EJS
 console.log('🎨 Setting up view engine and middleware...');
@@ -312,190 +225,113 @@ app.use(express.urlencoded({ extended: true }));
 console.log(`🎨 Middleware setup completed in ${Date.now() - middlewareStart}ms`);
 
 app.get('/', async (req: Request, res: Response) => {
-    // If data is not loaded yet, try to load it quickly
-    if (!dataLoaded) {
-        try {
-            console.log('🔄 Data not loaded, attempting quick load...');
-            await Promise.race([
-                loadGameData(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
-            ]);
-        } catch (error) {
-            console.log('⚡ Quick load failed or timed out, showing loading state');
+    try {
+        // Initialize database if not already done
+        if (!database) {
+            database = await getDatabase();
         }
-    }
-    
-    if (!dataLoaded) {
-        // Show loading state
+        
+        // Get fresh data from database
+        const gameData = await database.getCurrentGameData();
+        const groupedTeams = getGroupedTeams(gameData.games);
+        
         res.render('index', {
-            documentTitle: 'OLS Viikkopelit - Loading...',
+            documentTitle: `OLS Viikkopelit${gameData.documentDate && gameData.documentDate !== 'Unknown' ? ' - ' + gameData.documentDate : (gameData.sourceFile ? ' (' + gameData.sourceFile + ')' : '')}`,
+            groupedTeams: groupedTeams,
+            selectedTeam: null,
+            gamesForTeam: [],
+            fieldMapData,
+            loading: false
+        });
+    } catch (error) {
+        console.error('Error loading data from database:', error);
+        res.render('index', {
+            documentTitle: 'OLS Viikkopelit - Error',
             groupedTeams: [],
             selectedTeam: null,
             gamesForTeam: [],
             fieldMapData,
-            loading: true
+            loading: false,
+            error: 'Failed to load data from database'
         });
-        return;
-    }
-    
-    res.render('index', {
-        documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : (sourceFile ? ' (' + sourceFile + ')' : '')}`,
-        groupedTeams: cachedGroupedTeams, // Use cached version
-        selectedTeam: null,
-        gamesForTeam: [],
-        fieldMapData,
-        loading: false
-    });
-});
-
-// Admin page to refresh data from storage
-app.get('/admin', (req: Request, res: Response) => {
-    // This page should have a form/button that POSTs to /admin/refresh-action
-    // Trying to render 'admin.ejs'. Ensure this file exists in 'views' or change to 'ops-refresh-data.ejs'.
-    res.render('ops-refresh-data', {
-        message: req.query.message || null,
-        scheduleDate: documentDate,
-        scheduleFile: sourceFile
-    });
-});
-
-app.post('/admin/refresh-action', async (req: Request, res: Response) => {
-    console.log('Received request to refresh game data by fetching from admin service.');
-    try {
-        const adminAppDataUrl = process.env.ADMIN_APP_DATA_URL;
-        const apiKey = process.env.API_ACCESS_KEY;
-
-        if (!adminAppDataUrl || !apiKey) {
-            console.error('ADMIN_APP_DATA_URL or API_ACCESS_KEY is not set in environment variables.');
-            // Using redirect with query parameter for consistency with the original success case
-            return res.redirect('/admin?message=Failed to refresh: Admin app connection details are not configured.');
-        }
-
-        let newDataPayload: string;
-        try {
-            console.log(`Fetching latest data from admin app: ${adminAppDataUrl}`);
-            const response = await axios.get(adminAppDataUrl, {
-                headers: {
-                    'X-API-Key': apiKey
-                },
-                timeout: 15000 // 15 second timeout for the API call
-            });
-
-            if (typeof response.data === 'object' && response.data !== null) {
-                newDataPayload = JSON.stringify(response.data, null, 2);
-            } else if (typeof response.data === 'string') {
-                newDataPayload = response.data;
-            } else {
-                // Fallback for other types (e.g., number, boolean) or if response.data is null/undefined
-                console.warn('Admin app response data was not an object or string, converting to string:', response.data);
-                newDataPayload = String(response.data || ''); // Ensure it's a string, default to empty if null/undefined
-            }
-            console.log('Successfully fetched data from admin app.');
-
-        } catch (fetchError: any) {
-            console.error('Error fetching data from admin app:', fetchError.message);
-            let errorDetail = fetchError.message;
-            if (fetchError.response) {
-                errorDetail += ` (Status: ${fetchError.response.status} - Data: ${JSON.stringify(fetchError.response.data)})`;
-            }
-            return res.redirect(`/admin?message=Failed to fetch new data from admin service: ${encodeURIComponent(String(errorDetail))}`);
-        }
-
-        try {
-            const dataDir = path.dirname(jsonDataPath);
-            if (!fs.existsSync(dataDir)) {
-                fs.mkdirSync(dataDir, { recursive: true });
-            }
-            fs.writeFileSync(jsonDataPath, newDataPayload, 'utf-8');
-            console.log(`New data successfully written to ${jsonDataPath}`);
-
-            await loadGameData(); // This will update global documentDate and sourceFile
-
-            res.redirect('/admin?message=Data refreshed successfully from admin service and reloaded.');
-        } catch (writeError: any) {
-            console.error(`Error writing new data to ${jsonDataPath}:`, writeError.message);
-            return res.redirect(`/admin?message=Failed to save new data locally: ${encodeURIComponent(String(writeError.message || 'Unknown write error'))}`);
-        }
-    } catch (error: any) { // General catch block for the async route handler
-        console.error('Error in /admin/refresh-action route:', error.message);
-        res.redirect(`/admin?message=Error during refresh process: ${encodeURIComponent(String(error.message || 'Unknown refresh error'))}`);
     }
 });
 
 app.get('/team/:teamName', async (req: Request, res: Response) => {
   const teamName = decodeURIComponent(req.params.teamName);
   
-  // If data is not loaded yet, try to load it quickly
-  if (!dataLoaded) {
-    try {
-      console.log('🔄 Data not loaded for team route, attempting quick load...');
-      await Promise.race([
-        loadGameData(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
-      ]);
-    } catch (error) {
-      console.log('⚡ Quick load failed or timed out for team route, showing loading state');
+  try {
+    // Initialize database if not already done
+    if (!database) {
+      database = await getDatabase();
     }
-  }
-  
-  if (!dataLoaded) {
-    // Show loading state
-    res.render('index', {
-      documentTitle: 'OLS Viikkopelit - Loading...',
-      groupedTeams: [],
-      selectedTeam: teamName,
-      gamesForTeam: [],
-      fieldMapData,
-      loading: true
-    });
-    return;
-  }
-  
-  let gamesForTeam = allGames
-    .filter(game => game.team1 === teamName || game.team2 === teamName)
-    .map(game => {
+    
+    // Get games for this team directly from database
+    const teamGames = await database.getGamesForTeam(teamName);
+    
+    // Get all game data for grouped teams
+    const allGameData = await database.getCurrentGameData();
+    const groupedTeams = getGroupedTeams(allGameData.games);
+    
+    // Transform games to include opponent and other display logic
+    let gamesForTeam = teamGames.map((game: any) => {
       const opponent = game.team1 === teamName ? game.team2 : game.team1;
       return { ...game, opponent: opponent || 'VASTUSTAJA PUUTTUU' };
     });
 
-  // Sort games by start time
-  gamesForTeam.sort((a, b) => {
-    const startTimeA = getGameStartTimeInMinutes(a);
-    const startTimeB = getGameStartTimeInMinutes(b);
-    if (isNaN(startTimeA) || isNaN(startTimeB)) return 0; // Keep order if times are invalid
-    return startTimeA - startTimeB;
-  });
+    // Sort games by start time
+    gamesForTeam.sort((a: any, b: any) => {
+      const startTimeA = getGameStartTimeInMinutes(a);
+      const startTimeB = getGameStartTimeInMinutes(b);
+      if (isNaN(startTimeA) || isNaN(startTimeB)) return 0; // Keep order if times are invalid
+      return startTimeA - startTimeB;
+    });
 
-  // Calculate break time between games
-  for (let i = 1; i < gamesForTeam.length; i++) {
-    const currentGame = gamesForTeam[i] as any; // Use any to add new property
-    const previousGame = gamesForTeam[i - 1];
+    // Calculate break time between games
+    for (let i = 1; i < gamesForTeam.length; i++) {
+      const currentGame = gamesForTeam[i] as any; // Use any to add new property
+      const previousGame = gamesForTeam[i - 1];
 
-    const previousGameEndTimeParts = previousGame.time.split(' - ');
-    if (previousGameEndTimeParts.length === 2) {
-        const previousGameEndTimeMinutes = parseTimeToMinutes(previousGameEndTimeParts[1]);
-        const currentGameStartTimeMinutes = getGameStartTimeInMinutes(currentGame);
+      const previousGameEndTimeParts = previousGame.time.split(' - ');
+      if (previousGameEndTimeParts.length === 2) {
+          const previousGameEndTimeMinutes = parseTimeToMinutes(previousGameEndTimeParts[1]);
+          const currentGameStartTimeMinutes = getGameStartTimeInMinutes(currentGame);
 
-        if (!isNaN(previousGameEndTimeMinutes) && !isNaN(currentGameStartTimeMinutes)) {
-            const breakDuration = currentGameStartTimeMinutes - previousGameEndTimeMinutes;
-            if (breakDuration > 0) {
-                currentGame.breakDurationMinutes = breakDuration;
-            }
-        }
+          if (!isNaN(previousGameEndTimeMinutes) && !isNaN(currentGameStartTimeMinutes)) {
+              const breakDuration = currentGameStartTimeMinutes - previousGameEndTimeMinutes;
+              if (breakDuration > 0) {
+                  currentGame.breakDurationMinutes = breakDuration;
+              }
+          }
+      }
     }
-  }
 
-  res.render('index', { 
-    documentTitle: `OLS Viikkopelit${documentDate ? ' - ' + documentDate : ''}`, 
-    groupedTeams: cachedGroupedTeams, 
-    selectedTeam: teamName, 
-    gamesForTeam, 
-    fieldMapData,
-    loading: false
-  });
+    res.render('index', { 
+      documentTitle: `OLS Viikkopelit${allGameData.documentDate && allGameData.documentDate !== 'Unknown' ? ' - ' + allGameData.documentDate : ''}`, 
+      groupedTeams: groupedTeams, 
+      selectedTeam: teamName, 
+      gamesForTeam, 
+      fieldMapData,
+      loading: false
+    });
+  } catch (error) {
+    console.error('Error loading team data from database:', error);
+    res.render('index', {
+      documentTitle: 'OLS Viikkopelit - Error',
+      groupedTeams: [],
+      selectedTeam: teamName,
+      gamesForTeam: [],
+      fieldMapData,
+      loading: false,
+      error: 'Failed to load team data from database'
+    });
+  }
 });
 
+// Note: Admin refresh functionality removed - data flows automatically through database
+
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
-  console.log(`🌐 Server is running at http://localhost:${PORT}`);
-  console.log(`🏁 Total startup time: ${Date.now() - appStartTime}ms`);
-}); 
+    console.log(`⚽ Main app server running on http://localhost:${PORT}`);
+    console.log(`🎉 App startup completed in ${Date.now() - appStartTime}ms`);
+});
