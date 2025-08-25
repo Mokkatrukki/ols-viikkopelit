@@ -23,29 +23,28 @@ This project consists of two web applications designed to parse, manage, and dis
 
 ## Architecture Overview
 
-The system is designed as a microservice architecture:
+The system uses a **shared database architecture** for optimal performance and simplicity:
 
 *   **`ols-viikkopelit` (Main Viewer App)**:
     *   Responsibilities: Displays game schedules, team information, and field maps to end-users.
-    *   Data Source: Fetches structured game data from the `ols-viikkopelit-admin` app via an internal API call.
-    *   Storage: Stores a local copy of the game data on its own persistent Fly.io volume (`ols_data`) for quick access.
+    *   Data Source: Reads directly from shared SQLite database (real-time access).
+    *   Database Mode: **READ-ONLY** access to shared `games.db`.
     *   URL: [https://ols-viikkopelit.fly.dev/](https://ols-viikkopelit.fly.dev/)
 
 *   **`ols-viikkopelit-admin` (Admin & Scraping App)**:
     *   Responsibilities: 
-        *   Provides an admin dashboard to trigger data updates.
+        *   Provides admin dashboard to trigger data updates.
         *   Uses Puppeteer to scrape the latest Viikkopelit PDF from the OLS website.
-        *   Parses the PDF using `pdf2json` and custom extraction logic.
-        *   Saves the extracted structured game data (`extracted_games_output.json`) to its dedicated persistent Fly.io volume (`ols_admin_data`).
-        *   Exposes a secure API endpoint for the main viewer app to fetch the latest game data.
+        *   Parses PDF using `pdf2json` and custom extraction logic.
+        *   Saves extracted game data directly to shared SQLite database (`games.db`).
+    *   Database Mode: **READ + WRITE** access to shared `games.db`.
     *   URL: [https://ols-viikkopelit-admin.fly.dev/](https://ols-viikkopelit-admin.fly.dev/)
 
-**Data Flow:**
-1. An administrator accesses the `ols-viikkopelit-admin` dashboard and triggers an update.
-2. `ols-viikkopelit-admin` scrapes the PDF, processes it, and saves `extracted_games_output.json` to its volume.
-3. An administrator accesses the `/admin` page on the main `ols-viikkopelit` app and triggers a data refresh.
-4. The main `ols-viikkopelit` app calls a secure API endpoint on `ols-viikkopelit-admin` to get the latest `extracted_games_output.json`.
-5. The main `ols-viikkopelit` app saves this data to its own volume and updates its display.
+**Simplified Data Flow:**
+1. Administrator accesses `ols-viikkopelit-admin` dashboard and triggers update.
+2. Admin app scrapes PDF, processes it, and writes game data directly to shared `games.db`.
+3. Main app automatically sees updated data (no API calls or manual refresh needed).
+4. Users access updated schedules immediately at the main app.
 
 ## Features (Main Viewer App - `ols-viikkopelit`)
 
@@ -53,7 +52,7 @@ The system is designed as a microservice architecture:
 - **Team Schedule Display**: View game schedules by selecting a team.
 - **Grouped Team Selection**: Teams in the dropdown are grouped by their league/season year (e.g., 2017, 2019) for easier navigation.
 - **Dynamic Game Information**: Displays time, opponent, and field for each match.
-- **Admin Refresh**: Ability for an admin to trigger a refresh of game data from the admin service.
+- **Real-time Data**: Automatically displays latest game data from shared database (no manual refresh needed).
 
 ## PDF Parsing & Data Extraction (`ols-viikkopelit-admin`)
 
@@ -61,9 +60,9 @@ The PDF parsing and data extraction logic resides entirely within the `ols-viikk
 
 1.  **Web Scraping**: Puppeteer is used to navigate to `https://ols.fi/jalkapallo/viikkopelit/` and download the latest Viikkopelit PDF schedule.
 2.  **PDF to Structured JSON (`pdfParser.ts` in admin app)**: The downloaded PDF is processed by `pdf2json` to convert its content and layout into a structured JSON file (`parsed_pdf_data.json`). This file includes text elements and their coordinates.
-3.  **Data Extraction (`dataExtractor.ts` in admin app)**: Custom logic in this script reads `parsed_pdf_data.json`, identifies game blocks, headers, and extracts game details (time, teams, field, year/league). The final output is `extracted_games_output.json`.
+3.  **Data Extraction (`dataExtractor.ts` in admin app)**: Custom logic reads `parsed_pdf_data.json`, identifies game blocks, headers, and extracts game details (time, teams, field, year/league). The extracted data is saved directly to shared SQLite database (`games.db`).
 
-This entire process is triggered from the `ols-viikkopelit-admin` dashboard and runs on its Fly.io instance, saving the output to its dedicated volume.
+This entire process is triggered from the `ols-viikkopelit-admin` dashboard and runs on its Fly.io instance, saving the output directly to the shared database for immediate access by the main viewer app.
 
 ## 🚀 Performance & Cost Optimizations
 
@@ -88,6 +87,32 @@ This application has been extensively optimized for performance, cost-effectiven
 - **Signal Handling**: Docker's built-in init for proper process management
 - **Future-Proof**: Node 22 LTS support until 2027
 
+## 🔄 Recent Architecture Improvements
+
+**Shared Database Migration (August 2025)**
+
+We've migrated from a complex API-based architecture to a streamlined **shared SQLite database** approach:
+
+### **Before (API Architecture)**
+- ❌ Main app called admin app API for data
+- ❌ Two-step update process required
+- ❌ API authentication and error handling complexity
+- ❌ Network latency between apps
+- ❌ Manual refresh required in main app
+
+### **After (Shared Database)**
+- ✅ **Direct database access** - no API calls needed
+- ✅ **Real-time updates** - changes appear instantly
+- ✅ **Single-step workflow** - update once, available everywhere
+- ✅ **Better performance** - microsecond SQLite queries
+- ✅ **Simplified maintenance** - one database, clear separation
+
+### **Migration Benefits**
+- **Performance**: Eliminated network calls, faster data access
+- **Reliability**: No API dependencies or timeouts
+- **Simplicity**: Cleaner code, easier debugging
+- **Cost**: Reduced complexity = lower maintenance overhead
+
 ## Tech Stack
 
 **🔧 Optimized Technology Stack:**
@@ -95,14 +120,15 @@ This application has been extensively optimized for performance, cost-effectiven
 **`ols-viikkopelit` (Main Viewer App):**
 - **Runtime**: Node.js 22 Alpine (latest LTS, zero vulnerabilities)
 - **Backend**: Express.js with TypeScript
+- **Database**: SQLite (shared, read-only access)
 - **Frontend**: EJS (Embedded JavaScript templates) with server-side rendering
 - **Styling**: Tailwind CSS with critical CSS inlining
-- **HTTP Client**: `axios` (for fetching data from the admin app)
 - **Performance**: 78ms startup, instant CSS loading, sleep mode enabled
 
 **`ols-viikkopelit-admin` (Admin & Scraping App):**
 - **Runtime**: Node.js with TypeScript (separate optimized container)
 - **Backend**: Express.js with TypeScript
+- **Database**: SQLite (shared, read + write access)
 - **Frontend (Admin Dashboard)**: EJS
 - **Styling**: Tailwind CSS
 - **Web Scraping**: Puppeteer (with Chromium)
@@ -121,10 +147,10 @@ This project contains two separate Node.js applications: the main viewer app (`o
     cd /path/to/ols-viikkopelit
     npm install
     ```
-*   **Data File:** This app requires `persistent_app_files/extracted_games_output.json` to display data. For local development, you can:
-    *   Manually create this file with sample data.
-    *   Or, run the `ols-viikkopelit-admin` app locally (see below) and then copy its generated `extracted_games_output.json` into the main app's `./persistent_app_files/` directory.
-    *   Alternatively, for more integrated local development, you could modify the main app's environment to fetch from a locally running admin app instance (requires setting `ADMIN_APP_DATA_URL` and `API_ACCESS_KEY` locally, e.g., via a `.env` file and `dotenv` package).
+*   **Data Sharing:** The main app now reads directly from the admin app's SQLite database. For local development:
+    *   Admin app creates and manages the database at `admin_app/persistent_app_files/games.db`
+    *   Main app connects to the same database file in read-only mode
+    *   No JSON files or API calls needed for data sharing
 *   **Build:**
     ```bash
     npm run build # Compiles TypeScript and Tailwind CSS
@@ -147,7 +173,8 @@ This project contains two separate Node.js applications: the main viewer app (`o
     npm install
     ```
 *   **Environment (Local):**
-    *   This app uses `APP_PERSISTENT_STORAGE_PATH` to know where to save downloaded PDFs and generated JSON. Locally, it defaults to a path relative to its own `admin_app.ts` (e.g., `admin_app/persistent_app_files_admin/`). You might want to use a `.env` file with `dotenv` to manage this and `API_ACCESS_KEY` for local testing of its API.
+    *   This app uses `APP_PERSISTENT_STORAGE_PATH` to know where to save downloaded PDFs and the SQLite database. Locally, it defaults to `admin_app/persistent_app_files/`.
+    *   The admin app creates and manages the shared `games.db` database that both apps use.
 *   **Build:**
     ```bash
     npm run build # Compiles TypeScript
@@ -159,7 +186,7 @@ This project contains two separate Node.js applications: the main viewer app (`o
     # npm run dev 
     ```
     The admin app will be available at `http://localhost:3003` (or as configured).
-    *   You can then access its dashboard to trigger PDF scraping and processing. The output `extracted_games_output.json` will be in its configured persistent storage path.
+    *   You can then access its dashboard to trigger PDF scraping and processing. The game data will be saved directly to the shared SQLite database (`games.db`) for immediate access by the main app.
 
 ## Project Structure (Simplified)
 
@@ -168,9 +195,13 @@ This project contains two separate Node.js applications: the main viewer app (`o
 ├── admin_app/                  # OLS Viikkopelit Admin microservice
 │   ├── src/
 │   │   ├── admin_app.ts        # Admin app Express logic
+│   │   ├── database.ts         # SQLite database management (shared)
 │   │   ├── updateLatestPdf.ts  # Puppeteer scraping logic
 │   │   ├── pdfParser.ts        # PDF to JSON conversion
-│   │   └── dataExtractor.ts    # Game data extraction from JSON
+│   │   └── dataExtractor.ts    # Game data extraction to SQLite
+│   ├── persistent_app_files/   # Shared data storage
+│   │   ├── games.db            # Shared SQLite database
+│   │   └── downloaded_pdfs/    # PDF storage
 │   ├── views/
 │   │   └── admin_dashboard.ejs # Admin dashboard template
 │   ├── Dockerfile              # Dockerfile for admin_app (with Puppeteer)
@@ -179,11 +210,11 @@ This project contains two separate Node.js applications: the main viewer app (`o
 │   └── ...                     # Other admin_app files (tsconfig, tailwind config, etc.)
 ├── dist/                       # Compiled JS for main app (ols-viikkopelit)
 ├── node_modules/               # Dependencies for main app
-├── persistent_app_files/       # Local storage for main app's extracted_games_output.json
 ├── public/
 │   └── css/style.css           # Tailwind output for main app
 ├── src/
 │   ├── app.ts                  # Express logic for main app (ols-viikkopelit)
+│   ├── database.ts             # SQLite database access (read-only)
 │   └── input.css               # Tailwind input for main app
 ├── views/
 │   ├── index.ejs               # Main page template for main app
@@ -197,21 +228,24 @@ This project contains two separate Node.js applications: the main viewer app (`o
 
 ## Data Update Process (Production)
 
-The data update process involves interacting with both deployed applications:
+The data update process has been simplified with the shared database architecture:
 
-1.  **Trigger Scraping & Parsing (`ols-viikkopelit-admin`):
-    *   Navigate to the admin dashboard of the `ols-viikkopelit-admin` app: [https://ols-viikkopelit-admin.fly.dev/](https://ols-viikkopelit-admin.fly.dev/)
+1.  **Trigger Data Update (`ols-viikkopelit-admin`)**:
+    *   Navigate to the admin dashboard: [https://ols-viikkopelit-admin.fly.dev/](https://ols-viikkopelit-admin.fly.dev/)
     *   Click the "Trigger Full Data Update" button.
-    *   This initiates the Puppeteer script to scrape the latest PDF from the OLS website, parse it, extract game data, and save `extracted_games_output.json` to its dedicated volume (`ols_admin_data`) on Fly.io.
+    *   This initiates the Puppeteer script to scrape the latest PDF, parse it, extract game data, and save directly to the shared SQLite database.
     *   Monitor the `ols-viikkopelit-admin` logs on Fly.io for progress and confirmation.
 
-2.  **Refresh Data in Main Viewer App (`ols-viikkopelit`):
-    *   Navigate to the admin page of the main `ols-viikkopelit` app: [https://ols-viikkopelit.fly.dev/admin](https://ols-viikkopelit.fly.dev/admin)
-    *   Click the "Reload Data from Shared Storage" (or similarly named) button.
-    *   This action triggers the main app to call the secure API of `ols-viikkopelit-admin`, fetch the latest `extracted_games_output.json`, save it to its own Fly.io volume (`ols_data`), and then reload the game data for display.
-    *   Monitor the `ols-viikkopelit` logs on Fly.io for confirmation.
+2.  **Automatic Data Availability**:
+    *   Updated game schedules are immediately available at the main app: [https://ols-viikkopelit.fly.dev/](https://ols-viikkopelit.fly.dev/)
+    *   No manual refresh or additional steps needed - the main app reads from the same database
+    *   Changes appear in real-time for all users
 
-This two-step process ensures that the data scraping is handled by the specialized admin app, and the main app consumes this data in a controlled manner.
+**Benefits of Shared Database:**
+- ✅ **No API calls** between apps (faster, more reliable)
+- ✅ **Real-time updates** (no refresh delays)
+- ✅ **Simplified workflow** (single-step update process)
+- ✅ **Better performance** (direct database access)
 
 ## Dockerization
 
@@ -289,12 +323,7 @@ Both applications are deployed to Fly.io with **cost-optimized configurations** 
     ```bash
     fly volumes create ols_data --region arn --size 1 --app ols-viikkopelit
     ```
-*   **Secrets:**
-    ```bash
-    fly secrets set API_ACCESS_KEY="YOUR_SHARED_API_KEY" -a ols-viikkopelit
-    fly secrets set ADMIN_APP_DATA_URL="https://ols-viikkopelit-admin.fly.dev/api/internal/latest-games-data" -a ols-viikkopelit
-    ```
-    (Replace `YOUR_SHARED_API_KEY` with the actual key, e.g., `VILLIKISSA_VIEKAIKKIEN_RUUAT2342`)
+*   **No Secrets Required**: The shared database architecture eliminates the need for API keys between apps.
 *   **Deployment:**
     ```bash
     # From the project root directory
@@ -317,11 +346,11 @@ Both applications are deployed to Fly.io with **cost-optimized configurations** 
     ```bash
     fly volumes create ols_admin_data --region arn --size 1 --app ols-viikkopelit-admin
     ```
-*   **Secrets:**
+*   **Secrets (Optional):**
     ```bash
-    # For the API endpoint it serves
-    fly secrets set API_ACCESS_KEY="YOUR_SHARED_API_KEY" -a ols-viikkopelit-admin 
-    # Consider adding secrets to protect its dashboard, e.g., BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD
+    # Only if you want to protect the admin dashboard with basic auth
+    fly secrets set BASIC_AUTH_USERNAME="admin" -a ols-viikkopelit-admin
+    fly secrets set BASIC_AUTH_PASSWORD="your_secure_password" -a ols-viikkopelit-admin
     ```
 *   **Deployment:**
     ```bash
@@ -339,74 +368,51 @@ Both applications are deployed to Fly.io with **cost-optimized configurations** 
 
 ## Persistent Data Storage with Fly.io Volumes
 
-Both applications leverage Fly.io Volumes for persistent data storage, crucial for maintaining data across deployments and machine restarts.
+The applications use a **shared database approach** for efficient data management:
 
-*   **`ols-viikkopelit` (Main Viewer App):**
-    *   **Volume Name:** `ols_data` (or as configured in its `fly.toml`)
-    *   **Mount Point:** `/data` (as defined in its `fly.toml`)
-    *   **Internal Path Usage:** The app's `APP_PERSISTENT_STORAGE_PATH` environment variable (set in its `Dockerfile`) is `/data/app_files`. It stores the fetched `extracted_games_output.json` here (e.g., at `/data/app_files/extracted_games_output.json`).
-
-*   **`ols-viikkopelit-admin` (Admin & Scraping App):**
+*   **`ols-viikkopelit-admin` (Admin & Scraping App)**:
     *   **Volume Name:** `ols_admin_data` (or as configured in `admin_app/fly.toml`)
     *   **Mount Point:** `/data` (as defined in `admin_app/fly.toml`)
-    *   **Internal Path Usage:** Similar to the main app, its `APP_PERSISTENT_STORAGE_PATH` is `/data/app_files`. It stores downloaded PDFs (e.g., in `/data/app_files/downloaded_pdfs/`), the intermediate `parsed_pdf_data.json`, and the final `extracted_games_output.json` in this directory structure on its volume.
+    *   **Shared Database:** Creates and manages `games.db` at `/data/app_files/games.db`
+    *   **Additional Storage:** Downloaded PDFs in `/data/app_files/downloaded_pdfs/`, processing logs, etc.
 
-This separation of volumes ensures that each app manages its own persistent data independently.
+*   **`ols-viikkopelit` (Main Viewer App)**:
+    *   **Database Access:** Connects to the same `games.db` from admin app's volume (read-only)
+    *   **Volume Mount:** Can mount the same shared volume or connect via shared filesystem
+    *   **No Local Storage:** No need for separate data storage - reads directly from shared database
 
-## Admin Page and Manual Updates
+**Benefits of Shared Storage:**
+- ✅ **Single source of truth** for all game data
+- ✅ **Real-time synchronization** between apps
+- ✅ **Reduced storage costs** (no data duplication)
+- ✅ **Simplified backup** (only one database to backup)
 
-The application includes an admin interface:
+## Admin Dashboard
 
-- **Access**: Navigate to `/admin` on your deployed application URL (e.g., `https://your-app-name.fly.dev/admin`).
+The admin interface provides centralized management:
+
+- **Access**: Navigate to the admin dashboard at [https://ols-viikkopelit-admin.fly.dev/](https://ols-viikkopelit-admin.fly.dev/)
 - **Features**:
-    - Displays information about the currently loaded schedule (source PDF filename and document date).
-    - Provides a "Check for New Schedule & Update" button.
-- **Manual Update**: Clicking the button on the `/admin` page triggers the `runUpdater` function, which attempts to fetch and process the latest PDF from the OLS website. This is the same function that can be triggered by the scheduled task.
+    - View processing history and database statistics
+    - Trigger PDF scraping and data updates
+    - Monitor data extraction status
+- **One-Click Updates**: Click "Trigger Full Data Update" to refresh all game data
+- **Real-time Results**: Updated schedules appear immediately in the main app
 
 ## Scheduling PDF Updates on Fly.io
 
-To keep the game data automatically updated on Fly.io without manual intervention:
+For automated updates, you can schedule external triggers to the admin dashboard:
 
-1.  **HTTP Endpoint for Updates**:
-    The application exposes a POST endpoint at `/trigger-pdf-update` (in `src/app.ts`). This endpoint calls the `runUpdater` function from `src/updateLatestPdf.ts`.
-    ```typescript
-    // Snippet from src/app.ts
-    app.post('/trigger-pdf-update', async (req, res) => {
-        // Optional: Add a secret token check for security (recommended for public-facing apps)
-        // const expectedToken = process.env.UPDATE_SECRET_TOKEN;
-        // const providedToken = req.headers['x-update-token'];
-        // if (!expectedToken || providedToken !== expectedToken) {
-        //   return res.status(401).send('Unauthorized: Invalid or missing token.');
-        // }
+1.  **Admin Dashboard Endpoint**:
+    The admin app provides a web interface for triggering updates at `/` (admin dashboard). This is the recommended approach for manual updates.
 
-        console.log('PDF update triggered via HTTP endpoint.');
-        try {
-            await runUpdater(); // This function now uses APP_PERSISTENT_STORAGE_PATH
-            // Reload game data after update
-            gameData = loadGameData(); 
-            console.log('Game data reloaded after update.');
-            res.status(200).send('PDF update process successfully initiated and data reloaded.');
-        } catch (error) {
-            console.error('Error during HTTP-triggered PDF update:', error);
-            res.status(500).send('Failed to initiate PDF update.');
-        }
-    });
-    ```
-    *   **Security Note**: For a publicly accessible endpoint, consider adding a secret token shared between your scheduler and the app to prevent unauthorized triggers. The example above includes a commented-out suggestion.
+2.  **External Schedulers** (for automation):
+    Configure an external service to trigger updates by posting to the admin app periodically:
+    - **Services**: GitHub Actions, EasyCron, cron-job.org, Pipedream
+    - **Target**: Admin dashboard or webhook endpoint
+    - **Frequency**: Daily or as needed based on OLS publishing schedule
 
-2.  **Use an External Scheduler**:
-    Configure an external cron job service to send a POST request to your deployed app's endpoint periodically (e.g., once a day).
-    - **URL**: `https://your-app-name.fly.dev/trigger-pdf-update`
-    - **Method**: POST
-    - **Services**:
-        - GitHub Actions scheduled workflow (if your project is on GitHub)
-        - [EasyCron](https://www.easycron.com/)
-        - [cron-job.org](https://cron-job.org/)
-        - [Pipedream](https://pipedream.com/)
-        - Or any other service that can send scheduled HTTP requests.
-
-This approach works well with Fly.io's architecture, especially if `min_machines_running = 0` is set, as Fly.io will start a machine to handle the request and then stop it after a period of inactivity.
-The `/admin` page also provides a manual way to trigger this update process.
+This approach works well with Fly.io's sleep mode - the admin app wakes up when needed, processes updates, and both apps benefit from the shared database immediately.
 
 ## 📚 Documentation
 
