@@ -328,6 +328,16 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
   }
 });
 
+// Health check endpoint
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ 
+    status: 'UP', 
+    service: 'main-viewer',
+    database: 'shared-sqlite-readonly',
+    timestamp: new Date().toISOString() 
+  });
+});
+
 // Note: Admin refresh functionality removed - data flows automatically through database
 
 const PORT = process.env.PORT || 3002;

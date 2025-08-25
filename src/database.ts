@@ -44,187 +44,36 @@ export class MainAppDatabase {
   private dbPath: string;
 
   constructor() {
-    // Use same persistent storage path as main app
-    const persistentStoragePath = process.env.APP_PERSISTENT_STORAGE_PATH || 
-      path.join(__dirname, '../persistent_app_files');
-    this.dbPath = path.join(persistentStoragePath, 'games.db');
+    // SHARED DATABASE: Point to admin app's database
+    // In production: both apps will use shared volume/database
+    // In local dev: main app reads from admin app's database
+    const adminDbPath = process.env.SHARED_GAMES_DB_PATH || 
+      path.join(__dirname, '../admin_app/persistent_app_files/games.db');
+    
+    this.dbPath = adminDbPath;
+    console.log(`Main app will read from shared database at: ${this.dbPath}`);
   }
 
   async initialize(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.db = new sqlite3.Database(this.dbPath, (err) => {
+      // Open database in READ-ONLY mode since main app only reads
+      this.db = new sqlite3.Database(this.dbPath, sqlite3.OPEN_READONLY, (err) => {
         if (err) {
-          console.error('Failed to open database:', err);
+          console.error('Failed to open shared database:', err);
+          console.error('Make sure admin app has created the database first');
           reject(err);
           return;
         }
         
-        console.log(`Database opened at: ${this.dbPath}`);
-        this.createTables().then(resolve).catch(reject);
+        console.log(`Main app connected to shared database (READ-ONLY): ${this.dbPath}`);
+        // No need to create tables - admin app handles that
+        resolve();
       });
     });
   }
 
-  private async createTables(): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    const tables = [
-      // Games table - stores individual game records
-      `CREATE TABLE IF NOT EXISTS games (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        field TEXT NOT NULL,
-        time TEXT NOT NULL,
-        team1 TEXT NOT NULL DEFAULT '',
-        team2 TEXT NOT NULL DEFAULT '',
-        year TEXT NOT NULL,
-        game_duration TEXT NOT NULL,
-        game_type TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )`,
-      
-      // Metadata table for storing document info
-      `CREATE TABLE IF NOT EXISTS metadata (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        key TEXT NOT NULL UNIQUE,
-        value TEXT,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )`,
-      
-      // Indexes for better performance
-      `CREATE INDEX IF NOT EXISTS idx_games_team1 ON games(team1)`,
-      `CREATE INDEX IF NOT EXISTS idx_games_team2 ON games(team2)`,
-      `CREATE INDEX IF NOT EXISTS idx_games_field_time ON games(field, time)`,
-      `CREATE INDEX IF NOT EXISTS idx_games_year ON games(year)`
-    ];
-
-    for (const sql of tables) {
-      await new Promise<void>((resolve, reject) => {
-        this.db!.run(sql, (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
-    }
-
-    console.log('Database tables created/verified');
-  }
-
-  // Save games data from admin API response
-  async saveGamesData(gameData: GameData): Promise<number> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    let gamesInserted = 0;
-
-    try {
-      // Start transaction
-      await new Promise<void>((resolve, reject) => {
-        this.db!.run('BEGIN TRANSACTION', (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
-
-      // Clear existing games (we replace all data each time)
-      await new Promise<void>((resolve, reject) => {
-        this.db!.run('DELETE FROM games', (err) => {
-          if (err) reject(err);
-          else {
-            console.log('Cleared existing games from database');
-            resolve();
-          }
-        });
-      });
-
-      // Insert new games
-      for (const game of gameData.games) {
-        await new Promise<void>((resolve, reject) => {
-          this.db!.run(
-            `INSERT INTO games (field, time, team1, team2, year, game_duration, game_type)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [
-              game.field,
-              game.time,
-              game.team1 || '',
-              game.team2 || '',
-              game.year,
-              game.gameDuration,
-              game.gameType
-            ],
-            (err) => {
-              if (err) reject(err);
-              else {
-                gamesInserted++;
-                resolve();
-              }
-            }
-          );
-        });
-      }
-
-      // Update metadata
-      await this.updateMetadata('documentDate', gameData.documentDate);
-      if (gameData.sourceFile) {
-        await this.updateMetadata('sourceFile', gameData.sourceFile);
-      }
-
-      // Commit transaction
-      await new Promise<void>((resolve, reject) => {
-        this.db!.run('COMMIT', (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
-      
-      console.log(`Successfully saved ${gamesInserted} games to database`);
-      return gamesInserted;
-
-    } catch (error) {
-      // Rollback on error
-      await new Promise<void>((resolve, reject) => {
-        this.db!.run('ROLLBACK', (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
-      
-      console.error('Error saving games data:', error);
-      throw error;
-    }
-  }
-
-  // Update metadata (document date, source file)
-  private async updateMetadata(key: string, value: string): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    return new Promise((resolve, reject) => {
-      this.db!.run(
-        `INSERT OR REPLACE INTO metadata (key, value, updated_at) 
-         VALUES (?, ?, CURRENT_TIMESTAMP)`,
-        [key, value],
-        (err) => {
-          if (err) reject(err);
-          else resolve();
-        }
-      );
-    });
-  }
-
-  // Get metadata value
-  private async getMetadata(key: string): Promise<string | null> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    return new Promise((resolve, reject) => {
-      this.db!.get(
-        'SELECT value FROM metadata WHERE key = ?',
-        [key],
-        (err, row: { value: string } | undefined) => {
-          if (err) reject(err);
-          else resolve(row?.value || null);
-        }
-      );
-    });
-  }
+  // READ-ONLY OPERATIONS ONLY
+  // All write operations are handled by admin app
 
   // Get all games from database
   async getAllGames(): Promise<Game[]> {
@@ -298,13 +147,37 @@ export class MainAppDatabase {
   // Get current data for compatibility with existing code
   async getCurrentGameData(): Promise<GameData> {
     const games = await this.getAllGames();
-    const documentDate = await this.getMetadata('documentDate') || 'Unknown';
-    const sourceFile = await this.getMetadata('sourceFile');
+    
+    // Get document date from processing_log table (admin app's table)
+    let documentDate = 'Unknown';
+    let sourceFile: string | undefined;
+    
+    try {
+      const latestProcessing = await new Promise<{document_date: string, filename: string} | undefined>((resolve, reject) => {
+        this.db!.get(`
+          SELECT document_date, filename
+          FROM processing_log 
+          WHERE status = 'completed'
+          ORDER BY created_at DESC 
+          LIMIT 1
+        `, (err, row: {document_date: string, filename: string} | undefined) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+      
+      if (latestProcessing) {
+        documentDate = latestProcessing.document_date;
+        sourceFile = latestProcessing.filename;
+      }
+    } catch (error) {
+      console.warn('Could not read document metadata from processing_log:', error);
+    }
 
     return {
       documentDate,
       games,
-      sourceFile: sourceFile || undefined
+      sourceFile
     };
   }
 
