@@ -12,19 +12,22 @@
     "update-data": "node --loader ts-node/esm src/updateLatestPdf.ts",
     "parse-pdf": "node --loader ts-node/esm src/pdfParser.ts",
     "extract-data": "node --loader ts-node/esm src/dataExtractor.ts",
-    "generate-summary": "node --loader ts-node/esm src/generateGamesSummary.ts"
+    "generate-summary": "node --loader ts-node/esm src/generateGamesSummary.ts",
+    "migrate-to-db": "node --loader ts-node/esm src/migrate-to-database.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@types/ejs": "^3.1.5",
+    "@types/sqlite3": "^3.1.11",
+    "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "multer": "^2.0.1",
     "pdf2json": "^3.1.2",
     "puppeteer": "^22.9.0",
-    "dotenv": "^16.4.5"
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

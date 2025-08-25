@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getDatabase } from './database.js';
 // Debug utility function
 function debugLog(message, data) {
     const timestamp = new Date().toISOString();
@@ -142,7 +143,6 @@ function processPageLines(lines, pageWidth) {
 }
 async function main() {
     const inputPath = path.join(PERSISTENT_STORAGE_BASE_PATH, 'parsed_pdf_data.json');
-    const outputPath = path.join(PERSISTENT_STORAGE_BASE_PATH, 'extracted_games_output.json');
     console.log(`Reading PDF data from: ${inputPath}`);
     let rawPdfJson;
     try {
@@ -190,41 +190,45 @@ async function main() {
 --- Processing Page ${i + 1} ---`);
         const extractedTexts = extractTextElementsFromPage(page);
         const lines = groupElementsByLine(extractedTexts);
-        // console.log(`--- Grouped Text Lines from Page ${i + 1} ---`);
-        // lines.forEach((line, index) => {
-        //   const lineText = line.map(el => `"${el.text}" (x:${el.x.toFixed(2)})`).join(' | ');
-        //   const lineY = line.length > 0 ? line[0].y.toFixed(3) : 'N/A';
-        //   console.log(`Line ${index + 1} (y~${lineY}, items: ${line.length}): ${lineText}`);
-        // });
         const gamesFromPage = processPageLines(lines, page.Width);
         allGames.push(...gamesFromPage);
     }
     console.log(`
 Extraction finished. Found ${allGames.length} games in total.`);
-    // For inspection, print the first few games if any
     if (allGames.length > 0 || documentDate) {
         console.log("\n--- Sample Extracted Games ---");
         allGames.slice(0, 5).forEach(game => console.log(game));
-        const outputData = {
-            documentDate,
-            games: allGames,
-            sourceFile: parsedData.sourcePdfFile ? path.basename(parsedData.sourcePdfFile) : undefined // Extract and store just the filename
-        };
-        // Ensure the output directory exists before writing the final JSON
-        const outputDir = path.dirname(outputPath);
+        // Save to database
         try {
-            fs.mkdirSync(outputDir, { recursive: true }); // Use mkdirSync for simplicity here or convert main to async for await fs.promises.mkdir
-            console.log(`Directory ensured for final output: ${outputDir}`);
+            console.log('Saving data to database...');
+            const db = await getDatabase();
+            // Start a processing session
+            const sourceFileName = parsedData.sourcePdfFile ? path.basename(parsedData.sourcePdfFile) : 'unknown.pdf';
+            const processingId = await db.startProcessing(sourceFileName, documentDate || new Date().toISOString().split('T')[0]);
+            // Convert the games to database format
+            const gameData = {
+                documentDate: documentDate || 'Unknown',
+                games: allGames.map(game => ({
+                    field: game.field,
+                    time: game.time,
+                    team1: game.team1 || '',
+                    team2: game.team2 || '',
+                    year: game.year,
+                    gameDuration: game.gameDuration,
+                    gameType: game.gameType
+                }))
+            };
+            // Save games to database
+            const savedCount = await db.saveGamesData(processingId, gameData);
+            console.log(`Successfully saved ${savedCount} games to database`);
         }
-        catch (error) {
-            console.error(`Error creating directory ${outputDir} for final output:`, error);
-            // Decide if to throw or proceed if directory already exists (recursive:true handles this for mkdirSync)
+        catch (dbError) {
+            console.error('Error saving to database:', dbError);
+            throw dbError; // Re-throw since database is now our primary storage
         }
-        fs.writeFileSync(outputPath, JSON.stringify(outputData, null, 2));
-        console.log(`\nAll extracted data (including date and games) saved to ${outputPath}`);
     }
     else {
-        console.log('No games extracted and no date found, so extracted_games_output.json was not written.');
+        console.log('No games extracted and no date found, nothing to save.');
     }
 }
 main().catch(console.error);

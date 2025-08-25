@@ -1,190 +1,192 @@
 # Games Summary
-Generated on: 6/17/2025, 10:04:37 AM
+Generated on: 8/25/2025, 11:47:07 AM
 
-Total games found: 104
+Total games found: 106
 Total fields found: 16
 
 ## GARAM MASALA 1A
 
-### 2018 VP - 3 v 3 ( mv + 2 )
+### 2020 - 4 v 4 ( mv + 3 )
 
-16.45 - 17.00 - No opponent vs No opponent
-17.05 - 17.20 - ONS T2017 Valkoinen vs OLS Kreikka 18 Olympiakos
-17.25 - 17.40 - OsPa T17/18 vs OLS Kreikka 18 Olympiakos
-17.45 - 18.00 - No opponent vs No opponent
-18.05 - 18.20 - OsPa T17/18 vs ONS T2017 Valkoinen
-18.25 - 18.40 - No opponent vs No opponent
-18.45 - 19.00 - No opponent vs No opponent
+16.45 - 17.05 - OLS Belgia 20 Anderlehct vs OLS Kreikka 20 AEK
+17.10 - 17.30 - OLS Hollanti 20 Ajax vs OLS Kreikka 20 AEK
+17.35 - 17.55 - OLS Belgia 20 Anderlehct vs KKP - Nappulat 20 Sininen
+18.00 - 18.20 - OLS Hollanti 20 Ajax vs OLS Kreikka 20 Panathinaikos
+18.25 - 18.45 - KKP - Nappulat 20 Sininen vs OLS Kreikka 20 Panathinaikos
+18.50 - 19.10 - No opponent vs No opponent
 
 ## GARAM MASALA 1B
 
-### 2018 VP - 3 v 3 ( mv + 2 )
+### 2020 - 4 v 4 ( mv + 3 )
 
-16.45 - 17.00 - No opponent vs No opponent
-17.05 - 17.20 - OsPa T17/18 vs OLS Belgia 18 Genk
-17.25 - 17.40 - ONS T2017 Valkoinen vs OLS Belgia 18 Genk
-17.45 - 18.00 - No opponent vs No opponent
-18.05 - 18.20 - OLS Kreikka 18 Olympiakos vs OLS Belgia 18 Genk
-18.25 - 18.40 - No opponent vs No opponent
-18.45 - 19.00 - No opponent vs No opponent
+16.45 - 17.05 - OLS Ruotsi 20 Hammarby vs OLS Belgia 20 Brugge
+17.10 - 17.30 - OLS Ruotsi 20 Hammarby vs OLS Kreikka 20 Olympiakos
+17.35 - 17.55 - OLS Hollanti 20 PSV vs OLS Belgia 20 Brugge
+18.00 - 18.20 - KKP - Nappulat 20 Valkoinen vs OLS Kreikka 20 Olympiakos
+18.25 - 18.45 - KKP - Nappulat 20 Valkoinen vs OLS Hollanti 20 PSV
+18.50 - 19.10 - No opponent vs No opponent
 
 ## GARAM MASALA 1C
 
-### 2018 VP - 3 v 3 ( mv + 2 )
+### 2019 EP - 3 v 3 ( mv + 2 )
 
 16.45 - 17.00 - No opponent vs No opponent
-17.05 - 17.20 - OLS Hollanti 18 Feyenoord vs ONS T2017 Musta
-17.25 - 17.40 - OLS Espanja 18 Real Madrid vs ONS T2017 Musta
-17.45 - 18.00 - No opponent vs No opponent
-18.05 - 18.20 - OLS Portugali 18 Sporting vs ONS T2017 Musta
+17.05 - 17.20 - OLS Belgia 19 Anderlecht vs OLS Ruotsi 19 Malmö
+17.25 - 17.40 - OLS Belgia 19 Anderlecht vs OLS Ruotsi 19 AIK
+17.45 - 18.00 - OLS Belgia 19 Brugge vs OLS Ruotsi 19 AIK
+18.05 - 18.20 - OLS Belgia 19 Brugge vs OLS Ruotsi 19 Malmö
 18.25 - 18.40 - No opponent vs No opponent
 18.45 - 19.00 - No opponent vs No opponent
 
 ## GARAM MASALA 1D
 
-### 2018 VP - 3 v 3 ( mv + 2 )
+### 2019 EP - 3 v 3 ( mv + 2 )
 
 16.45 - 17.00 - No opponent vs No opponent
-17.05 - 17.20 - OLS Espanja 18 Real Madrid vs OLS Portugali 18 Sporting
-17.25 - 17.40 - OLS Hollanti 18 Feyenoord vs OLS Portugali 18 Sporting
+17.05 - 17.20 - OLS Kreikka 19 AEK vs OLS Belgia 19 Brugge
+17.25 - 17.40 - OLS Kreikka 19 AEK vs OLS Ruotsi 19 Malmö
 17.45 - 18.00 - No opponent vs No opponent
-18.05 - 18.20 - OLS Hollanti 18 Feyenoord vs OLS Espanja 18 Real Madrid
-18.25 - 18.40 - No opponent vs No opponent
+18.05 - 18.20 - OLS Kreikka 19 AEK vs OLS Belgia 19 Anderlecht
+18.25 - 18.40 - OLS Kreikka 19 AEK vs OLS Ruotsi 19 AIK
 18.45 - 19.00 - No opponent vs No opponent
 
 ## GARAM MASALA 2A
 
-### 2018 EP - 3 v 3 ( mv + 2 )
+### 2019 VP - 3 v 3 ( mv + 2 )
 
 16.45 - 17.00 - No opponent vs No opponent
-17.05 - 17.20 - OLS Ruotsi 18 AIK vs OLS Hollanti 18 Ajax
-17.25 - 17.40 - OLS Ruotsi 18 AIK vs OLS Belgia 18 Anderlecht
+17.05 - 17.20 - OLS Kreikka 19 Olympiakos vs OLS Hollanti 19 Ajax
+17.25 - 17.40 - OLS Kreikka 19 Olympiakos vs OLS Ruotsi 19 Örgryte
 17.45 - 18.00 - No opponent vs No opponent
-18.05 - 18.20 - OLS Hollanti 18 Ajax vs OLS Belgia 18 Anderlecht
+18.05 - 18.20 - OLS Ruotsi 19 Örgryte vs OLS Hollanti 19 Ajax
 18.25 - 18.40 - No opponent vs No opponent
 18.45 - 19.00 - No opponent vs No opponent
 
 ## GARAM MASALA 2B
 
-### 2018 EP - 3 v 3 ( mv + 2 )
+### 2019 VP - 3 v 3 ( mv + 2 )
 
 16.45 - 17.00 - No opponent vs No opponent
-17.05 - 17.20 - OLS Belgia 18 Anderlecht vs OLS Portugali 18 Porto
-17.25 - 17.40 - OLS Hollanti 18 Ajax vs OLS Portugali 18 Porto
+17.05 - 17.20 - OLS Belgia 19 Genk vs OLS Ruotsi 19 Örgryte
+17.25 - 17.40 - OLS Belgia 19 Genk vs OLS Hollanti 19 Ajax
 17.45 - 18.00 - No opponent vs No opponent
-18.05 - 18.20 - OLS Ruotsi 18 AIK vs OLS Portugali 18 Porto
+18.05 - 18.20 - OLS Belgia 19 Genk vs OLS Kreikka 19 Olympiakos
 18.25 - 18.40 - No opponent vs No opponent
 18.45 - 19.00 - No opponent vs No opponent
 
 ## GARAM MASALA 2C
 
-### 2018 EP - 3 v 3 ( mv + 2 )
+### 2019 VP - 3 v 3 ( mv + 2 )
 
 16.45 - 17.00 - No opponent vs No opponent
-17.05 - 17.20 - OLS Hollanti 18 PSV vs OLS Kreikka 18 Panathinaikos
-17.25 - 17.40 - OLS Hollanti 18 PSV vs OLS Belgia 18 Brugge
+17.05 - 17.20 - OLS Kreikka 19 Panathinaikos vs OLS Ruotsi 19 Hammarby
+17.25 - 17.40 - OLS Kreikka 19 Panathinaikos vs OLS Ruotsi 20 AIK
 17.45 - 18.00 - No opponent vs No opponent
-18.05 - 18.20 - OLS Hollanti 18 PSV vs OLS Espanja 18 Barcelona
+18.05 - 18.20 - OLS Kreikka 19 Panathinaikos vs KKP - Nappulat 19 Sininen
 18.25 - 18.40 - No opponent vs No opponent
 18.45 - 19.00 - No opponent vs No opponent
 
 ## GARAM MASALA 2D
 
-### 2018 EP - 3 v 3 ( mv + 2 )
+### 2019 VP - 3 v 3 ( mv + 2 )
 
 16.45 - 17.00 - No opponent vs No opponent
-17.05 - 17.20 - OLS Espanja 18 Barcelona vs OLS Belgia 18 Brugge
-17.25 - 17.40 - OLS Espanja 18 Barcelona vs OLS Kreikka 18 Panathinaikos
+17.05 - 17.20 - OLS Ruotsi 20 AIK vs KKP - Nappulat 19 Sininen
+17.25 - 17.40 - OLS Ruotsi 19 Hammarby vs KKP - Nappulat 19 Sininen
 17.45 - 18.00 - No opponent vs No opponent
-18.05 - 18.20 - OLS Belgia 18 Brugge vs OLS Kreikka 18 Panathinaikos
+18.05 - 18.20 - OLS Ruotsi 19 Hammarby vs OLS Ruotsi 20 AIK
 18.25 - 18.40 - No opponent vs No opponent
 18.45 - 19.00 - No opponent vs No opponent
 
 ## HEINÄPÄÄN TEKONURMI A
 
-### 2016 2 - 4 v 4 ( mv + 3 )
+### 2017 1 - 4 v 4 ( mv + 3 )
 
-16.45 - 17.05 - No opponent vs No opponent
-17.10 - 17.30 - OLS Kreikka 16 Olympiakos vs OsPa P1617 Valkoinen
-17.35 - 17.55 - OLS Kreikka 16 Olympiakos vs OLS Portugali 16 Braga
-18.00 - 18.20 - No opponent vs No opponent
-18.25 - 18.45 - OLS Kreikka 16 Olympiakos vs KKP 16 Sininen
+16.45 - 17.05 - OLS Ruotsi 17 AIK vs OLS Hollanti 17 Ajax
+17.10 - 17.30 - OLS Ruotsi 17 AIK vs OLS Belgia 17 Anderlecht
+17.35 - 17.55 - OLS Kreikka 17 AEK vs OLS Belgia 17 Brugge
+18.00 - 18.20 - OLS Kreikka 17 AEK vs OLS Ruotsi 17 AIK
+18.25 - 18.45 - OLS Belgia 17 Brugge vs OLS Hollanti 17 Ajax
 18.50 - 19.10 - No opponent vs No opponent
 19.15 - 19.35 - No opponent vs No opponent
 
 ## HEINÄPÄÄN TEKONURMI B
 
-### 2016 2 - 4 v 4 ( mv + 3 )
+### 2017 1 - 4 v 4 ( mv + 3 )
 
-16.45 - 17.05 - No opponent vs No opponent
-17.10 - 17.30 - OLS Portugali 16 Braga vs KKP 16 Sininen
-17.35 - 17.55 - OsPa P1617 Valkoinen vs KKP 16 Sininen
+16.45 - 17.05 - OLS Belgia 17 Anderlecht vs OLS Kreikka 17 AEK
+17.10 - 17.30 - KKP P8 Keltainen vs OLS Belgia 17 Brugge
+17.35 - 17.55 - KKP P8 Keltainen vs OLS Hollanti 17 Ajax
 18.00 - 18.20 - No opponent vs No opponent
-18.25 - 18.45 - OsPa P1617 Valkoinen vs OLS Portugali 16 Braga
+18.25 - 18.45 - OLS Belgia 17 Anderlecht vs KKP P8 Keltainen
 18.50 - 19.10 - No opponent vs No opponent
 19.15 - 19.35 - No opponent vs No opponent
 
 ## HEINÄPÄÄN TEKONURMI C
 
-### 2016 3 - 4 v 4 ( mv + 3 )
+### 2017 2 - 4 v 4 ( mv + 3 )
 
-16.45 - 17.05 - ONS 16 Punainen vs OLS Ruotsi 16 Malmö
-17.10 - 17.30 - ONS 16 Punainen vs OLS Belgia 16 Liege
-17.35 - 17.55 - OsPa P1617 Sininen vs OLS Ruotsi 16 Malmö
-18.00 - 18.20 - No opponent vs No opponent
-18.25 - 18.45 - OsPa P1617 Sininen vs OLS Belgia 16 Liege
-18.50 - 19.10 - No opponent vs No opponent
+16.45 - 17.05 - OLS Portugali 17 Benfica vs OLS Ruotsi 17 Hammarby
+17.10 - 17.30 - OLS Portugali 17 Benfica vs KKP P8 Sininen
+17.35 - 17.55 - OLS Kreikka 17 PAOK vs OLS Espanja 17 Barcelona
+18.00 - 18.20 - OLS Ruotsi 17 Hammarby vs KKP P8 Sininen
+18.25 - 18.45 - OLS Kreikka 17 PAOK vs KKP P8 Musta
+18.50 - 19.10 - OLS Kreikka 17 PAOK vs OLS Belgia 17 Genk
 19.15 - 19.35 - No opponent vs No opponent
 
 ## HEINÄPÄÄN TEKONURMI D
 
-### 2016 3 - 4 v 4 ( mv + 3 )
+### 2017 2 - 4 v 4 ( mv + 3 )
 
-16.45 - 17.05 - OLS Belgia 16 Liege vs OLS Kreikka 16 PAOK
-17.10 - 17.30 - OsPa P1617 Sininen vs KKP 16 Valkoinen
-17.35 - 17.55 - OLS Kreikka 16 PAOK vs KKP 16 Valkoinen
-18.00 - 18.20 - OLS Kreikka 16 PAOK vs ONS 16 Punainen
-18.25 - 18.45 - OLS Ruotsi 16 Malmö vs KKP 16 Valkoinen
-18.50 - 19.10 - No opponent vs No opponent
+16.45 - 17.05 - KKP P8 Sininen vs OLS Espanja 17 Real Madrid
+17.10 - 17.30 - OLS Ruotsi 17 Hammarby vs OLS Espanja 17 Real Madrid
+17.35 - 17.55 - KKP P8 Musta vs OLS Belgia 17 Genk
+18.00 - 18.20 - OLS Portugali 17 Benfica vs OLS Espanja 17 Real Madrid
+18.25 - 18.45 - OLS Espanja 17 Barcelona vs OLS Belgia 17 Genk
+18.50 - 19.10 - OLS Espanja 17 Barcelona vs KKP P8 Musta
 19.15 - 19.35 - No opponent vs No opponent
 
 ## HEPA -  HALLI C
 
-### 2016 2 - 4 v 4 ( mv + 3 )
+### 2017 3 - 4 v 4 ( mv + 3 )
 
-16.45 - 17.05 - OLS Belgia 16 Brugge vs OLS Ruotsi 16 Hammarby
-17.10 - 17.30 - OLS Belgia 16 Brugge vs OHF 15/16
-17.35 - 17.55 - No opponent vs No opponent
-18.00 - 18.20 - OLS Belgia 16 Brugge vs OLS Hollanti 16 PSV
-18.25 - 18.45 - No opponent vs No opponent
+16.45 - 17.05 - No opponent vs No opponent
+17.10 - 17.30 - OLS Kreikka 17 Olympiakos vs ONS T2017 Punainen
+17.35 - 17.55 - KKP T9 Pantterit vs ONS T2017 Punainen
+18.00 - 18.20 - No opponent vs No opponent
+18.25 - 18.45 - OLS Hollanti 17 PSV vs ONS T2017 Punainen
+18.50 - 19.10 - No opponent vs No opponent
 
 ## HEPA - HALLI A
 
-### 2016 1 - 4 v 4 ( mv + 3 )
+### 2017 3 - 4 v 4 ( mv + 3 )
 
 16.45 - 17.05 - No opponent vs No opponent
-17.10 - 17.30 - OLS Belgia 16 Anderlecht vs OLS Hollanti 16 Ajax
-17.35 - 17.55 - OLS Belgia 16 Anderlecht vs OLS Portugali 16 Porto
+17.10 - 17.30 - OLS Portugali 17 Porto vs OLS Ruotsi 17 Malmö
+17.35 - 17.55 - OLS Hollanti 17 PSV vs OLS Ruotsi 17 Malmö
 18.00 - 18.20 - No opponent vs No opponent
-18.25 - 18.45 - OLS Belgia 16 Anderlecht vs OLS Kreikka 16 AEK
+18.25 - 18.45 - OLS Portugali 17 Porto vs KKP T9 Pantterit
+18.50 - 19.10 - OLS Kreikka 17 Olympiakos vs KKP T9 Pantterit
 
 ## HEPA - HALLI B
 
-### 2016 1 - 4 v 4 ( mv + 3 )
+### 2017 3 - 4 v 4 ( mv + 3 )
 
 16.45 - 17.05 - No opponent vs No opponent
-17.10 - 17.30 - OLS Portugali 16 Porto vs OLS Kreikka 16 AEK
-17.35 - 17.55 - OLS Hollanti 16 Ajax vs OLS Kreikka 16 AEK
+17.10 - 17.30 - OLS Hollanti 17 PSV vs OLS Espanja 17 Sevilla
+17.35 - 17.55 - OLS Kreikka 17 Olympiakos vs OLS Espanja 17 Sevilla
 18.00 - 18.20 - No opponent vs No opponent
-18.25 - 18.45 - OLS Hollanti 16 Ajax vs OLS Portugali 16 Porto
+18.25 - 18.45 - OLS Ruotsi 17 Malmö vs OLS Espanja 17 Sevilla
+18.50 - 19.10 - OLS Portugali 17 Porto vs OLS Hollanti 17 PSV
 
 ## HEPA- HALLI D
 
-### 2016 2 - 4 v 4 ( mv + 3 )
+### 2017 3 - 4 v 4 ( mv + 3 )
 
-16.45 - 17.05 - OHF 15/16 vs OLS Hollanti 16 PSV
-17.10 - 17.30 - OLS Ruotsi 16 Hammarby vs OLS Hollanti 16 PSV
+16.45 - 17.05 - No opponent vs No opponent
+17.10 - 17.30 - No opponent vs No opponent
 17.35 - 17.55 - No opponent vs No opponent
-18.00 - 18.20 - OLS Ruotsi 16 Hammarby vs OHF 15/16
+18.00 - 18.20 - No opponent vs No opponent
 18.25 - 18.45 - No opponent vs No opponent
+18.50 - 19.10 - No opponent vs No opponent
 

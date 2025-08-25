@@ -4,8 +4,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { runUpdater } from './updateLatestPdf.js';
 import { generateDataSummary, checkDataIssues } from './gameDataExtractor.js';
-import fs from 'fs/promises'; // Using promises API for fs
 import uploadRoutes from './routes/uploadRoutes.js';
+import { getDatabase } from './database.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -17,7 +17,6 @@ const PORT = process.env.PORT || 3003;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views')); // Point to admin_app/views
 const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || path.join(__dirname, '../persistent_app_files'); // Path to admin_app/persistent_app_files for local dev
-const EXTRACTED_GAMES_OUTPUT_PATH = path.join(PERSISTENT_STORAGE_BASE_PATH, 'extracted_games_output.json');
 app.use(express.static(path.join(__dirname, '../public'))); // Serve static files from admin_app/public
 app.use(express.urlencoded({ extended: true })); // For parsing form data
 // Admin dashboard page
@@ -64,19 +63,15 @@ app.post('/trigger-full-update', async (req, res) => {
     try {
         let currentScheduleDateString = null;
         try {
-            const fileContent = await fs.readFile(EXTRACTED_GAMES_OUTPUT_PATH, 'utf-8');
-            const parsedData = JSON.parse(fileContent);
-            currentScheduleDateString = parsedData.documentDate || null;
-            console.log(`Current schedule date from JSON: ${currentScheduleDateString}`);
+            // Get current schedule date from database
+            const db = await getDatabase();
+            const gameData = await db.exportGamesAsJSON();
+            currentScheduleDateString = gameData.documentDate || null;
+            console.log(`Current schedule date from database: ${currentScheduleDateString}`);
         }
         catch (err) {
-            if (err.code === 'ENOENT') {
-                console.log('extracted_games_output.json not found. Assuming no current schedule.');
-            }
-            else {
-                console.warn('Could not read or parse existing extracted_games_output.json:', err);
-            }
-            // Proceed with null currentScheduleDateString if file doesn't exist or is invalid
+            console.log('Could not read current schedule from database. Assuming no current schedule.');
+            // Proceed with null currentScheduleDateString if database read fails
         }
         const result = await runUpdater(currentScheduleDateString, forceUpdate);
         console.log('Update process finished:', result);
@@ -112,20 +107,16 @@ app.get('/api/internal/latest-games-data', async (req, res) => {
         return res.status(403).send('Pääsy estetty: Virheellinen API-avain.');
     }
     try {
-        const fileContent = await fs.readFile(EXTRACTED_GAMES_OUTPUT_PATH, 'utf-8');
-        // const jsonData = JSON.parse(fileContent); // No need to parse, send raw content
+        // Get data from database
+        const db = await getDatabase();
+        const gameData = await db.exportGamesAsJSON();
         res.setHeader('Content-Type', 'application/json');
-        res.send(fileContent);
+        res.json(gameData);
+        console.log(`Served ${gameData.games.length} games from database via API`);
     }
     catch (error) {
-        if (error.code === 'ENOENT') {
-            console.error('Error serving latest games data: extracted_games_output.json not found.');
-            return res.status(404).send('Ei löydy: Pelidataa sisältävää tiedostoa ei ole.');
-        }
-        else {
-            console.error('Error reading games data file for API:', error);
-            return res.status(500).send('Sisäinen palvelinvirhe.');
-        }
+        console.error('Error reading games data from database:', error);
+        return res.status(500).send('Sisäinen palvelinvirhe: Tietokannan lukuvirhe.');
     }
 });
 // Mount the upload routes
