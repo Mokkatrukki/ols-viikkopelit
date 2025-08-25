@@ -6,10 +6,19 @@ const __dirname = path.dirname(__filename);
 export class AdminDatabase {
     constructor() {
         this.db = null;
-        // Use same persistent storage path as current app
-        const persistentStoragePath = process.env.APP_PERSISTENT_STORAGE_PATH ||
-            path.join(__dirname, '../persistent_app_files');
-        this.dbPath = path.join(persistentStoragePath, 'games.db');
+        // Use LiteFS mount for shared database
+        // In production: /litefs/games.db (LiteFS mount)
+        // In local dev: use local persistent storage
+        if (process.env.FLY_APP_NAME) {
+            // Production: use LiteFS mount
+            this.dbPath = '/litefs/games.db';
+        }
+        else {
+            // Local development: use local persistent storage
+            const persistentStoragePath = path.join(__dirname, '../persistent_app_files');
+            this.dbPath = path.join(persistentStoragePath, 'games.db');
+        }
+        console.log(`Admin database will be at: ${this.dbPath}`);
     }
     async initialize() {
         return new Promise((resolve, reject) => {

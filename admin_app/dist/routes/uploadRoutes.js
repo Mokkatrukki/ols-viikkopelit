@@ -11,8 +11,9 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 // --- Configuration ---
 const UPLOAD_PASSWORD_ENV = process.env.UPLOAD_PASSWORD;
-// Fly.io volume mount point is /data. For local dev, use a path relative to the app.
-const UPLOAD_DIR_BASE = process.env.FLY_APP_NAME ? '/data' : path.join(__dirname, '../../persistent_app_files');
+// Use file storage path separate from LiteFS mount
+const UPLOAD_DIR_BASE = process.env.APP_FILE_STORAGE_PATH ||
+    (process.env.FLY_APP_NAME ? '/data' : path.join(__dirname, '../../persistent_app_files'));
 const UPLOAD_DIR = path.join(UPLOAD_DIR_BASE, 'uploaded_pdfs');
 // Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_DIR)) {

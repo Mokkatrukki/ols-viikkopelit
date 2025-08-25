@@ -30,7 +30,7 @@ if (!pdfFileNameArg) {
 // const pdfFilePath = `./${pdfFileNameArg}`; // Prepend './' to look in the current directory
 const pdfFilePath = path.isAbsolute(pdfFileNameArg) ? pdfFileNameArg : `./${pdfFileNameArg}`;
 
-const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
+const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_FILE_STORAGE_PATH || process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
 const outputJsonFilePath = path.join(PERSISTENT_STORAGE_BASE_PATH, 'parsed_pdf_data.json');
 
 // Function to ensure directory for outputJsonFilePath exists

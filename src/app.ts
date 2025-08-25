@@ -340,7 +340,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 // Note: Admin refresh functionality removed - data flows automatically through database
 
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => {
     console.log(`⚽ Main app server running on http://localhost:${PORT}`);
     console.log(`🎉 App startup completed in ${Date.now() - appStartTime}ms`);

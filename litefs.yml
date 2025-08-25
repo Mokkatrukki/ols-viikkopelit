@@ -1,0 +1,40 @@
+# LiteFS config for main app (read-only replica)
+# This directory is where your application will access the database.
+fuse:
+  dir: "/litefs"
+
+# This directory is where LiteFS will store internal data.
+# Replicas don't need persistent storage - they sync from primary
+data:
+  dir: "/var/lib/litefs"
+
+# Running as a supervisor - LiteFS will start our app
+exec:
+  - cmd: "node dist/app.js"
+
+# LiteFS HTTP API for node communication
+http:
+  addr: ":20202"
+
+# Built-in proxy for write redirection and consistency
+proxy:
+  addr: ":8080"
+  target: "localhost:8081"
+  db: "games.db"
+
+# Lease configuration for primary election
+lease:
+  type: "consul"
+  
+  # This node CANNOT become primary (read-only replica)
+  candidate: false
+  
+  # The API URL that other nodes will use to connect to this node
+  advertise-url: "http://${FLY_ALLOC_ID}.vm.${FLY_APP_NAME}.internal:20202"
+  
+  consul:
+    # The URL of the Consul cluster (set by fly consul attach)
+    url: "${FLY_CONSUL_URL}"
+    
+    # SAME key as admin app - this joins them in the same cluster
+    key: "ols-viikkopelit-cluster/primary"

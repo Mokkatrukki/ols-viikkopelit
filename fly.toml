@@ -1,5 +1,5 @@
-# fly.toml app configuration for ols-viikkopelit
-# 🚀 OPTIMIZED FOR MINIMAL COST + FAST PERFORMANCE
+# fly.toml app configuration for ols-viikkopelit (MAIN APP - READ-ONLY REPLICA)
+# 🚀 OPTIMIZED FOR MINIMAL COST + FAST PERFORMANCE + LITEFS
 
 app = 'ols-viikkopelit'
 primary_region = 'arn'  # Stockholm, Sweden - good pricing
@@ -14,7 +14,7 @@ primary_region = 'arn'  # Stockholm, Sweden - good pricing
   app = ""
 
 [http_service]
-  internal_port = 3002
+  internal_port = 8080    # LiteFS proxy port
   force_https = true
   auto_stop_machines = true   # Enable sleep mode for cost savings
   auto_start_machines = true  # Wake up on requests
@@ -25,7 +25,7 @@ primary_region = 'arn'  # Stockholm, Sweden - good pricing
     path = "/health"
     interval = "30s"          # Less frequent checks to reduce overhead
     timeout = "3s"
-    grace_period = "5s"       # Faster grace period with optimized startup
+    grace_period = "10s"      # Longer grace period for LiteFS startup
     method = "GET"
 
   [[http_service.autostop]]
@@ -42,7 +42,4 @@ primary_region = 'arn'  # Stockholm, Sweden - good pricing
   processes = ["app"]
   init = true                # Use Docker's built-in init (Tini) - ChatGPT optimization!
 
-# Mount the persistent volume (keep current 1GB)
-[mounts]
-  source = "ols_data"        # 1GB volume = $0.15/month
-  destination = "/data"
+# NO VOLUME NEEDED - This is a read-only replica

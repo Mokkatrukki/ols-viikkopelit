@@ -1,7 +1,5 @@
-# fly.toml app configuration file generated for ols-viikkopelit-admin on 2025-05-28T12:28:14+03:00
-#
+# fly.toml app configuration for ols-viikkopelit-admin (ADMIN APP - PRIMARY/WRITER)
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
 
 app = 'ols-viikkopelit-admin'
 primary_region = 'arn'
@@ -9,12 +7,13 @@ primary_region = 'arn'
 [build]
   dockerfile = 'Dockerfile'
 
+# ADMIN APP NEEDS A VOLUME - It's the primary database
 [[mounts]]
   source = 'ols_admin_data'
-  destination = '/data'
+  destination = '/var/lib/litefs'  # LiteFS data directory
 
 [http_service]
-  internal_port = 3003
+  internal_port = 8080      # LiteFS proxy port
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true

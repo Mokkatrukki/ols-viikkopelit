@@ -2,8 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { getDatabase } from './database.js';
 // Get the persistent storage path from environment variable or use default
-const persistentStoragePath = process.env.APP_PERSISTENT_STORAGE_PATH ||
-    path.join(process.cwd(), 'persistent_app_files');
+const persistentStoragePath = process.env.APP_FILE_STORAGE_PATH || process.env.APP_PERSISTENT_STORAGE_PATH ||
+    path.join(__dirname, '../persistent_app_files');
 // Output file path
 const summaryOutputPath = path.join(persistentStoragePath, 'games_summary.txt');
 /**

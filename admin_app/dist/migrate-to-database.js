@@ -6,7 +6,7 @@ import { getDatabase } from './database.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 async function migrateJsonToDatabase() {
-    const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || path.join(__dirname, '../persistent_app_files');
+    const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_FILE_STORAGE_PATH || process.env.APP_PERSISTENT_STORAGE_PATH || path.join(__dirname, '../persistent_app_files');
     const jsonFilePath = path.join(PERSISTENT_STORAGE_BASE_PATH, 'extracted_games_output.json');
     try {
         console.log('🔄 Starting migration from JSON to database...');

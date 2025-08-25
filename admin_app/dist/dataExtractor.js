@@ -18,7 +18,7 @@ function debugLog(message, data) {
 }
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
+const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_FILE_STORAGE_PATH || process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
 function decodeText(encodedText) {
     try {
         return decodeURIComponent(encodedText);

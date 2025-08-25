@@ -30,36 +30,48 @@ RUN npm run build
 RUN npm prune --omit=dev && npm cache clean --force
 
 # ===============================
-# STAGE 2: TINY PRODUCTION RUNTIME
+# STAGE 2: TINY PRODUCTION RUNTIME WITH LITEFS
 # ===============================
 FROM node:22-alpine AS runtime
+
+# Install LiteFS dependencies
+RUN apk add --no-cache ca-certificates fuse3 sqlite
+
+# Install LiteFS binary
+COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
+
+# Enable user_allow_other for FUSE
+RUN echo "user_allow_other" >> /etc/fuse.conf
 
 WORKDIR /usr/src/app
 
 # Environment variables
 ENV NODE_ENV=production \
-    APP_PERSISTENT_STORAGE_PATH=/data/app_files
+    SHARED_GAMES_DB_PATH=/litefs/games.db
 
-# Copy app with correct ownership in one go (ChatGPT optimization!)
-COPY --chown=node:node --from=build /app/dist         ./dist
-COPY --chown=node:node --from=build /app/public       ./public
-COPY --chown=node:node --from=build /app/views        ./views
-COPY --chown=node:node --from=build /app/package*.json ./
-COPY --chown=node:node --from=build /app/node_modules ./node_modules
+# Copy app with correct ownership (but run as root for LiteFS)
+COPY --from=build /app/dist         ./dist
+COPY --from=build /app/public       ./public
+COPY --from=build /app/views        ./views
+COPY --from=build /app/package*.json ./
+COPY --from=build /app/node_modules ./node_modules
 
-# Create data directory as root, then switch to node user
-RUN mkdir -p /data/app_files && \
-    chown -R node:node /data/app_files
+# Copy LiteFS configuration
+COPY litefs.yml /etc/litefs.yml
 
-# Switch to non-root user (using built-in 'node' user)
-USER node
+# Create LiteFS directories - run as root since we need FUSE permissions
+RUN mkdir -p /litefs /var/lib/litefs && \
+    chmod 755 /litefs /var/lib/litefs
 
-# Expose port
-EXPOSE 3002
+# DO NOT set USER - LiteFS must run as root for FUSE mounts
+# LiteFS will handle running our app via exec configuration
 
-# Modern healthcheck using Node's built-in fetch (ChatGPT optimization!)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "fetch('http://localhost:3002/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+# Expose LiteFS proxy port (instead of app port directly)
+EXPOSE 8080
 
-# Use built-in init handling (no dumb-init needed)
-CMD ["node", "dist/app.js"] 
+# Modern healthcheck using LiteFS proxy port
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD node -e "fetch('http://localhost:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+# Use LiteFS as entrypoint
+ENTRYPOINT ["litefs", "mount"] 

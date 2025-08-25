@@ -5,7 +5,7 @@ import { exec } from 'child_process';
 import { pipeline } from 'stream/promises';
 import { getDatabase } from './database.js';
 
-const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
+const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_FILE_STORAGE_PATH || process.env.APP_PERSISTENT_STORAGE_PATH || './persistent_app_files';
 const PDF_DOWNLOAD_SUB_DIR = 'downloaded_pdfs';
 const PDF_DOWNLOAD_DIR = path.join(PERSISTENT_STORAGE_BASE_PATH, PDF_DOWNLOAD_SUB_DIR);
 

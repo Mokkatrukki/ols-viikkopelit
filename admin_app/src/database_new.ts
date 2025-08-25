@@ -63,7 +63,7 @@ export class AdminDatabase {
 
   constructor() {
     // Use same persistent storage path as current app
-    const persistentStoragePath = process.env.APP_PERSISTENT_STORAGE_PATH || 
+    const persistentStoragePath = process.env.APP_FILE_STORAGE_PATH || process.env.APP_PERSISTENT_STORAGE_PATH || 
       path.join(__dirname, '../persistent_app_files');
     this.dbPath = path.join(persistentStoragePath, 'games.db');
   }

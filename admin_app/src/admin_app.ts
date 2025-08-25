@@ -17,12 +17,12 @@ app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 8081;
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views')); // Point to admin_app/views
 
-const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_PERSISTENT_STORAGE_PATH || path.join(__dirname, '../persistent_app_files'); // Path to admin_app/persistent_app_files for local dev
+const PERSISTENT_STORAGE_BASE_PATH = process.env.APP_FILE_STORAGE_PATH || process.env.APP_PERSISTENT_STORAGE_PATH || path.join(__dirname, '../persistent_app_files'); // Path to file storage for file operations
 app.use(express.static(path.join(__dirname, '../public'))); // Serve static files from admin_app/public
 app.use(express.urlencoded({ extended: true })); // For parsing form data
 
