@@ -184,7 +184,7 @@
                     group.teams.forEach(team => allTeams.add(team));
                 });
                 
-                // Get base teams that have subteams in our data
+                // Get base teams that have subteams in our data and sort alphabetically
                 const relevantBaseTeams = typeof baseTeams !== 'undefined' ? baseTeams.filter(bt => 
                     bt.subteams.some(st => allTeams.has(st))
                 ).sort((a, b) => a.name.localeCompare(b.name)) : [];

@@ -660,6 +660,7 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
       selectedTeam: teamName,
       gamesForTeam: [],
       fieldMapData,
+      baseTeams: [],
       loading: true
     });
     return;
@@ -705,6 +706,7 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
     selectedTeam: teamName, 
     gamesForTeam, 
     fieldMapData,
+    baseTeams: cachedBaseTeams,
     loading: false
   });
 });
