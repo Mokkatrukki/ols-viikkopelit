@@ -165,19 +165,77 @@
         <main class="p-4 md:p-8 mt-4 flex-grow">
         <form method="GET" id="teamSelectionForm" class="mb-6">
             <label for="team" class="block text-lg font-medium text-green-800 mb-2 font-heading">Valitse joukkue:</label>
-            <select name="teamName" id="team" onchange="if (this.value) { window.location.href = '/team/' + encodeURIComponent(this.value); } else { window.location.href = '/'; }" class="w-full p-3 border border-slate-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 font-body">
+            <select name="teamName" id="team" onchange="handleTeamSelection(this.value)" class="w-full p-3 border border-slate-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 font-body">
                 <option value="">-- Kaikki joukkueet --</option>
-                <% groupedTeams.forEach(group => { %>
-                    <optgroup label="<%= group.year %>">
-                        <% group.teams.forEach(team => { %>
-                            <option value="<%= team %>" <%= selectedTeam === team ? 'selected' : '' %>>
-                                <%= team %>
-                            </option>
-                        <% }); %>
-                    </optgroup>
+                <% 
+                // Create a map of teams that belong to base teams
+                const teamsInBaseTeams = new Set();
+                if (typeof baseTeams !== 'undefined') {
+                    baseTeams.forEach(baseTeam => {
+                        baseTeam.subteams.forEach(subteam => {
+                            teamsInBaseTeams.add(subteam);
+                        });
+                    });
+                }
+                
+                // Collect all teams from all year groups
+                const allTeams = new Set();
+                groupedTeams.forEach(group => {
+                    group.teams.forEach(team => allTeams.add(team));
+                });
+                
+                // Get base teams that have subteams in our data
+                const relevantBaseTeams = typeof baseTeams !== 'undefined' ? baseTeams.filter(bt => 
+                    bt.subteams.some(st => allTeams.has(st))
+                ).sort((a, b) => a.name.localeCompare(b.name)) : [];
+                
+                // Show base teams first
+                relevantBaseTeams.forEach(baseTeam => { 
+                %>
+                    <option value="base-team:<%= baseTeam.name %>" <%= selectedTeam === baseTeam.name ? 'selected' : '' %> style="font-weight: bold;">
+                        <%= baseTeam.name %>
+                    </option>
+                    <% baseTeam.subteams.forEach(subteam => { %>
+                        <option value="<%= subteam %>" <%= selectedTeam === subteam ? 'selected' : '' %>>
+                            &nbsp;&nbsp;&nbsp;&nbsp;- <%= subteam.split(' ').pop() %>
+                        </option>
+                    <% }); %>
+                <% }); %>
+                
+                <% 
+                // Then show individual teams (those not part of any base team)
+                const individualTeams = [];
+                groupedTeams.forEach(group => {
+                    group.teams.forEach(team => {
+                        if (!teamsInBaseTeams.has(team)) {
+                            individualTeams.push(team);
+                        }
+                    });
+                });
+                individualTeams.sort().forEach(team => { 
+                %>
+                    <option value="<%= team %>" <%= selectedTeam === team ? 'selected' : '' %>>
+                        <%= team %>
+                    </option>
                 <% }); %>
             </select>
         </form>
+        
+        <script>
+            function handleTeamSelection(value) {
+                if (!value) {
+                    window.location.href = '/';
+                } else if (value.startsWith('base-team:')) {
+                    // Navigate to base team portal
+                    const baseTeamName = value.substring('base-team:'.length);
+                    window.location.href = '/base-team/' + encodeURIComponent(baseTeamName);
+                } else {
+                    // Navigate to individual team page
+                    window.location.href = '/team/' + encodeURIComponent(value);
+                }
+            }
+        </script>
+
 
         <% if (typeof loading !== 'undefined' && loading) { %>
             <div class="text-center py-8">

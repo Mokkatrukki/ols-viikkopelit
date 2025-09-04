@@ -10,7 +10,8 @@
         "start:server": "node --import \"data:text/javascript,import { register } from 'node:module'; import { pathToFileURL } from 'node:url'; register('ts-node/esm', pathToFileURL('./'));\" src/app.ts",
         "build": "tsc && npm run build:css:once",
         "build:css:once": "tailwindcss -i ./src/input.css -o ./public/css/style.css && ./node_modules/.bin/csso ./public/css/style.css -o ./public/css/style.min.css",
-        "build:css": "tailwindcss -i ./src/input.css -o ./public/css/style.css --watch"
+        "build:css": "tailwindcss -i ./src/input.css -o ./public/css/style.css --watch",
+        "test:teams": "node test-team-grouping.js"
     },
     "keywords": [],
     "author": "",

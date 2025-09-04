@@ -69,6 +69,145 @@ function getBaseYear(gameYear: string): string {
     return match ? match[1] : "Muut"; // Default to "Muut" if no 4-digit year found
 }
 
+// Helper function to find longest common prefix between two strings
+function longestCommonPrefix(str1: string, str2: string): string {
+    let i = 0;
+    while (i < str1.length && i < str2.length && str1[i] === str2[i]) {
+        i++;
+    }
+    // Trim to last space to avoid cutting words in half
+    const prefix = str1.substring(0, i);
+    const lastSpaceIndex = prefix.lastIndexOf(' ');
+    return lastSpaceIndex > 0 ? prefix.substring(0, lastSpaceIndex).trim() : prefix.trim();
+}
+
+// Helper function to dynamically group teams by finding common prefixes
+function findTeamGroups(teamNames: string[]): Map<string, string[]> {
+    // First, find all possible groupings
+    const allPossibleGroups: Array<{prefix: string, teams: string[]}> = [];
+    
+    for (let i = 0; i < teamNames.length; i++) {
+        for (let j = i + 1; j < teamNames.length; j++) {
+            const team1 = teamNames[i];
+            const team2 = teamNames[j];
+            const commonPrefix = longestCommonPrefix(team1, team2);
+            
+            // Only consider meaningful prefixes
+            const prefixWords = commonPrefix.split(/\s+/).filter(w => w.length > 0);
+            const isMeaningfulPrefix = 
+                (commonPrefix.length >= 10 && prefixWords.length >= 3) || // Long prefix with 3+ words
+                (prefixWords.length >= 2 && prefixWords.every(word => word.length >= 2)); // 2+ words, each 2+ chars
+            
+            if (isMeaningfulPrefix) {
+                // Find all teams that match this prefix
+                const matchingTeams = teamNames.filter(team => 
+                    team.startsWith(commonPrefix + ' ')
+                );
+                
+                if (matchingTeams.length >= 2) {
+                    allPossibleGroups.push({
+                        prefix: commonPrefix,
+                        teams: matchingTeams.sort()
+                    });
+                }
+            }
+        }
+    }
+    
+    // Remove duplicate groups (same teams, different prefix length)
+    const uniqueGroups: Array<{prefix: string, teams: string[]}> = [];
+    
+    for (const group of allPossibleGroups) {
+        const teamSet = new Set(group.teams);
+        const isDuplicate = uniqueGroups.some(existing => {
+            const existingSet = new Set(existing.teams);
+            return teamSet.size === existingSet.size && 
+                   [...teamSet].every(team => existingSet.has(team));
+        });
+        
+        if (!isDuplicate) {
+            uniqueGroups.push(group);
+        } else {
+            // If duplicate, keep the one with longer (more specific) prefix
+            const existingIndex = uniqueGroups.findIndex(existing => {
+                const existingSet = new Set(existing.teams);
+                return teamSet.size === existingSet.size && 
+                       [...teamSet].every(team => existingSet.has(team));
+            });
+            
+            if (existingIndex !== -1 && group.prefix.length > uniqueGroups[existingIndex].prefix.length) {
+                uniqueGroups[existingIndex] = group;
+            }
+        }
+    }
+    
+    // Sort by specificity (longer prefix first) and group size
+    uniqueGroups.sort((a, b) => {
+        if (a.prefix.length !== b.prefix.length) {
+            return b.prefix.length - a.prefix.length; // Longer prefix first
+        }
+        return b.teams.length - a.teams.length; // More teams first
+    });
+    
+    // Select non-overlapping groups greedily (most specific first)
+    const finalGroups = new Map<string, string[]>();
+    const usedTeams = new Set<string>();
+    
+    for (const group of uniqueGroups) {
+        const hasOverlap = group.teams.some(team => usedTeams.has(team));
+        
+        if (!hasOverlap && group.teams.length > 1) {
+            finalGroups.set(group.prefix, group.teams);
+            group.teams.forEach(team => usedTeams.add(team));
+        }
+    }
+    
+    return finalGroups;
+}
+
+// Interface for base teams with their subteams
+interface BaseTeam {
+    name: string; // Base team name like "OLS Hollanti 20"
+    subteams: string[]; // Full subteam names like "OLS Hollanti 20 Ajax"
+}
+
+// Helper function to group teams by their base names using dynamic detection
+function getBaseTeams(allGamesData: GameInfo[]): BaseTeam[] {
+    // Collect all unique team names
+    const allTeamNames: string[] = [];
+    const teamNameSet = new Set<string>();
+    
+    allGamesData.forEach(game => {
+        if (game.team1 && game.team1.trim() !== "") {
+            if (!teamNameSet.has(game.team1)) {
+                teamNameSet.add(game.team1);
+                allTeamNames.push(game.team1);
+            }
+        }
+        if (game.team2 && game.team2.trim() !== "") {
+            if (!teamNameSet.has(game.team2)) {
+                teamNameSet.add(game.team2);
+                allTeamNames.push(game.team2);
+            }
+        }
+    });
+    
+    // Use dynamic grouping to find teams with common prefixes
+    const teamGroups = findTeamGroups(allTeamNames);
+    
+    // Convert to BaseTeam array
+    const result: BaseTeam[] = [];
+    teamGroups.forEach((subteams, baseName) => {
+        result.push({
+            name: baseName,
+            subteams: subteams.sort() // Sort subteams alphabetically
+        });
+    });
+    
+    // Sort alphabetically by base team name
+    return result.sort((a, b) => a.name.localeCompare(b.name));
+}
+
 interface GroupedTeamEntry {
   year: string; // This will be the base year like "2017"
   teams: string[];
@@ -183,6 +322,7 @@ let allGames: GameInfo[] = [];
 let documentDate: string | null = null;
 let sourceFile: string | null = null; // To store the source PDF filename
 let cachedGroupedTeams: GroupedTeamEntry[] = [];
+let cachedBaseTeams: BaseTeam[] = [];
 let dataLoaded = false; // Track if data is loaded
 
 // Function to load or reload game data
@@ -204,6 +344,7 @@ async function loadGameData() {
             documentDate = null;
             sourceFile = null;
             cachedGroupedTeams = [];
+            cachedBaseTeams = [];
             dataLoaded = true;
             console.log(`⚡ loadGameData() completed in ${Date.now() - startTime}ms (no data file)`);
             return; // Exit early if file doesn't exist
@@ -223,6 +364,7 @@ async function loadGameData() {
         
         const groupingStart = Date.now();
         cachedGroupedTeams = getGroupedTeams(allGames);
+        cachedBaseTeams = getBaseTeams(allGames);
         console.log(`👥 Team grouping took ${Date.now() - groupingStart}ms`);
         
         dataLoaded = true;
@@ -242,6 +384,7 @@ async function loadGameData() {
         documentDate = null;
         sourceFile = null;
         cachedGroupedTeams = [];
+        cachedBaseTeams = [];
         dataLoaded = true; // Mark as loaded even if failed, to prevent infinite loading
         console.error('Failed to load game data:', error);
         console.log(`❌ loadGameData() failed after ${Date.now() - startTime}ms`);
@@ -333,6 +476,7 @@ app.get('/', async (req: Request, res: Response) => {
             selectedTeam: null,
             gamesForTeam: [],
             fieldMapData,
+            baseTeams: [],
             loading: true
         });
         return;
@@ -344,6 +488,7 @@ app.get('/', async (req: Request, res: Response) => {
         selectedTeam: null,
         gamesForTeam: [],
         fieldMapData,
+        baseTeams: cachedBaseTeams,
         loading: false
     });
 });
@@ -420,6 +565,75 @@ app.post('/admin/refresh-action', async (req: Request, res: Response) => {
         console.error('Error in /admin/refresh-action route:', error.message);
         res.redirect(`/admin?message=Error during refresh process: ${encodeURIComponent(String(error.message || 'Unknown refresh error'))}`);
     }
+});
+
+// Team portal route - shows all subteams for a base team
+app.get('/base-team/:baseTeamName', async (req: Request, res: Response): Promise<void> => {
+  const baseTeamName = decodeURIComponent(req.params.baseTeamName);
+  
+  // If data is not loaded yet, try to load it quickly
+  if (!dataLoaded) {
+    try {
+      console.log('🔄 Data not loaded for base team route, attempting quick load...');
+      await Promise.race([
+        loadGameData(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
+      ]);
+    } catch (error) {
+      console.log('⚡ Quick load failed or timed out for base team route, showing loading state');
+    }
+  }
+  
+  if (!dataLoaded) {
+    // Show loading state
+    res.render('base_team_portal', {
+      documentTitle: `${baseTeamName} - Joukkueportaali`,
+      baseTeamName: baseTeamName,
+      subteams: [],
+      loading: true
+    });
+    return;
+  }
+  
+  // Find the base team
+  const baseTeam = cachedBaseTeams.find(bt => bt.name === baseTeamName);
+  if (!baseTeam) {
+    res.status(404).send('Base team not found');
+    return;
+  }
+  
+  // Get next game for each subteam
+  const subteamsWithNextGame = baseTeam.subteams.map(subteamName => {
+    const gamesForSubteam = allGames
+      .filter(game => game.team1 === subteamName || game.team2 === subteamName)
+      .map(game => {
+        const opponent = game.team1 === subteamName ? game.team2 : game.team1;
+        return { ...game, opponent: opponent || 'VASTUSTAJA PUUTTUU' };
+      })
+      .sort((a, b) => {
+        const startTimeA = getGameStartTimeInMinutes(a);
+        const startTimeB = getGameStartTimeInMinutes(b);
+        if (isNaN(startTimeA) || isNaN(startTimeB)) return 0;
+        return startTimeA - startTimeB;
+      });
+    
+    const nextGame = gamesForSubteam[0] || null; // First game is the next game
+    
+    return {
+      name: subteamName,
+      nextGame: nextGame
+    };
+  });
+  
+  // Sort alphabetically by subteam name
+  subteamsWithNextGame.sort((a, b) => a.name.localeCompare(b.name));
+  
+  res.render('base_team_portal', {
+    documentTitle: `${baseTeamName} - Joukkueportaali`,
+    baseTeamName: baseTeamName,
+    subteams: subteamsWithNextGame,
+    loading: false
+  });
 });
 
 app.get('/team/:teamName', async (req: Request, res: Response) => {

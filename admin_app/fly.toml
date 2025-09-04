@@ -10,7 +10,7 @@ primary_region = 'arn'
   dockerfile = 'Dockerfile'
 
 [[mounts]]
-  source = 'ols_admin_data'
+  source = 'ols_data'
   destination = '/data'
 
 [http_service]

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="<%= baseTeamName %> joukkueportaali - katsele alijoukkueiden aikatauluja ja pelejä.">
+    <meta property="og:title" content="<%= documentTitle %>">
+    <meta property="og:description" content="<% if (!loading && subteams.length > 0) { %><%= subteams.map(st => st.nextGame ? `${st.name.split(' ').pop()} - ${st.nextGame.time.split(' - ')[0]}` : `${st.name.split(' ').pop()} - Ei pelejä`).join(', ') %><% } else { %>Joukkueportaali - katsele alijoukkueiden aikatauluja<% } %>">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <title>
+        <%= documentTitle %>
+    </title>
+    
+    <!-- Critical CSS inlined for fast initial render -->
+    <style>
+        /* Critical CSS - Complete styles for immediate render */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        *, ::before, ::after {
+            --tw-border-spacing-x: 0; --tw-border-spacing-y: 0; --tw-translate-x: 0; --tw-translate-y: 0;
+            --tw-rotate: 0; --tw-skew-x: 0; --tw-skew-y: 0; --tw-scale-x: 1; --tw-scale-y: 1;
+            --tw-ring-inset: ; --tw-ring-offset-width: 0px; --tw-ring-offset-color: #fff;
+            --tw-ring-color: rgb(59 130 246 / 0.5); --tw-ring-offset-shadow: 0 0 #0000;
+            --tw-ring-shadow: 0 0 #0000; --tw-shadow: 0 0 #0000; --tw-shadow-colored: 0 0 #0000;
+        }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.5; }
+        
+        /* Layout classes */
+        .min-h-screen { min-height: 100vh; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-grow { flex-grow: 1; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .text-center { text-align: center; }
+        .container { width: 100%; margin-left: auto; margin-right: auto; }
+        .max-w-3xl { max-width: 48rem; }
+        .w-full { width: 100%; }
+        .h-8 { height: 2rem; }
+        .w-8 { width: 2rem; }
+        .h-auto { height: auto; }
+        .block { display: block; }
+        .inline-block { display: inline-block; }
+        .object-contain { object-fit: contain; }
+        
+        /* Spacing */
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-5 { padding: 1.25rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .my-4 { margin-top: 1rem; margin-bottom: 1rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        
+        /* Colors - Background */
+        .bg-white { --tw-bg-opacity: 1; background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1)); }
+        .bg-green-700 { --tw-bg-opacity: 1; background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1)); }
+        .bg-slate-100 { --tw-bg-opacity: 1; background-color: rgb(241 245 249 / var(--tw-bg-opacity, 1)); }
+        .bg-sky-50 { --tw-bg-opacity: 1; background-color: rgb(240 249 255 / var(--tw-bg-opacity, 1)); }
+        
+        /* Colors - Text */
+        .text-white { --tw-text-opacity: 1; color: rgb(255 255 255 / var(--tw-text-opacity, 1)); }
+        .text-green-800 { --tw-text-opacity: 1; color: rgb(22 101 52 / var(--tw-text-opacity, 1)); }
+        .text-slate-600 { --tw-text-opacity: 1; color: rgb(71 85 105 / var(--tw-text-opacity, 1)); }
+        .text-slate-700 { --tw-text-opacity: 1; color: rgb(51 65 85 / var(--tw-text-opacity, 1)); }
+        .text-slate-800 { --tw-text-opacity: 1; color: rgb(30 41 59 / var(--tw-text-opacity, 1)); }
+        .text-green-700 { --tw-text-opacity: 1; color: rgb(21 128 61 / var(--tw-text-opacity, 1)); }
+        .text-sky-700 { --tw-text-opacity: 1; color: rgb(3 105 161 / var(--tw-text-opacity, 1)); }
+        
+        /* Colors - Borders */
+        .border { border-width: 1px; }
+        .border-b-2 { border-bottom-width: 2px; }
+        .border-l-4 { border-left-width: 4px; }
+        .border-green-700 { --tw-border-opacity: 1; border-color: rgb(21 128 61 / var(--tw-border-opacity, 1)); }
+        .border-slate-300 { --tw-border-opacity: 1; border-color: rgb(203 213 225 / var(--tw-border-opacity, 1)); }
+        .border-green-600 { --tw-border-opacity: 1; border-color: rgb(22 163 74 / var(--tw-border-opacity, 1)); }
+        .border-sky-400 { --tw-border-opacity: 1; border-color: rgb(56 189 248 / var(--tw-border-opacity, 1)); }
+        
+        /* Typography */
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-heading { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        .font-body { font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        
+        /* Borders and shapes */
+        .rounded-full { border-radius: 9999px; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-md { border-radius: 0.375rem; }
+        .rounded-b-lg { border-bottom-right-radius: 0.5rem; border-bottom-left-radius: 0.5rem; }
+        
+        /* Shadows */
+        .shadow-sm { --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color); box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow); }
+        .shadow-md { --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color); box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow); }
+        .shadow-xl { --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color); box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow); }
+        
+        /* Loading animation */
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Spacing utilities */
+        .space-y-6 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(1.5rem * var(--tw-space-y-reverse)); }
+        
+        /* Transitions */
+        .transition-shadow { transition-property: box-shadow; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .duration-300 { transition-duration: 300ms; }
+        .hover\:shadow-2xl:hover { --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color); box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow); }
+        
+        /* Responsive */
+        @media (min-width: 768px) {
+            .md\\:p-8 { padding: 2rem; }
+            .md\\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        }
+    </style>
+    
+    <!-- Load additional CSS asynchronously -->
+    <link rel="preload" href="/css/style.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/css/style.min.css"></noscript>
+    
+    <!-- Non-blocking Google Fonts loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap"></noscript>
+    <style>
+        body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .font-heading {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        .font-body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 font-body flex flex-col min-h-screen">
+    <div class="container mx-auto max-w-3xl flex-col flex-grow w-full">
+        <header class="bg-green-700 text-white p-4 rounded-b-lg shadow-md font-heading">
+            <h1 class="text-2xl md:text-3xl font-bold text-center">
+                <%= baseTeamName %>
+            </h1>
+            <p class="text-center mt-2">Joukkueportaali</p>
+        </header>
+
+        <main class="p-4 md:p-8 mt-4 flex-grow">
+            <!-- Back navigation -->
+            <div class="mb-6">
+                <a href="/" class="text-green-700 hover:text-green-800 font-medium">← Takaisin kaikkiin joukkueisiin</a>
+            </div>
+
+            <% if (typeof loading !== 'undefined' && loading) { %>
+                <div class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+                    <p class="mt-4 text-lg text-green-800">Ladataan alijoukkueita...</p>
+                    <p class="text-sm text-slate-600 mt-2">Palvelin käynnistyy, odota hetki.</p>
+                </div>
+            <% } else if (subteams.length > 0) { %>
+                <h2 class="text-2xl font-semibold text-green-800 mb-6 text-center font-heading">
+                    Alijoukkueet
+                </h2>
+
+                <div class="space-y-6">
+                    <% subteams.forEach((subteam) => { %>
+                        <div class="bg-white p-5 rounded-lg shadow-xl border border-green-600 hover:shadow-2xl transition-shadow duration-300">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-xl font-bold text-green-700 font-heading">
+                                    <%= subteam.name.split(' ').pop() %>
+                                </h3>
+                            </div>
+                            
+                            <% if (subteam.nextGame) { %>
+                                <div class="mb-3">
+                                    <p class="text-lg font-semibold text-slate-700 font-body mb-2">
+                                        Seuraava peli:
+                                    </p>
+                                    <p class="text-md text-slate-800 font-body">
+                                        🕒 <span class="font-bold"><%= subteam.nextGame.time.split(' - ')[0] %></span> vs <span class="text-slate-700"><%= subteam.nextGame.opponent.split('(')[0].trim() %></span>
+                                    </p>
+                                    <p class="text-md text-slate-600 font-body">
+                                        📍 <%= subteam.nextGame.field %>
+                                    </p>
+                                </div>
+                                
+                                <div class="text-xs text-slate-600 font-body mb-4 pt-3 border-t border-slate-200">
+                                    <span class="font-semibold">Pelimuoto:</span> <%= subteam.nextGame.gameType %> &nbsp;&middot;&nbsp; 
+                                    <span class="font-semibold">Sarja/Ikäluokka:</span> <%= subteam.nextGame.year %> &nbsp;&middot;&nbsp; 
+                                    <span class="font-semibold">Kesto:</span> <%= subteam.nextGame.gameDuration %>
+                                </div>
+                            <% } else { %>
+                                <div class="mb-4">
+                                    <p class="text-lg text-slate-500 font-body">
+                                        Ei tulevia pelejä
+                                    </p>
+                                </div>
+                            <% } %>
+                            
+                            <div class="pt-3 border-t border-slate-200">
+                                <a href="/team/<%= encodeURIComponent(subteam.name) %>" 
+                                   class="inline-block bg-green-700 hover:bg-green-800 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300">
+                                    Näytä aikataulu
+                                </a>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <p class="text-center text-slate-500 mt-10 text-lg font-body">Ei alijoukkueita löytynyt.</p>
+            <% } %>
+        </main>
+
+        <footer class="bg-slate-800 text-slate-300 text-center p-4 rounded-t-lg mt-12 font-body shadow-inner">
+            <p>Tämä on epävirallinen työkalu OLS Viikkopelien otteluohjelman selaamiseen.</p>
+        </footer>
+    </div>
+</body>
+
+</html>
