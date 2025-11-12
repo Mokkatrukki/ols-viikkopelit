@@ -19,9 +19,16 @@ interface GameInfo {
   location?: string;
 }
 
+interface DateGroup {
+  date: string;
+  fullDate: string;
+  games: GameInfo[];
+}
+
 interface ExtractedData {
   documentDate: string;
   games: GameInfo[];
+  gamesByDate: DateGroup[];
 }
 
 interface GroupedTeamEntry {
@@ -77,6 +84,43 @@ function getGroupedTeams(allGamesData: GameInfo[]): GroupedTeamEntry[] {
   return result;
 }
 
+// Helper function to get teams for a specific date
+function getGroupedTeamsForDate(date: string): GroupedTeamEntry[] {
+  const dateGroup = gamesByDate.find(dg => dg.date === date);
+  if (!dateGroup) return [];
+  return getGroupedTeams(dateGroup.games);
+}
+
+// Helper function to parse date string (dd.mm.yyyy) to Date object
+function parseFullDate(dateStr: string): Date | null {
+  const parts = dateStr.split('.');
+  if (parts.length !== 3) return null;
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1; // Months are 0-indexed
+  const year = parseInt(parts[2], 10);
+  if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+  return new Date(year, month, day);
+}
+
+// Helper function to find the default date (today or next future date)
+function findDefaultDate(): string | null {
+  if (gamesByDate.length === 0) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Find today or the next future date
+  for (const dateGroup of gamesByDate) {
+    const gameDate = parseFullDate(dateGroup.fullDate);
+    if (gameDate && gameDate >= today) {
+      return dateGroup.date;
+    }
+  }
+
+  // If no future dates, return the last date
+  return gamesByDate[gamesByDate.length - 1].date;
+}
+
 // Helper function to parse time to minutes
 function parseTimeToMinutes(timeStr: string): number {
   const parts = timeStr.split(':');
@@ -100,8 +144,9 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // Data storage
-const jsonDataPath = path.join(__dirname, '..', 'data', 'games.json');
+const jsonDataPath = path.join(__dirname, '..', '..', 'data', 'games.json');
 let allGames: GameInfo[] = [];
+let gamesByDate: DateGroup[] = [];
 let documentDate: string = '';
 let cachedGroupedTeams: GroupedTeamEntry[] = [];
 let dataLoaded = false;
@@ -126,15 +171,17 @@ async function loadGameData() {
     const parsedData: ExtractedData = JSON.parse(fileContent);
 
     allGames = parsedData.games || [];
+    gamesByDate = parsedData.gamesByDate || [];
     documentDate = parsedData.documentDate || '';
     cachedGroupedTeams = getGroupedTeams(allGames);
 
     dataLoaded = true;
-    console.log(`✅ Loaded ${allGames.length} games`);
+    console.log(`✅ Loaded ${allGames.length} games across ${gamesByDate.length} dates`);
     console.log(`⚡ Data load completed in ${Date.now() - startTime}ms`);
   } catch (error) {
     console.error('❌ Error loading game data:', error);
     allGames = [];
+    gamesByDate = [];
     documentDate = '';
     cachedGroupedTeams = [];
     dataLoaded = true;
@@ -148,7 +195,7 @@ loadGameData().catch(error => {
 
 // Setup view engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '..', 'views'));
+app.set('views', path.join(__dirname, '..', '..', 'views'));
 
 // Security headers
 app.use((req: Request, res: Response, next) => {
@@ -168,19 +215,19 @@ app.use((req: Request, res: Response, next) => {
 });
 
 // Serve static files with caching
-app.use('/css', express.static(path.join(__dirname, '..', 'public', 'css'), {
+app.use('/css', express.static(path.join(__dirname, '..', '..', 'public', 'css'), {
   maxAge: '1y',
   immutable: true
 }));
-app.use('/images', express.static(path.join(__dirname, '..', 'public', 'images'), {
+app.use('/images', express.static(path.join(__dirname, '..', '..', 'public', 'images'), {
   maxAge: '1y',
   immutable: true
 }));
-app.use(express.static(path.join(__dirname, '..', 'public'), {
+app.use(express.static(path.join(__dirname, '..', '..', 'public'), {
   maxAge: process.env.NODE_ENV === 'production' ? '1d' : '5m'
 }));
 
-// Home route
+// Home route - redirect to default date
 app.get('/', async (req: Request, res: Response) => {
   if (!dataLoaded) {
     try {
@@ -198,26 +245,90 @@ app.get('/', async (req: Request, res: Response) => {
       documentTitle: 'Talviliiga - Ladataan...',
       groupedTeams: [],
       selectedTeam: null,
+      selectedDate: null,
       gamesForTeam: [],
       fieldMapData,
-      loading: true
+      loading: true,
+      gamesByDate: [],
+      currentDateIndex: 0
     });
     return;
   }
 
+  // Find default date and redirect
+  const defaultDate = findDefaultDate();
+  if (defaultDate) {
+    res.redirect(`/date/${encodeURIComponent(defaultDate)}`);
+  } else {
+    res.render('index', {
+      documentTitle: `Talviliiga${documentDate ? ' - ' + documentDate : ''}`,
+      groupedTeams: [],
+      selectedTeam: null,
+      selectedDate: null,
+      gamesForTeam: [],
+      fieldMapData,
+      loading: false,
+      gamesByDate: [],
+      currentDateIndex: 0
+    });
+  }
+});
+
+// Date route - show games for a specific date
+app.get('/date/:date', async (req: Request, res: Response) => {
+  const selectedDate = decodeURIComponent(req.params.date);
+
+  if (!dataLoaded) {
+    try {
+      await Promise.race([
+        loadGameData(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
+      ]);
+    } catch (error) {
+      console.log('⚡ Quick load timeout for date route');
+    }
+  }
+
+  if (!dataLoaded) {
+    res.render('index', {
+      documentTitle: 'Talviliiga - Ladataan...',
+      groupedTeams: [],
+      selectedTeam: null,
+      selectedDate,
+      gamesForTeam: [],
+      fieldMapData,
+      loading: true,
+      gamesByDate: [],
+      currentDateIndex: 0
+    });
+    return;
+  }
+
+  const currentDateIndex = gamesByDate.findIndex(dg => dg.date === selectedDate);
+  const dateGroup = gamesByDate[currentDateIndex];
+
+  if (!dateGroup) {
+    res.redirect('/');
+    return;
+  }
+
   res.render('index', {
-    documentTitle: `Talviliiga${documentDate ? ' - ' + documentDate : ''}`,
-    groupedTeams: cachedGroupedTeams,
+    documentTitle: `Talviliiga - ${dateGroup.fullDate}`,
+    groupedTeams: getGroupedTeamsForDate(selectedDate),
     selectedTeam: null,
+    selectedDate,
     gamesForTeam: [],
     fieldMapData,
-    loading: false
+    loading: false,
+    gamesByDate,
+    currentDateIndex
   });
 });
 
-// Team route
+// Team route with optional date
 app.get('/team/:teamName', async (req: Request, res: Response) => {
   const teamName = decodeURIComponent(req.params.teamName);
+  const selectedDate = req.query.date ? String(req.query.date) : null;
 
   if (!dataLoaded) {
     try {
@@ -235,14 +346,26 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
       documentTitle: 'Talviliiga - Ladataan...',
       groupedTeams: [],
       selectedTeam: teamName,
+      selectedDate,
       gamesForTeam: [],
       fieldMapData,
-      loading: true
+      loading: true,
+      gamesByDate: [],
+      currentDateIndex: 0
     });
     return;
   }
 
-  let gamesForTeam = allGames
+  // Filter games by date if specified
+  let gamesToFilter = allGames;
+  if (selectedDate) {
+    const dateGroup = gamesByDate.find(dg => dg.date === selectedDate);
+    if (dateGroup) {
+      gamesToFilter = dateGroup.games;
+    }
+  }
+
+  let gamesForTeam = gamesToFilter
     .filter(game => game.team1 === teamName || game.team2 === teamName)
     .map(game => {
       const opponent = game.team1 === teamName ? game.team2 : game.team1;
@@ -287,13 +410,19 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
     }
   }
 
+  const currentDateIndex = selectedDate ? gamesByDate.findIndex(dg => dg.date === selectedDate) : -1;
+  const groupedTeams = selectedDate ? getGroupedTeamsForDate(selectedDate) : cachedGroupedTeams;
+
   res.render('index', {
     documentTitle: `Talviliiga${documentDate ? ' - ' + documentDate : ''}`,
-    groupedTeams: cachedGroupedTeams,
+    groupedTeams,
     selectedTeam: teamName,
+    selectedDate,
     gamesForTeam,
     fieldMapData,
-    loading: false
+    loading: false,
+    gamesByDate,
+    currentDateIndex: currentDateIndex >= 0 ? currentDateIndex : 0
   });
 });
 

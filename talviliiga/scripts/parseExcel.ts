@@ -18,9 +18,16 @@ interface Game {
   location?: string;
 }
 
+interface DateGroup {
+  date: string;
+  fullDate: string; // Full date with year for comparison
+  games: Game[];
+}
+
 interface GameOutput {
   documentDate: string;
   games: Game[];
+  gamesByDate: DateGroup[];
 }
 
 /**
@@ -32,6 +39,18 @@ function excelDateToString(excelDate: number): string {
   const day = date.getDate();
   const month = date.getMonth() + 1;
   return `${day}.${month}`;
+}
+
+/**
+ * Convert Excel date number to full date string with year
+ */
+function excelDateToFullString(excelDate: number): string {
+  const excelEpoch = new Date(1899, 11, 30);
+  const date = new Date(excelEpoch.getTime() + excelDate * 86400000);
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
 }
 
 /**
@@ -137,12 +156,14 @@ function isTeamName(value: any): boolean {
 /**
  * Parse a tournament sheet
  */
-function parseSheet(worksheet: XLSX.WorkSheet, sheetName: string): Game[] {
+function parseSheet(worksheet: XLSX.WorkSheet, sheetName: string): { games: Game[], dateToExcelDate: Map<string, number> } {
   const games: Game[] = [];
   const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
   const seenGames = new Set<string>(); // Track unique games to avoid duplicates
+  const dateToExcelDate = new Map<string, number>(); // Map date strings to Excel dates for full date conversion
 
   let currentDate = '';
+  let currentExcelDate: number | null = null;
   let currentLocation = '';
   let currentGameDuration = '';
   const gameType = getGameType(sheetName);
@@ -161,6 +182,8 @@ function parseSheet(worksheet: XLSX.WorkSheet, sheetName: string): Game[] {
       const val = rowCells[C];
       if (typeof val === 'number' && val > 40000 && val < 50000) {
         currentDate = excelDateToString(val);
+        currentExcelDate = val;
+        dateToExcelDate.set(currentDate, val);
         console.log(`Found date: ${currentDate}`);
         break;
       }
@@ -244,7 +267,7 @@ function parseSheet(worksheet: XLSX.WorkSheet, sheetName: string): Game[] {
 
   console.log(`Total games parsed: ${games.length}`);
   console.log(`Duplicates filtered: ${seenGames.size - games.length}`);
-  return games;
+  return { games, dateToExcelDate };
 }
 
 /**
@@ -257,6 +280,7 @@ function parseExcelFile(filePath: string): GameOutput {
   console.log(`Found sheets: ${workbook.SheetNames.join(', ')}`);
 
   const allGames: Game[] = [];
+  const allDateToExcelDate = new Map<string, number>();
 
   const sheetsToProcess = workbook.SheetNames.filter(name =>
     name.includes('5v5 turnaukset') || name.includes('4v4 turnaukset')
@@ -266,8 +290,11 @@ function parseExcelFile(filePath: string): GameOutput {
 
   for (const sheetName of sheetsToProcess) {
     const worksheet = workbook.Sheets[sheetName];
-    const games = parseSheet(worksheet, sheetName);
-    allGames.push(...games);
+    const result = parseSheet(worksheet, sheetName);
+    allGames.push(...result.games);
+    result.dateToExcelDate.forEach((excelDate, date) => {
+      allDateToExcelDate.set(date, excelDate);
+    });
   }
 
   // Sort games by date and time
@@ -278,9 +305,39 @@ function parseExcelFile(filePath: string): GameOutput {
     return (a.time || '').localeCompare(b.time || '');
   });
 
+  // Group games by date
+  const gamesByDateMap = new Map<string, Game[]>();
+  allGames.forEach(game => {
+    if (game.date) {
+      if (!gamesByDateMap.has(game.date)) {
+        gamesByDateMap.set(game.date, []);
+      }
+      gamesByDateMap.get(game.date)!.push(game);
+    }
+  });
+
+  // Convert to array and add full dates
+  const gamesByDate: DateGroup[] = Array.from(gamesByDateMap.entries()).map(([date, games]) => {
+    const excelDate = allDateToExcelDate.get(date);
+    const fullDate = excelDate ? excelDateToFullString(excelDate) : date;
+    return {
+      date,
+      fullDate,
+      games
+    };
+  });
+
+  // Sort by full date
+  gamesByDate.sort((a, b) => {
+    const dateA = a.fullDate.split('.').reverse().join('-');
+    const dateB = b.fullDate.split('.').reverse().join('-');
+    return dateA.localeCompare(dateB);
+  });
+
   return {
     documentDate: new Date().toLocaleDateString('fi-FI'),
-    games: allGames
+    games: allGames,
+    gamesByDate
   };
 }
 
@@ -325,4 +382,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
 }
 
-export { parseExcelFile, Game, GameOutput };
+export { parseExcelFile, Game, GameOutput, DateGroup };
