@@ -222,63 +222,105 @@ function splitTeamName(teamName: string, baseTeams: BaseTeam[]): { parent: strin
   };
 }
 
-// Helper function to get all unique teams grouped by year with base teams
+// Helper function to get all unique teams (without year grouping)
 function getGroupedTeams(allGamesData: GameInfo[]): GroupedTeamEntry[] {
-  const teamsByBaseYear: Record<string, Set<string>> = {};
+  // Collect all unique teams
+  const allTeamsSet = new Set<string>();
 
   allGamesData.forEach(game => {
-    const baseYear = getBaseYear(game.year);
-    if (!teamsByBaseYear[baseYear]) {
-      teamsByBaseYear[baseYear] = new Set<string>();
-    }
     if (game.team1 && game.team1.trim() !== "") {
-      teamsByBaseYear[baseYear].add(game.team1);
+      allTeamsSet.add(game.team1);
     }
     if (game.team2 && game.team2.trim() !== "") {
-      teamsByBaseYear[baseYear].add(game.team2);
+      allTeamsSet.add(game.team2);
     }
   });
 
-  const result: GroupedTeamEntry[] = [];
-  Object.keys(teamsByBaseYear).sort((a, b) => {
-    if (a === "Muut") return 1;
-    if (b === "Muut") return -1;
-    return parseInt(a, 10) - parseInt(b, 10);
-  }).forEach(baseYear => {
-    const teamsInYear = Array.from(teamsByBaseYear[baseYear]);
+  const allTeamsArray = Array.from(allTeamsSet);
 
-    // Get base teams for this year's teams
-    const teamGroups = findTeamGroups(teamsInYear);
-    const baseTeams: BaseTeam[] = [];
-    const teamsInBaseTeams = new Set<string>();
+  // Find team groups (base teams with subteams)
+  const teamGroups = findTeamGroups(allTeamsArray);
+  const baseTeams: BaseTeam[] = [];
+  const allSubteams = new Set<string>();
 
-    teamGroups.forEach((subteams, baseName) => {
-      baseTeams.push({
-        name: baseName,
-        subteams: subteams.sort()
-      });
-      subteams.forEach(team => teamsInBaseTeams.add(team));
+  teamGroups.forEach((subteams, baseName) => {
+    baseTeams.push({
+      name: baseName,
+      subteams: subteams.sort()
     });
-
-    // Find individual teams (not part of any base team)
-    const individualTeams = teamsInYear.filter(team => !teamsInBaseTeams.has(team)).sort();
-
-    result.push({
-      year: baseYear,
-      teams: teamsInYear.sort(),
-      baseTeams: baseTeams.sort((a, b) => a.name.localeCompare(b.name)),
-      individualTeams
-    });
+    subteams.forEach(team => allSubteams.add(team));
   });
 
-  return result;
+  // Find individual teams (not part of any base team)
+  const individualTeams = allTeamsArray.filter(team => !allSubteams.has(team)).sort();
+
+
+  // Return as a single entry (no year-based grouping)
+  return [{
+    year: "",
+    teams: allTeamsArray.sort(),
+    baseTeams: baseTeams.sort((a, b) => a.name.localeCompare(b.name)),
+    individualTeams
+  }];
 }
 
-// Helper function to get teams for a specific date
+// Helper function to get teams for a specific date (without year grouping)
+// Uses GLOBAL base team structure to avoid duplicates
 function getGroupedTeamsForDate(date: string): GroupedTeamEntry[] {
   const dateGroup = gamesByDate.find(dg => dg.date === date);
   if (!dateGroup) return [];
-  return getGroupedTeams(dateGroup.games);
+
+  // Collect all unique teams for this date
+  const teamsForDate = new Set<string>();
+  dateGroup.games.forEach(game => {
+    if (game.team1 && game.team1.trim() !== "") {
+      teamsForDate.add(game.team1);
+    }
+    if (game.team2 && game.team2.trim() !== "") {
+      teamsForDate.add(game.team2);
+    }
+  });
+
+  const teamsArray = Array.from(teamsForDate);
+
+  // Use GLOBAL base teams (cachedBaseTeams) to filter out subteams
+  // This prevents subteams from appearing as individual teams even if
+  // only one subteam plays on this specific date
+  const baseTeamsForDate: BaseTeam[] = [];
+  const allGlobalSubteams = new Set<string>();
+
+  // First, collect all subteams from global cache
+  cachedBaseTeams.forEach(globalBaseTeam => {
+    globalBaseTeam.subteams.forEach(subteam => {
+      allGlobalSubteams.add(subteam);
+    });
+  });
+
+  // Only include base teams that have at least one subteam playing on this date
+  cachedBaseTeams.forEach(globalBaseTeam => {
+    const subteamsOnThisDate = globalBaseTeam.subteams.filter(subteam =>
+      teamsForDate.has(subteam)
+    );
+
+    if (subteamsOnThisDate.length > 0) {
+      baseTeamsForDate.push({
+        name: globalBaseTeam.name,
+        subteams: subteamsOnThisDate.sort()
+      });
+    }
+  });
+
+  // Find individual teams (not part of any base team globally)
+  const individualTeams = teamsArray.filter(team => !allGlobalSubteams.has(team)).sort();
+
+
+  // Return as a single entry (no year-based grouping)
+  return [{
+    year: "",
+    teams: teamsArray.sort(),
+    baseTeams: baseTeamsForDate.sort((a, b) => a.name.localeCompare(b.name)),
+    individualTeams
+  }];
 }
 
 // Helper function to parse date string (dd.mm.yyyy) to Date object

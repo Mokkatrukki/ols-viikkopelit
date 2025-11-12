@@ -88,6 +88,69 @@
         select { font-family: inherit; font-size: 100%; padding: 0.75rem; width: 100%; border: 1px solid rgb(203 213 225); border-radius: 0.5rem; }
         option.base-team { font-weight: 700 !important; }
 
+        /* Searchable Select Styles */
+        .searchable-select-wrapper { position: relative; width: 100%; }
+        .searchable-select-input {
+            width: 100%;
+            padding: 0.75rem;
+            padding-right: 2.5rem;
+            border: 1px solid rgb(203 213 225);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+        .searchable-select-input:focus {
+            outline: 2px solid rgb(59 130 246);
+            outline-offset: -1px;
+        }
+        .searchable-select-arrow {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: rgb(71 85 105);
+        }
+        .searchable-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 0.25rem;
+            background: white;
+            border: 1px solid rgb(203 213 225);
+            border-radius: 0.5rem;
+            max-height: 20rem;
+            overflow-y: auto;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            z-index: 50;
+            display: none;
+        }
+        .searchable-select-dropdown.open { display: block; }
+        .searchable-select-option {
+            padding: 0.75rem;
+            cursor: pointer;
+            border-bottom: 1px solid rgb(241 245 249);
+        }
+        .searchable-select-option:hover {
+            background-color: rgb(239 246 255);
+        }
+        .searchable-select-option:last-child { border-bottom: none; }
+        .searchable-select-option.selected {
+            background-color: rgb(219 234 254);
+            font-weight: 600;
+        }
+        .searchable-select-option.base-team {
+            font-weight: 700;
+            color: rgb(30 64 175);
+        }
+        .searchable-select-option.subteam {
+            padding-left: 2rem;
+            color: rgb(71 85 105);
+        }
+        .searchable-select-option.hidden { display: none; }
+
         .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
 
         @media (min-width: 768px) {
@@ -135,26 +198,112 @@
 
         <main class="p-4 md:p-8 mt-4 flex-grow">
             <form method="GET" id="teamSelectionForm" class="mb-6">
-                <label for="team" class="block text-lg font-medium text-blue-800 mb-2">Valitse joukkue:</label>
-                <select name="teamName" id="team" onchange="handleTeamSelection(this.value)" class="w-full p-4 border border-slate-300 rounded-lg shadow-sm">
-                    <option value="">-- Kaikki joukkueet --</option>
-                    <% groupedTeams.forEach(group => { %>
-                        <% group.baseTeams.forEach(baseTeam => { %>
-                            <option value="base-team:<%= baseTeam.name %>" class="base-team" style="font-weight: bold;" <%= selectedTeam === baseTeam.name ? 'selected' : '' %>>● <%= baseTeam.name %></option>
-                            <% baseTeam.subteams.forEach(subteam => { %>
-                                <% const subteamSuffix = subteam.substring(baseTeam.name.length).trim(); %>
-                                <option value="<%= subteam %>" <%= selectedTeam === subteam ? 'selected' : '' %>>&nbsp;&nbsp;&nbsp;&nbsp;- <%= subteamSuffix %></option>
+                <label for="teamSearch" class="block text-lg font-medium text-blue-800 mb-2">Valitse joukkue:</label>
+                <div class="searchable-select-wrapper">
+                    <input
+                        type="text"
+                        id="teamSearch"
+                        class="searchable-select-input"
+                        placeholder="-- Kaikki joukkueet --"
+                        autocomplete="off"
+                        value="<%= selectedTeam ? selectedTeam : '' %>"
+                    >
+                    <span class="searchable-select-arrow">▼</span>
+                    <div id="teamDropdown" class="searchable-select-dropdown">
+                        <div class="searchable-select-option" data-value="">-- Kaikki joukkueet --</div>
+                        <% groupedTeams.forEach(group => { %>
+                            <% group.baseTeams.forEach(baseTeam => { %>
+                                <div class="searchable-select-option base-team"
+                                     data-value="base-team:<%= baseTeam.name %>"
+                                     data-fullname="<%= baseTeam.name %>"
+                                     data-search="<%= baseTeam.name.toLowerCase() %>">
+                                    ● <%= baseTeam.name %>
+                                </div>
+                                <% baseTeam.subteams.forEach(subteam => { %>
+                                    <% const subteamSuffix = subteam.substring(baseTeam.name.length).trim(); %>
+                                    <div class="searchable-select-option subteam <%= selectedTeam === subteam ? 'selected' : '' %>"
+                                         data-value="<%= subteam %>"
+                                         data-fullname="<%= subteam %>"
+                                         data-search="<%= subteam.toLowerCase() %> <%= subteamSuffix.toLowerCase() %>">
+                                        <%= baseTeam.name %> - <%= subteamSuffix %>
+                                    </div>
+                                <% }); %>
+                            <% }); %>
+                            <% group.individualTeams.forEach(team => { %>
+                                <div class="searchable-select-option <%= selectedTeam === team ? 'selected' : '' %>"
+                                     data-value="<%= team %>"
+                                     data-fullname="<%= team %>"
+                                     data-search="<%= team.toLowerCase() %>">
+                                    <%= team %>
+                                </div>
                             <% }); %>
                         <% }); %>
-                        <% group.individualTeams.forEach(team => { %>
-                            <option value="<%= team %>" <%= selectedTeam === team ? 'selected' : '' %>><%= team %></option>
-                        <% }); %>
-                    <% }); %>
-                </select>
+                    </div>
+                </div>
             </form>
 
             <script>
                 const currentDate = '<%= typeof selectedDate !== "undefined" && selectedDate ? selectedDate : "" %>';
+                const searchInput = document.getElementById('teamSearch');
+                const dropdown = document.getElementById('teamDropdown');
+                const options = dropdown.querySelectorAll('.searchable-select-option');
+
+                // Toggle dropdown on input click
+                searchInput.addEventListener('click', function() {
+                    dropdown.classList.toggle('open');
+                });
+
+                // Filter options as user types
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase().trim();
+                    dropdown.classList.add('open');
+
+                    options.forEach(option => {
+                        const searchData = option.getAttribute('data-search') || '';
+                        if (searchTerm === '' || searchData.includes(searchTerm)) {
+                            option.classList.remove('hidden');
+                        } else {
+                            option.classList.add('hidden');
+                        }
+                    });
+                });
+
+                // Handle option selection
+                options.forEach(option => {
+                    option.addEventListener('click', function() {
+                        const value = this.getAttribute('data-value');
+                        const fullName = this.getAttribute('data-fullname');
+
+                        // Update input
+                        if (value === '') {
+                            searchInput.value = '';
+                            searchInput.placeholder = '-- Kaikki joukkueet --';
+                        } else {
+                            // Use full name if available, otherwise use cleaned text
+                            searchInput.value = fullName || this.textContent.trim().replace('●', '').replace('-', '').trim();
+                        }
+
+                        // Close dropdown
+                        dropdown.classList.remove('open');
+
+                        // Navigate
+                        handleTeamSelection(value);
+                    });
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!searchInput.contains(event.target) && !dropdown.contains(event.target)) {
+                        dropdown.classList.remove('open');
+                    }
+                });
+
+                // Handle keyboard navigation
+                searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        dropdown.classList.remove('open');
+                    }
+                });
 
                 function handleTeamSelection(value) {
                     if (!value) {
