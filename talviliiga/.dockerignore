@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Git files
+.git/
+.gitignore
+
+# Environment files
+.env
+.env.local
+
+# Build outputs (will be rebuilt in container)
+dist/
+
+# Documentation
+README.md
+*.md
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Fly.io files
+fly.toml
+
+# Temporary files
+*.tmp
+.cache/

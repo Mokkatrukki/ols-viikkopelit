@@ -1,0 +1,22 @@
+{
+  "name": "ols-excel-parser",
+  "version": "1.0.0",
+  "description": "Excel parser for OLS tournament schedules",
+  "main": "dist/excelParser.js",
+  "scripts": {
+    "build": "tsc",
+    "parse": "npm run build && node dist/excelParser.js",
+    "dev": "ts-node src/excelParser.ts"
+  },
+  "keywords": ["excel", "parser", "ols", "tournament"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
