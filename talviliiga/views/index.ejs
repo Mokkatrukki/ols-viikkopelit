@@ -139,7 +139,17 @@
                     <option value="">-- Kaikki joukkueet --</option>
                     <% groupedTeams.forEach(group => { %>
                         <optgroup label="<%= group.year %>">
-                            <% group.teams.forEach(team => { %>
+                            <% group.baseTeams.forEach(baseTeam => { %>
+                                <option value="base-team:<%= baseTeam.name %>" style="font-weight: bold;" <%= selectedTeam === baseTeam.name ? 'selected' : '' %>>
+                                    <%= baseTeam.name %>
+                                </option>
+                                <% baseTeam.subteams.forEach(subteam => { %>
+                                    <option value="<%= subteam %>" <%= selectedTeam === subteam ? 'selected' : '' %>>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;- <%= subteam %>
+                                    </option>
+                                <% }); %>
+                            <% }); %>
+                            <% group.individualTeams.forEach(team => { %>
                                 <option value="<%= team %>" <%= selectedTeam === team ? 'selected' : '' %>>
                                     <%= team %>
                                 </option>
@@ -159,7 +169,12 @@
                         } else {
                             window.location.href = '/';
                         }
+                    } else if (value.startsWith('base-team:')) {
+                        // Navigate to base team portal
+                        const baseTeamName = value.substring('base-team:'.length);
+                        window.location.href = '/base-team/' + encodeURIComponent(baseTeamName);
                     } else {
+                        // Navigate to individual team page
                         if (currentDate) {
                             window.location.href = '/team/' + encodeURIComponent(value) + '?date=' + encodeURIComponent(currentDate);
                         } else {
@@ -192,7 +207,11 @@
                 </script>
             <% } else if (selectedTeam && gamesForTeam.length > 0) { %>
                 <h2 class="text-2xl font-semibold text-blue-800 mb-4 text-center">
-                    <%= selectedTeam %> - Otteluohjelma
+                    <% if (typeof teamNameSplit !== 'undefined' && teamNameSplit.parent && teamNameSplit.subteam) { %>
+                        <%= teamNameSplit.parent %> / <%= teamNameSplit.subteam %> - Otteluohjelma
+                    <% } else { %>
+                        <%= selectedTeam %> - Otteluohjelma
+                    <% } %>
                 </h2>
 
                 <div class="space-y-6">

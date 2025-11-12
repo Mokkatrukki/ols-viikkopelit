@@ -6,6 +6,13 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Determine project root (works in both dev and compiled modes)
+// In dev: __dirname = /path/to/talviliiga/src
+// In prod: __dirname = /path/to/talviliiga/dist/src
+const projectRoot = __dirname.includes('/dist/')
+  ? path.join(__dirname, '..', '..') // From dist/src to project root
+  : path.join(__dirname, '..'); // From src to project root
+
 // Interfaces
 interface GameInfo {
   field: string;
@@ -31,9 +38,16 @@ interface ExtractedData {
   gamesByDate: DateGroup[];
 }
 
+interface BaseTeam {
+  name: string; // Base team name like "OLS Kreikka 17"
+  subteams: string[]; // Full subteam names like "OLS Kreikka 17 Aek"
+}
+
 interface GroupedTeamEntry {
   year: string;
   teams: string[];
+  baseTeams: BaseTeam[]; // Base teams for this year
+  individualTeams: string[]; // Teams not part of any base team
 }
 
 // Field map data for venue images
@@ -46,13 +60,169 @@ const fieldMapData: { [key: string]: { src: string; width: number; height: numbe
   "KURIKKAHAANTIEN HALLI KENTTÄ 2": { src: '/images/kurikka.webp', width: 800, height: 600 },
 };
 
+// Helper function to find longest common prefix between two strings
+function longestCommonPrefix(str1: string, str2: string): string {
+  let i = 0;
+  while (i < str1.length && i < str2.length && str1[i] === str2[i]) {
+    i++;
+  }
+  // Trim to last space to avoid cutting words in half
+  const prefix = str1.substring(0, i);
+  const lastSpaceIndex = prefix.lastIndexOf(' ');
+  return lastSpaceIndex > 0 ? prefix.substring(0, lastSpaceIndex).trim() : prefix.trim();
+}
+
+// Helper function to dynamically group teams by finding common prefixes
+function findTeamGroups(teamNames: string[]): Map<string, string[]> {
+  // First, find all possible groupings
+  const allPossibleGroups: Array<{prefix: string, teams: string[]}> = [];
+
+  for (let i = 0; i < teamNames.length; i++) {
+    for (let j = i + 1; j < teamNames.length; j++) {
+      const team1 = teamNames[i];
+      const team2 = teamNames[j];
+      const commonPrefix = longestCommonPrefix(team1, team2);
+
+      // Only consider meaningful prefixes
+      const prefixWords = commonPrefix.split(/\s+/).filter(w => w.length > 0);
+      const isMeaningfulPrefix =
+        (commonPrefix.length >= 10 && prefixWords.length >= 3) || // Long prefix with 3+ words
+        (prefixWords.length >= 2 && prefixWords.every(word => word.length >= 2)); // 2+ words, each 2+ chars
+
+      if (isMeaningfulPrefix) {
+        // Find all teams that match this prefix
+        const matchingTeams = teamNames.filter(team =>
+          team.startsWith(commonPrefix + ' ')
+        );
+
+        if (matchingTeams.length >= 2) {
+          allPossibleGroups.push({
+            prefix: commonPrefix,
+            teams: matchingTeams.sort()
+          });
+        }
+      }
+    }
+  }
+
+  // Remove duplicate groups (same teams, different prefix length)
+  const uniqueGroups: Array<{prefix: string, teams: string[]}> = [];
+
+  for (const group of allPossibleGroups) {
+    const teamSet = new Set(group.teams);
+    const isDuplicate = uniqueGroups.some(existing => {
+      const existingSet = new Set(existing.teams);
+      return teamSet.size === existingSet.size &&
+             [...teamSet].every(team => existingSet.has(team));
+    });
+
+    if (!isDuplicate) {
+      uniqueGroups.push(group);
+    } else {
+      // If duplicate, keep the one with longer (more specific) prefix
+      const existingIndex = uniqueGroups.findIndex(existing => {
+        const existingSet = new Set(existing.teams);
+        return teamSet.size === existingSet.size &&
+               [...teamSet].every(team => existingSet.has(team));
+      });
+
+      if (existingIndex !== -1 && group.prefix.length > uniqueGroups[existingIndex].prefix.length) {
+        uniqueGroups[existingIndex] = group;
+      }
+    }
+  }
+
+  // Sort by specificity (longer prefix first) and group size
+  uniqueGroups.sort((a, b) => {
+    if (a.prefix.length !== b.prefix.length) {
+      return b.prefix.length - a.prefix.length; // Longer prefix first
+    }
+    return b.teams.length - a.teams.length; // More teams first
+  });
+
+  // Select non-overlapping groups greedily (most specific first)
+  const finalGroups = new Map<string, string[]>();
+  const usedTeams = new Set<string>();
+
+  for (const group of uniqueGroups) {
+    const hasOverlap = group.teams.some(team => usedTeams.has(team));
+
+    if (!hasOverlap && group.teams.length > 1) {
+      finalGroups.set(group.prefix, group.teams);
+      group.teams.forEach(team => usedTeams.add(team));
+    }
+  }
+
+  return finalGroups;
+}
+
+// Helper function to group teams by their base names using dynamic detection
+function getBaseTeams(allGamesData: GameInfo[]): BaseTeam[] {
+  // Collect all unique team names
+  const allTeamNames: string[] = [];
+  const teamNameSet = new Set<string>();
+
+  allGamesData.forEach(game => {
+    if (game.team1 && game.team1.trim() !== "") {
+      if (!teamNameSet.has(game.team1)) {
+        teamNameSet.add(game.team1);
+        allTeamNames.push(game.team1);
+      }
+    }
+    if (game.team2 && game.team2.trim() !== "") {
+      if (!teamNameSet.has(game.team2)) {
+        teamNameSet.add(game.team2);
+        allTeamNames.push(game.team2);
+      }
+    }
+  });
+
+  // Use dynamic grouping to find teams with common prefixes
+  const teamGroups = findTeamGroups(allTeamNames);
+
+  // Convert to BaseTeam array
+  const result: BaseTeam[] = [];
+  teamGroups.forEach((subteams, baseName) => {
+    result.push({
+      name: baseName,
+      subteams: subteams.sort() // Sort subteams alphabetically
+    });
+  });
+
+  // Sort alphabetically by base team name
+  return result.sort((a, b) => a.name.localeCompare(b.name));
+}
+
 // Helper function to extract base year from game year
 function getBaseYear(gameYear: string): string {
   const match = gameYear.match(/^(\d{4})/);
   return match ? match[1] : "Muut";
 }
 
-// Helper function to get all unique teams grouped by year
+// Helper function to split team name into parent and subteam
+function splitTeamName(teamName: string, baseTeams: BaseTeam[]): { parent: string | null, subteam: string | null, fullName: string } {
+  // Check if this team is part of any base team
+  for (const baseTeam of baseTeams) {
+    if (baseTeam.subteams.includes(teamName)) {
+      // This is a subteam - extract the subteam part
+      const subteamPart = teamName.substring(baseTeam.name.length).trim();
+      return {
+        parent: baseTeam.name,
+        subteam: subteamPart,
+        fullName: teamName
+      };
+    }
+  }
+
+  // Not a subteam, return as-is
+  return {
+    parent: null,
+    subteam: null,
+    fullName: teamName
+  };
+}
+
+// Helper function to get all unique teams grouped by year with base teams
 function getGroupedTeams(allGamesData: GameInfo[]): GroupedTeamEntry[] {
   const teamsByBaseYear: Record<string, Set<string>> = {};
 
@@ -75,9 +245,29 @@ function getGroupedTeams(allGamesData: GameInfo[]): GroupedTeamEntry[] {
     if (b === "Muut") return -1;
     return parseInt(a, 10) - parseInt(b, 10);
   }).forEach(baseYear => {
+    const teamsInYear = Array.from(teamsByBaseYear[baseYear]);
+
+    // Get base teams for this year's teams
+    const teamGroups = findTeamGroups(teamsInYear);
+    const baseTeams: BaseTeam[] = [];
+    const teamsInBaseTeams = new Set<string>();
+
+    teamGroups.forEach((subteams, baseName) => {
+      baseTeams.push({
+        name: baseName,
+        subteams: subteams.sort()
+      });
+      subteams.forEach(team => teamsInBaseTeams.add(team));
+    });
+
+    // Find individual teams (not part of any base team)
+    const individualTeams = teamsInYear.filter(team => !teamsInBaseTeams.has(team)).sort();
+
     result.push({
       year: baseYear,
-      teams: Array.from(teamsByBaseYear[baseYear]).sort()
+      teams: teamsInYear.sort(),
+      baseTeams: baseTeams.sort((a, b) => a.name.localeCompare(b.name)),
+      individualTeams
     });
   });
 
@@ -144,11 +334,12 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // Data storage
-const jsonDataPath = path.join(__dirname, '..', '..', 'data', 'games.json');
+const jsonDataPath = path.join(projectRoot, 'data', 'games.json');
 let allGames: GameInfo[] = [];
 let gamesByDate: DateGroup[] = [];
 let documentDate: string = '';
 let cachedGroupedTeams: GroupedTeamEntry[] = [];
+let cachedBaseTeams: BaseTeam[] = [];
 let dataLoaded = false;
 
 // Function to load game data
@@ -174,9 +365,11 @@ async function loadGameData() {
     gamesByDate = parsedData.gamesByDate || [];
     documentDate = parsedData.documentDate || '';
     cachedGroupedTeams = getGroupedTeams(allGames);
+    cachedBaseTeams = getBaseTeams(allGames);
 
     dataLoaded = true;
     console.log(`✅ Loaded ${allGames.length} games across ${gamesByDate.length} dates`);
+    console.log(`✅ Found ${cachedBaseTeams.length} base teams`);
     console.log(`⚡ Data load completed in ${Date.now() - startTime}ms`);
   } catch (error) {
     console.error('❌ Error loading game data:', error);
@@ -195,7 +388,7 @@ loadGameData().catch(error => {
 
 // Setup view engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '..', '..', 'views'));
+app.set('views', path.join(projectRoot, 'views'));
 
 // Security headers
 app.use((req: Request, res: Response, next) => {
@@ -215,15 +408,15 @@ app.use((req: Request, res: Response, next) => {
 });
 
 // Serve static files with caching
-app.use('/css', express.static(path.join(__dirname, '..', '..', 'public', 'css'), {
+app.use('/css', express.static(path.join(projectRoot, 'public', 'css'), {
   maxAge: '1y',
   immutable: true
 }));
-app.use('/images', express.static(path.join(__dirname, '..', '..', 'public', 'images'), {
+app.use('/images', express.static(path.join(projectRoot, 'public', 'images'), {
   maxAge: '1y',
   immutable: true
 }));
-app.use(express.static(path.join(__dirname, '..', '..', 'public'), {
+app.use(express.static(path.join(projectRoot, 'public'), {
   maxAge: process.env.NODE_ENV === 'production' ? '1d' : '5m'
 }));
 
@@ -245,6 +438,7 @@ app.get('/', async (req: Request, res: Response) => {
       documentTitle: 'Talviliiga - Ladataan...',
       groupedTeams: [],
       selectedTeam: null,
+      teamNameSplit: null,
       selectedDate: null,
       gamesForTeam: [],
       fieldMapData,
@@ -264,6 +458,7 @@ app.get('/', async (req: Request, res: Response) => {
       documentTitle: `Talviliiga${documentDate ? ' - ' + documentDate : ''}`,
       groupedTeams: [],
       selectedTeam: null,
+      teamNameSplit: null,
       selectedDate: null,
       gamesForTeam: [],
       fieldMapData,
@@ -294,6 +489,7 @@ app.get('/date/:date', async (req: Request, res: Response) => {
       documentTitle: 'Talviliiga - Ladataan...',
       groupedTeams: [],
       selectedTeam: null,
+      teamNameSplit: null,
       selectedDate,
       gamesForTeam: [],
       fieldMapData,
@@ -316,12 +512,86 @@ app.get('/date/:date', async (req: Request, res: Response) => {
     documentTitle: `Talviliiga - ${dateGroup.fullDate}`,
     groupedTeams: getGroupedTeamsForDate(selectedDate),
     selectedTeam: null,
+    teamNameSplit: null,
     selectedDate,
     gamesForTeam: [],
     fieldMapData,
     loading: false,
     gamesByDate,
     currentDateIndex
+  });
+});
+
+// Base team portal route - shows all subteams for a base team
+app.get('/base-team/:baseTeamName', async (req: Request, res: Response) => {
+  const baseTeamName = decodeURIComponent(req.params.baseTeamName);
+
+  if (!dataLoaded) {
+    try {
+      await Promise.race([
+        loadGameData(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
+      ]);
+    } catch (error) {
+      console.log('⚡ Quick load timeout for base team route');
+    }
+  }
+
+  if (!dataLoaded) {
+    res.render('base_team_portal', {
+      documentTitle: `${baseTeamName} - Joukkueportaali`,
+      baseTeamName: baseTeamName,
+      subteams: [],
+      loading: true,
+      fieldMapData
+    });
+    return;
+  }
+
+  // Find the base team
+  const baseTeam = cachedBaseTeams.find(bt => bt.name === baseTeamName);
+  if (!baseTeam) {
+    res.status(404).send('Base team not found');
+    return;
+  }
+
+  // Get next game for each subteam
+  const subteamsWithNextGame = baseTeam.subteams.map(subteamName => {
+    const gamesForSubteam = allGames
+      .filter(game => game.team1 === subteamName || game.team2 === subteamName)
+      .map(game => {
+        const opponent = game.team1 === subteamName ? game.team2 : game.team1;
+        return { ...game, opponent: opponent || 'Vastustaja puuttuu' };
+      })
+      .sort((a, b) => {
+        // Sort by date first
+        if (a.date && b.date && a.date !== b.date) {
+          return a.date.localeCompare(b.date);
+        }
+        // Then by time
+        const timeA = parseTimeToMinutes(a.time);
+        const timeB = parseTimeToMinutes(b.time);
+        if (isNaN(timeA) || isNaN(timeB)) return 0;
+        return timeA - timeB;
+      });
+
+    const nextGame = gamesForSubteam[0] || null; // First game is the next game
+
+    return {
+      name: subteamName,
+      nextGame: nextGame
+    };
+  });
+
+  // Sort alphabetically by subteam name
+  subteamsWithNextGame.sort((a, b) => a.name.localeCompare(b.name));
+
+  res.render('base_team_portal', {
+    documentTitle: `${baseTeamName} - Joukkueportaali`,
+    baseTeamName: baseTeamName,
+    subteams: subteamsWithNextGame,
+    loading: false,
+    fieldMapData
   });
 });
 
@@ -346,6 +616,7 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
       documentTitle: 'Talviliiga - Ladataan...',
       groupedTeams: [],
       selectedTeam: teamName,
+      teamNameSplit: null,
       selectedDate,
       gamesForTeam: [],
       fieldMapData,
@@ -413,10 +684,14 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
   const currentDateIndex = selectedDate ? gamesByDate.findIndex(dg => dg.date === selectedDate) : -1;
   const groupedTeams = selectedDate ? getGroupedTeamsForDate(selectedDate) : cachedGroupedTeams;
 
+  // Split team name for better display
+  const teamNameSplit = splitTeamName(teamName, cachedBaseTeams);
+
   res.render('index', {
     documentTitle: `Talviliiga${documentDate ? ' - ' + documentDate : ''}`,
     groupedTeams,
     selectedTeam: teamName,
+    teamNameSplit, // { parent, subteam, fullName }
     selectedDate,
     gamesForTeam,
     fieldMapData,
