@@ -627,6 +627,15 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
     return;
   }
 
+  // If no date is specified, redirect to the default date
+  if (!selectedDate) {
+    const defaultDate = findDefaultDate();
+    if (defaultDate) {
+      res.redirect(`/team/${encodeURIComponent(teamName)}?date=${encodeURIComponent(defaultDate)}`);
+      return;
+    }
+  }
+
   // Filter games by date if specified
   let gamesToFilter = allGames;
   if (selectedDate) {

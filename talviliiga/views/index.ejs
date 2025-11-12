@@ -86,6 +86,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         select { font-family: inherit; font-size: 100%; padding: 0.75rem; width: 100%; border: 1px solid rgb(203 213 225); border-radius: 0.5rem; }
+        option.base-team { font-weight: 700 !important; }
 
         .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
 
@@ -138,23 +139,16 @@
                 <select name="teamName" id="team" onchange="handleTeamSelection(this.value)" class="w-full p-4 border border-slate-300 rounded-lg shadow-sm">
                     <option value="">-- Kaikki joukkueet --</option>
                     <% groupedTeams.forEach(group => { %>
-                        <optgroup label="<%= group.year %>">
-                            <% group.baseTeams.forEach(baseTeam => { %>
-                                <option value="base-team:<%= baseTeam.name %>" style="font-weight: bold;" <%= selectedTeam === baseTeam.name ? 'selected' : '' %>>
-                                    <%= baseTeam.name %>
-                                </option>
-                                <% baseTeam.subteams.forEach(subteam => { %>
-                                    <option value="<%= subteam %>" <%= selectedTeam === subteam ? 'selected' : '' %>>
-                                        &nbsp;&nbsp;&nbsp;&nbsp;- <%= subteam %>
-                                    </option>
-                                <% }); %>
+                        <% group.baseTeams.forEach(baseTeam => { %>
+                            <option value="base-team:<%= baseTeam.name %>" class="base-team" style="font-weight: bold;" <%= selectedTeam === baseTeam.name ? 'selected' : '' %>>● <%= baseTeam.name %></option>
+                            <% baseTeam.subteams.forEach(subteam => { %>
+                                <% const subteamSuffix = subteam.substring(baseTeam.name.length).trim(); %>
+                                <option value="<%= subteam %>" <%= selectedTeam === subteam ? 'selected' : '' %>>&nbsp;&nbsp;&nbsp;&nbsp;- <%= subteamSuffix %></option>
                             <% }); %>
-                            <% group.individualTeams.forEach(team => { %>
-                                <option value="<%= team %>" <%= selectedTeam === team ? 'selected' : '' %>>
-                                    <%= team %>
-                                </option>
-                            <% }); %>
-                        </optgroup>
+                        <% }); %>
+                        <% group.individualTeams.forEach(team => { %>
+                            <option value="<%= team %>" <%= selectedTeam === team ? 'selected' : '' %>><%= team %></option>
+                        <% }); %>
                     <% }); %>
                 </select>
             </form>
