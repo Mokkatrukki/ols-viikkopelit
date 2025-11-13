@@ -175,6 +175,50 @@ This is a simple, focused tool. If you want to add features, please ensure they:
 
 ISC
 
+## 📊 Usage Analytics
+
+The app includes request logging to track page views and usage statistics. After game days, you can check the logs to see how many people used the app.
+
+### View Logs
+
+```bash
+# See recent logs with page views
+fly logs --app talviliiga --no-tail | grep "📊"
+
+# See live logs (real-time)
+fly logs --app talviliiga -f
+```
+
+### Usage Statistics
+
+```bash
+# Count total page views
+fly logs --app talviliiga --no-tail | grep "📊" | wc -l
+
+# Count unique visitors (approximate)
+fly logs --app talviliiga --no-tail | grep "📊" | grep -oP 'IP: \K[^\s]+' | sort -u | wc -l
+
+# See which teams/pages are most popular
+fly logs --app talviliiga --no-tail | grep "📊" | grep -oP 'GET \K[^\s]+' | sort | uniq -c | sort -rn
+
+# Count mobile vs desktop usage
+fly logs --app talviliiga --no-tail | grep "📊" | grep -i "iphone\|android\|mobile" | wc -l
+```
+
+### Example Log Output
+
+```
+📊 [2025-11-13T11:26:24.459Z] GET / - IP: 192.168.1.1 - UA: Mozilla/5.0 (iPhone...)
+📊 [2025-11-13T11:26:27.597Z] GET /base-team/Ajax%20P10 - IP: 192.168.1.1 - UA: Mozilla/5.0...
+📊 [2025-11-13T11:26:30.168Z] GET /team/Ajax%20P10%20Keltainen?date=16.11 - IP: 192.168.1.2 - UA: Mozilla/5.0...
+```
+
+Each log entry shows:
+- **Timestamp**: When the request was made
+- **URL**: Which page was visited
+- **IP**: Visitor's IP address (first part only)
+- **User Agent**: Browser/device information (truncated)
+
 ## 🙏 Acknowledgments
 
 Built using simplified patterns from the OLS Viikkopelit app, focusing on performance and simplicity for static tournament schedules.

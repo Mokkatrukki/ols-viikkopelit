@@ -433,6 +433,25 @@ loadGameData().catch(error => {
 app.set('view engine', 'ejs');
 app.set('views', path.join(projectRoot, 'views'));
 
+// Request logging middleware for tracking usage
+app.use((req: Request, res: Response, next) => {
+  const timestamp = new Date().toISOString();
+  const method = req.method;
+  const url = req.url;
+  const userAgent = req.get('user-agent') || 'unknown';
+  const ip = req.get('x-forwarded-for') || req.ip || 'unknown';
+
+  // Log page views (skip static assets, health checks, and favicon)
+  if (!url.startsWith('/css') &&
+      !url.startsWith('/images') &&
+      !url.startsWith('/favicon') &&
+      url !== '/health') {
+    console.log(`📊 [${timestamp}] ${method} ${url} - IP: ${ip.split(',')[0]} - UA: ${userAgent.substring(0, 50)}`);
+  }
+
+  next();
+});
+
 // Security headers
 app.use((req: Request, res: Response, next) => {
   res.setHeader('Content-Security-Policy',
@@ -628,7 +647,13 @@ app.get('/base-team/:baseTeamName', async (req: Request, res: Response) => {
       .filter(game => game.team1 === subteamName || game.team2 === subteamName)
       .map(game => {
         const opponent = game.team1 === subteamName ? game.team2 : game.team1;
-        return { ...game, opponent: opponent || 'Vastustaja puuttuu' };
+        // Find the full date for this game
+        let fullDate = game.date;
+        const dateGroup = gamesByDate.find(dg => dg.date === game.date);
+        if (dateGroup) {
+          fullDate = dateGroup.fullDate;
+        }
+        return { ...game, opponent: opponent || 'Vastustaja puuttuu', fullDate };
       })
       .sort((a, b) => {
         // Sort by date first
@@ -726,7 +751,13 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
     .filter(game => game.team1 === teamName || game.team2 === teamName)
     .map(game => {
       const opponent = game.team1 === teamName ? game.team2 : game.team1;
-      return { ...game, opponent: opponent || 'Vastustaja puuttuu' };
+      // Find the full date for this game
+      let fullDate = game.date;
+      const dateGroup = gamesByDate.find(dg => dg.date === game.date);
+      if (dateGroup) {
+        fullDate = dateGroup.fullDate;
+      }
+      return { ...game, opponent: opponent || 'Vastustaja puuttuu', fullDate };
     });
 
   // Sort games by date and time
@@ -780,7 +811,12 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
   }
   if (gamesForTeam.length > 0) {
     const firstGame = gamesForTeam[0];
-    metaDescription += `. First game: ${firstGame.time} vs ${firstGame.opponent}`;
+    // Include date if not already in the description
+    if (!dateGroupForMeta && firstGame.date) {
+      metaDescription += `. First game: ${firstGame.date} at ${firstGame.time} vs ${firstGame.opponent}`;
+    } else {
+      metaDescription += `. First game: ${firstGame.time} vs ${firstGame.opponent}`;
+    }
   }
 
   // Create title with parent team and subteam if available
