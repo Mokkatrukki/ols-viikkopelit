@@ -87,7 +87,8 @@ function findTeamGroups(teamNames: string[]): Map<string, string[]> {
       const prefixWords = commonPrefix.split(/\s+/).filter(w => w.length > 0);
       const isMeaningfulPrefix =
         (commonPrefix.length >= 10 && prefixWords.length >= 3) || // Long prefix with 3+ words
-        (prefixWords.length >= 2 && prefixWords.every(word => word.length >= 2)); // 2+ words, each 2+ chars
+        (prefixWords.length >= 2 && prefixWords.every(word => word.length >= 2)) || // 2+ words, each 2+ chars
+        (prefixWords.length === 1 && commonPrefix.length >= 3); // Single word, at least 3 chars
 
       if (isMeaningfulPrefix) {
         // Find all teams that match this prefix
