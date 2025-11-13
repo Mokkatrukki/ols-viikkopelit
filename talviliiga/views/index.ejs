@@ -248,9 +248,17 @@
                 const dropdown = document.getElementById('teamDropdown');
                 const options = dropdown.querySelectorAll('.searchable-select-option');
 
-                // Toggle dropdown on input click
+                // Toggle dropdown on input click and select all text for easy replacement
                 searchInput.addEventListener('click', function() {
                     dropdown.classList.toggle('open');
+                    // Select all text so typing replaces it (especially useful on mobile)
+                    this.select();
+                });
+
+                // Also select all when focused (e.g., via tab key)
+                searchInput.addEventListener('focus', function() {
+                    // Small delay to ensure selection works on mobile
+                    setTimeout(() => this.select(), 10);
                 });
 
                 // Filter options as user types
@@ -351,7 +359,7 @@
             <% } else if (selectedTeam && gamesForTeam.length > 0) { %>
                 <h2 class="text-2xl font-semibold text-blue-800 mb-4 text-center">
                     <% if (typeof teamNameSplit !== 'undefined' && teamNameSplit.parent && teamNameSplit.subteam) { %>
-                        <%= teamNameSplit.parent %> / <%= teamNameSplit.subteam %> - Otteluohjelma
+                        <a href="/base-team/<%= encodeURIComponent(teamNameSplit.parent) %>" class="hover:text-blue-600 underline"><%= teamNameSplit.parent %></a> / <%= teamNameSplit.subteam %> - Otteluohjelma
                     <% } else { %>
                         <%= selectedTeam %> - Otteluohjelma
                     <% } %>
