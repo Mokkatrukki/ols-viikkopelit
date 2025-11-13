@@ -44,9 +44,9 @@ USER nodejs
 # Expose port
 EXPOSE 3003
 
-# Health check
+# Modern healthcheck using Node's built-in fetch (optimized for fast cold start)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3003/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+  CMD node -e "fetch('http://localhost:3003/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 # Start the application
-CMD ["node", "dist/app.js"]
+CMD ["node", "dist/src/app.js"]

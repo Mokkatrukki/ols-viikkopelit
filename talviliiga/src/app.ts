@@ -52,10 +52,10 @@ interface GroupedTeamEntry {
 
 // Field map data for venue images
 const fieldMapData: { [key: string]: { src: string; width: number; height: number; } } = {
-  "KEMPELE AREENA KENTTÄ 1": { src: '/images/kempele.webp', width: 800, height: 600 },
-  "KEMPELE AREENA KENTTÄ 2": { src: '/images/kempele.webp', width: 800, height: 600 },
-  "KEMPELE AREENA KENTTÄ 3": { src: '/images/kempele.webp', width: 800, height: 600 },
-  "KEMPELE AREENA KENTTÄ 4": { src: '/images/kempele.webp', width: 800, height: 600 },
+  "KEMPELE AREENA KENTTÄ 1": { src: '/images/kempele-kentta-1.webp', width: 1000, height: 707 },
+  "KEMPELE AREENA KENTTÄ 2": { src: '/images/kempele-kentta-2.webp', width: 1000, height: 707 },
+  "KEMPELE AREENA KENTTÄ 3": { src: '/images/kempele-kentta-3.webp', width: 1000, height: 707 },
+  "KEMPELE AREENA KENTTÄ 4": { src: '/images/kempele-kentta-4.webp', width: 1000, height: 707 },
   "KURIKKAHAANTIEN HALLI KENTTÄ 1": { src: '/images/kurikka.webp', width: 800, height: 600 },
   "KURIKKAHAANTIEN HALLI KENTTÄ 2": { src: '/images/kurikka.webp', width: 800, height: 600 },
 };
@@ -463,6 +463,13 @@ app.use(express.static(path.join(projectRoot, 'public'), {
   maxAge: process.env.NODE_ENV === 'production' ? '1d' : '5m'
 }));
 
+// Helper function to get base URL from request
+function getBaseUrl(req: Request): string {
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+  const host = req.headers['x-forwarded-host'] || req.headers.host || 'talviliiga.fly.dev';
+  return `${protocol}://${host}`;
+}
+
 // Home route - redirect to default date
 app.get('/', async (req: Request, res: Response) => {
   if (!dataLoaded) {
@@ -477,8 +484,12 @@ app.get('/', async (req: Request, res: Response) => {
   }
 
   if (!dataLoaded) {
+    const baseUrl = getBaseUrl(req);
     res.render('index', {
       documentTitle: 'Talviliiga - Ladataan...',
+      metaTitle: 'Talviliiga',
+      metaDescription: 'Talviliiga tournament schedule viewer - see all tournament games',
+      metaUrl: baseUrl,
       groupedTeams: [],
       selectedTeam: null,
       teamNameSplit: null,
@@ -497,8 +508,12 @@ app.get('/', async (req: Request, res: Response) => {
   if (defaultDate) {
     res.redirect(`/date/${encodeURIComponent(defaultDate)}`);
   } else {
+    const baseUrl = getBaseUrl(req);
     res.render('index', {
       documentTitle: `Talviliiga${documentDate ? ' - ' + documentDate : ''}`,
+      metaTitle: 'Talviliiga',
+      metaDescription: 'Talviliiga tournament schedule viewer - see all tournament games',
+      metaUrl: baseUrl,
       groupedTeams: [],
       selectedTeam: null,
       teamNameSplit: null,
@@ -527,9 +542,15 @@ app.get('/date/:date', async (req: Request, res: Response) => {
     }
   }
 
+  const baseUrl = getBaseUrl(req);
+  const currentUrl = `${baseUrl}/date/${encodeURIComponent(selectedDate)}`;
+
   if (!dataLoaded) {
     res.render('index', {
       documentTitle: 'Talviliiga - Ladataan...',
+      metaTitle: `Talviliiga - ${selectedDate}`,
+      metaDescription: `Talviliiga tournament games on ${selectedDate}`,
+      metaUrl: currentUrl,
       groupedTeams: [],
       selectedTeam: null,
       teamNameSplit: null,
@@ -553,6 +574,9 @@ app.get('/date/:date', async (req: Request, res: Response) => {
 
   res.render('index', {
     documentTitle: `Talviliiga - ${dateGroup.fullDate}`,
+    metaTitle: `Talviliiga - ${dateGroup.fullDate}`,
+    metaDescription: `Talviliiga tournament games on ${dateGroup.fullDate}`,
+    metaUrl: currentUrl,
     groupedTeams: getGroupedTeamsForDate(selectedDate),
     selectedTeam: null,
     teamNameSplit: null,
@@ -654,9 +678,17 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
     }
   }
 
+  const baseUrl = getBaseUrl(req);
+  const currentUrl = selectedDate
+    ? `${baseUrl}/team/${encodeURIComponent(teamName)}?date=${encodeURIComponent(selectedDate)}`
+    : `${baseUrl}/team/${encodeURIComponent(teamName)}`;
+
   if (!dataLoaded) {
     res.render('index', {
       documentTitle: 'Talviliiga - Ladataan...',
+      metaTitle: `${teamName} - Talviliiga`,
+      metaDescription: `View ${teamName}'s tournament schedule${selectedDate ? ' on ' + selectedDate : ''}`,
+      metaUrl: currentUrl,
       groupedTeams: [],
       selectedTeam: teamName,
       teamNameSplit: null,
@@ -681,10 +713,12 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
 
   // Filter games by date if specified
   let gamesToFilter = allGames;
+  let dateGroupForMeta = null;
   if (selectedDate) {
     const dateGroup = gamesByDate.find(dg => dg.date === selectedDate);
     if (dateGroup) {
       gamesToFilter = dateGroup.games;
+      dateGroupForMeta = dateGroup;
     }
   }
 
@@ -739,8 +773,31 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
   // Split team name for better display
   const teamNameSplit = splitTeamName(teamName, cachedBaseTeams);
 
+  // Create metadata description with first game info if available
+  let metaDescription = `View ${teamName}'s tournament schedule`;
+  if (dateGroupForMeta) {
+    metaDescription += ` on ${dateGroupForMeta.fullDate}`;
+  }
+  if (gamesForTeam.length > 0) {
+    const firstGame = gamesForTeam[0];
+    metaDescription += `. First game: ${firstGame.time} vs ${firstGame.opponent}`;
+  }
+
+  // Create title with parent team and subteam if available
+  let metaTitle = teamName;
+  if (teamNameSplit.parent && teamNameSplit.subteam) {
+    metaTitle = `${teamNameSplit.parent} ${teamNameSplit.subteam}`;
+  }
+  if (dateGroupForMeta) {
+    metaTitle += ` - ${dateGroupForMeta.fullDate}`;
+  }
+  metaTitle += ' - Talviliiga';
+
   res.render('index', {
     documentTitle: `Talviliiga${documentDate ? ' - ' + documentDate : ''}`,
+    metaTitle,
+    metaDescription,
+    metaUrl: currentUrl,
     groupedTeams,
     selectedTeam: teamName,
     teamNameSplit, // { parent, subteam, fullName }

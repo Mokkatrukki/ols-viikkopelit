@@ -1,7 +1,19 @@
+# fly.toml app configuration file generated for talviliiga on 2025-11-13T09:52:52+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
 app = 'talviliiga'
 primary_region = 'arn'
 
 [build]
+  dockerfile = 'Dockerfile'
+
+[deploy]
+  strategy = 'immediate'
+
+[processes]
+  app = ''
 
 [http_service]
   internal_port = 3003
@@ -11,44 +23,22 @@ primary_region = 'arn'
   min_machines_running = 0
   processes = ['app']
 
-  [http_service.concurrency]
-    type = 'connections'
-    hard_limit = 25
-    soft_limit = 20
+  [[http_service.checks]]
+    interval = '30s'
+    timeout = '3s'
+    grace_period = '5s'
+    method = 'GET'
+    path = '/health'
+
+  [[http_service.autostop]]
+    kill_signal = "SIGINT"
+    kill_timeout = "5s"
+    min_machines_running = 0
+    autostop_timeout = "5m"   # Sleep after 5 minutes of inactivity
 
 [[vm]]
   memory = '256mb'
   cpu_kind = 'shared'
   cpus = 1
-
-[[services]]
-  protocol = 'tcp'
-  internal_port = 3003
   processes = ['app']
-
-  [[services.ports]]
-    port = 80
-    handlers = ['http']
-    force_https = true
-
-  [[services.ports]]
-    port = 443
-    handlers = ['tls', 'http']
-
-  [services.concurrency]
-    type = 'connections'
-    hard_limit = 25
-    soft_limit = 20
-
-  [[services.tcp_checks]]
-    interval = '15s'
-    timeout = '2s'
-    grace_period = '5s'
-
-  [[services.http_checks]]
-    interval = '30s'
-    timeout = '5s'
-    grace_period = '10s'
-    method = 'get'
-    path = '/health'
-    protocol = 'http'
+  init = true                # Use Docker's built-in init (Tini) for faster startup
