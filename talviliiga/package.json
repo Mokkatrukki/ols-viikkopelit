@@ -10,9 +10,14 @@
     "build": "tsc && npm run build:css:once",
     "build:css:once": "tailwindcss -i ./src/input.css -o ./public/css/style.css && csso ./public/css/style.css -o ./public/css/style.min.css",
     "build:css": "tailwindcss -i ./src/input.css -o ./public/css/style.css --watch",
-    "parse": "node --import \"data:text/javascript,import { register } from 'node:module'; import { pathToFileURL } from 'node:url'; register('ts-node/esm', pathToFileURL('./'));\" scripts/parseExcel.ts"
+    "parse": "node --import \"data:text/javascript,import { register } from 'node:module'; import { pathToFileURL } from 'node:url'; register('ts-node/esm', pathToFileURL('./'));\" scripts/parseExcel.ts",
+    "parse:pdf": "node --import \"data:text/javascript,import { register } from 'node:module'; import { pathToFileURL } from 'node:url'; register('ts-node/esm', pathToFileURL('./'));\" scripts/parsePdf.ts"
   },
-  "keywords": ["tournament", "talviliiga", "schedule"],
+  "keywords": [
+    "tournament",
+    "talviliiga",
+    "schedule"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -28,7 +33,11 @@
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5",
+    "typescript": "^5.4.5"
+  },
+  "optionalDependencies": {
+    "canvas": "^3.2.0",
+    "pdfjs-dist": "^5.4.394",
     "xlsx": "^0.18.5"
   }
 }

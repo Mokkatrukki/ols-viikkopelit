@@ -13,9 +13,10 @@ A simple, fast, and lightweight tournament schedule viewer for Talviliiga tourna
 
 - Team-based view - select a team to see their schedule
 - Display date, time, opponent, location, field, and game duration
+- Field maps - automatically displays venue field layout for each game
 - Clean, responsive Tailwind CSS design
 - Mobile-friendly interface
-- Parses tournament schedules from Excel files
+- Parses tournament schedules from Excel or PDF files
 
 ## 📁 Project Structure
 
@@ -28,12 +29,14 @@ talviliiga/
 │   └── index.ejs           # Main template
 ├── public/
 │   ├── css/                # Built CSS files
-│   └── images/             # Venue maps (optional)
+│   └── images/             # Venue field maps (webp)
 ├── data/
-│   ├── talviliiga.xlsx     # Source Excel file
+│   ├── talviliiga.xlsx     # Source Excel file (optional)
+│   ├── team-mappings.json  # Team name mappings for PDF parser
 │   └── games.json          # Parsed game data
 ├── scripts/
-│   └── parseExcel.ts       # Excel parser
+│   ├── parseExcel.ts       # Excel parser
+│   └── parsePdf.ts         # PDF parser
 ├── dist/                   # Compiled TypeScript
 ├── Dockerfile              # Docker configuration
 ├── fly.toml                # Fly.io deployment config
@@ -53,8 +56,12 @@ talviliiga/
 # Install dependencies
 npm install
 
-# Parse Excel file to generate games.json
+# Parse schedule file to generate games.json
+# For Excel format:
 npm run parse
+
+# For PDF format:
+npm run parse:pdf
 
 # Build the application
 npm run build
@@ -74,10 +81,25 @@ npm run dev
 
 ## 📊 Updating Tournament Data
 
+### Excel Format
+
 1. **Update Excel file**: Replace `data/talviliiga.xlsx` with the new schedule
 2. **Parse Excel**: Run `npm run parse` to generate `data/games.json`
 3. **Rebuild**: Run `npm run build`
 4. **Deploy**: Commit and deploy (see deployment section)
+
+### PDF Format
+
+1. **Add PDF file**: Place your PDF schedule in the project root (e.g., `Talviliiga221125a.pdf`)
+2. **Update team mappings**: Edit `data/team-mappings.json` if needed to add new teams
+3. **Parse PDF**: Run `npm run parse:pdf` to generate `data/games.json`
+4. **Rebuild**: Run `npm run build`
+5. **Deploy**: Commit and deploy (see deployment section)
+
+**Note:** You can specify custom paths:
+```bash
+npm run parse:pdf path/to/schedule.pdf data/output.json
+```
 
 ## 🐳 Docker
 
@@ -135,7 +157,9 @@ fly status
 fly open
 ```
 
-## 📝 Excel File Format
+## 📝 Schedule File Formats
+
+### Excel Format
 
 The Excel file should have two sheets:
 - `5v5 turnaukset` - 5v5 tournament games
@@ -146,6 +170,22 @@ Each sheet should contain:
 - Location (e.g., "Kempele Areena", "Kurikkahaantien halli")
 - Game duration (e.g., "PELIAIKA 25MIN")
 - Game rows with: Time | Team1 | Team2 (repeating pattern across columns)
+
+### PDF Format
+
+The PDF parser supports landscape-format tournament schedules with:
+- Multiple fields (e.g., Kenttä 1A, 1B, 1C, 1D)
+- Time slots with age groups (2017-2020)
+- Automatic game type detection:
+  - **2019-2020**: 3v3, 15min games, 3 fields (A, B, C)
+  - **2017-2018**: 4v4, 20min games, 4 fields (A, B, C, D)
+- Team name mapping via `data/team-mappings.json`
+
+The parser extracts:
+- Date and location from PDF metadata
+- Time slots and age groups
+- Team matchups
+- Field assignments
 
 ## 🎯 Design Principles
 

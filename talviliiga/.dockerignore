@@ -36,3 +36,6 @@ fly.toml
 # Temporary files
 *.tmp
 .cache/
+
+# Development-only scripts (PDF parsing with canvas dependency)
+scripts/

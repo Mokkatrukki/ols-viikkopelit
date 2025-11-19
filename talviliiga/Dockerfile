@@ -8,8 +8,8 @@ COPY package*.json ./
 COPY tsconfig.json ./
 COPY tailwind.config.js ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (optionalDependencies like canvas will be skipped if they fail)
+RUN npm ci --omit=optional
 
 # Copy source files
 COPY src ./src

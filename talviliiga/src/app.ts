@@ -52,12 +52,23 @@ interface GroupedTeamEntry {
 
 // Field map data for venue images
 const fieldMapData: { [key: string]: { src: string; width: number; height: number; } } = {
+  // Kempele Areena - Original format
   "KEMPELE AREENA KENTTÄ 1": { src: '/images/kempele-kentta-1.webp', width: 1000, height: 707 },
   "KEMPELE AREENA KENTTÄ 2": { src: '/images/kempele-kentta-2.webp', width: 1000, height: 707 },
   "KEMPELE AREENA KENTTÄ 3": { src: '/images/kempele-kentta-3.webp', width: 1000, height: 707 },
   "KEMPELE AREENA KENTTÄ 4": { src: '/images/kempele-kentta-4.webp', width: 1000, height: 707 },
   "KURIKKAHAANTIEN HALLI KENTTÄ 1": { src: '/images/kurikka.webp', width: 800, height: 600 },
   "KURIKKAHAANTIEN HALLI KENTTÄ 2": { src: '/images/kurikka.webp', width: 800, height: 600 },
+
+  // PDF format - Field maps with A/B/C/D suffixes
+  "GARAM MASALA KENTTÄ 1A": { src: '/images/kentta-1A.webp', width: 800, height: 450 },
+  "GARAM MASALA KENTTÄ 1B": { src: '/images/kentta-1B.webp', width: 800, height: 450 },
+  "GARAM MASALA KENTTÄ 1C": { src: '/images/kentta-1C.webp', width: 800, height: 450 },
+  "GARAM MASALA KENTTÄ 1D": { src: '/images/kentta-1D.webp', width: 800, height: 450 },
+  "GARAM MASALA KENTTÄ 2A": { src: '/images/kentta-2A.webp', width: 800, height: 450 },
+  "GARAM MASALA KENTTÄ 2B": { src: '/images/kentta-2B.webp', width: 800, height: 450 },
+  "GARAM MASALA KENTTÄ 2C": { src: '/images/kentta-2C.webp', width: 800, height: 450 },
+  "GARAM MASALA KENTTÄ 2D": { src: '/images/kentta-2D.webp', width: 800, height: 450 },
 };
 
 // Helper function to find longest common prefix between two strings
