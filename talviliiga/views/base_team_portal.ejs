@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="<%= baseTeamName %> joukkueportaali - katsele alijoukkueiden aikatauluja ja pelejä.">
-    <meta property="og:title" content="<%= documentTitle %>">
-    <meta property="og:description" content="<% if (!loading && subteams.length > 0) { %><%= subteams.map(st => st.nextGame ? `${st.name.split(' ').pop()} - ${st.nextGame.fullDate || st.nextGame.date} ${st.nextGame.time}` : `${st.name.split(' ').pop()} - Ei pelejä`).join(', ') %><% } else { %>Joukkueportaali - katsele alijoukkueiden aikatauluja<% } %>">
+    <meta name="description" content="<%= metaDescription || (baseTeamName + ' joukkueportaali - katsele alijoukkueiden aikatauluja ja pelejä.') %>">
+    <meta property="og:title" content="<%= metaTitle || documentTitle %>">
+    <meta property="og:description" content="<%= metaDescription || (baseTeamName + ' joukkueportaali - katsele alijoukkueiden aikatauluja.') %>">
+    <meta property="og:url" content="<%= metaUrl || '' %>">
     <meta property="og:type" content="website">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <title><%= documentTitle %></title>

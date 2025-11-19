@@ -689,8 +689,28 @@ app.get('/base-team/:baseTeamName', async (req: Request, res: Response) => {
   // Sort alphabetically by subteam name
   subteamsWithNextGame.sort((a, b) => a.name.localeCompare(b.name));
 
+  // Create metadata description with first game info if available
+  const baseUrl = getBaseUrl(req);
+  const currentUrl = `${baseUrl}/base-team/${encodeURIComponent(baseTeamName)}`;
+
+  // Create description showing all subteams with their next games
+  const metaDescription = subteamsWithNextGame
+    .map(st => {
+      if (st.nextGame) {
+        const subteamShortName = st.name.split(' ').pop(); // Get last word (e.g., "AEK", "PAOK")
+        return `${subteamShortName} - ${st.nextGame.fullDate || st.nextGame.date} ${st.nextGame.time}`;
+      } else {
+        const subteamShortName = st.name.split(' ').pop();
+        return `${subteamShortName} - Ei pelejä`;
+      }
+    })
+    .join(', ');
+
   res.render('base_team_portal', {
     documentTitle: `${baseTeamName} - Joukkueportaali`,
+    metaTitle: `${baseTeamName} - Joukkueportaali - Talviliiga`,
+    metaDescription,
+    metaUrl: currentUrl,
     baseTeamName: baseTeamName,
     subteams: subteamsWithNextGame,
     loading: false,
@@ -816,18 +836,13 @@ app.get('/team/:teamName', async (req: Request, res: Response) => {
   const teamNameSplit = splitTeamName(teamName, cachedBaseTeams);
 
   // Create metadata description with first game info if available
-  let metaDescription = `View ${teamName}'s tournament schedule`;
-  if (dateGroupForMeta) {
-    metaDescription += ` on ${dateGroupForMeta.fullDate}`;
-  }
+  let metaDescription = '';
   if (gamesForTeam.length > 0) {
     const firstGame = gamesForTeam[0];
-    // Include date if not already in the description
-    if (!dateGroupForMeta && firstGame.date) {
-      metaDescription += `. First game: ${firstGame.date} at ${firstGame.time} vs ${firstGame.opponent}`;
-    } else {
-      metaDescription += `. First game: ${firstGame.time} vs ${firstGame.opponent}`;
-    }
+    const gameLocation = firstGame.location ? `, paikka: ${firstGame.location}` : '';
+    metaDescription = `Eka peli: ${firstGame.time}${gameLocation}`;
+  } else {
+    metaDescription = `Katso ${teamName} otteluohjelma`;
   }
 
   // Create title with parent team and subteam if available
