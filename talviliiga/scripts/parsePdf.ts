@@ -182,34 +182,18 @@ function parsePdfContent(text: string, teamMappings: TeamMappings): GameOutput {
   console.log(`📍 Location: ${location}`);
   console.log(`\n=== Parsing games ===\n`);
 
-  // Use regex to find all time slots with year and games
-  // Pattern: "HH.MM - HH.MM  YYYY  Game1  Game2  Game3..."
-  // Games are separated by multiple spaces (3+) and end before the next time slot or "Kenttä"
-  const timeSlotRegex = /(\d{1,2}\.\d{2}\s*-\s*\d{1,2}\.?\d{2})\s+(\d{4})\s+(.*?)(?=\d{1,2}\.\d{2}\s*-\s*\d{1,2}\.?\d{2}|Kenttä|$)/g;
+  // Split text into sections for Kenttä 1 and Kenttä 2
+  const kentta1Match = text.match(/Kenttä 1A\s+Kenttä 1B\s+Kenttä 1C\s+Kenttä 1D(.*?)(?=Kenttä 2A|$)/s);
+  const kentta2Match = text.match(/Kenttä 2A\s+Kenttä 2B\s+Kenttä 2C\s+Kenttä 2D(.*?)(?=OTTELUOHJELMA|$)/s);
 
-  let match;
-  while ((match = timeSlotRegex.exec(text)) !== null) {
-    const timeRange = match[1];
-    const ageGroup = match[2];
-    const gamesText = match[3].trim();
+  if (kentta1Match) {
+    console.log('📍 Parsing Kenttä 1 section...\n');
+    parseFieldSection(games, kentta1Match[1], '1', teamMappings, shortDate, fullDateMatch, location);
+  }
 
-    const time = parseTimeRange(timeRange);
-    if (!time || !gamesText) continue;
-
-    // Split games by pattern "TeamA - TeamB" separated by 3 or more spaces
-    // Example: "Hollanti 20 Ajax - Kreikka 20 Olympiakos   Belgia 20 Anderlecht - Kreikka 20 AEK"
-    // Split on 3+ spaces and filter out junk
-    const gameLines = gamesText
-      .split(/\s{3,}/)
-      .map(g => g.trim())
-      .filter(g => g.includes(' - ') && !g.includes('OTTELUOHJELMA') && !g.includes('siirtymä'));
-
-    if (gameLines.length === 0) {
-      console.warn(`⚠️  No games found in slot: ${timeRange} ${ageGroup}`);
-      continue;
-    }
-
-    processGameSlot(games, time, ageGroup, gameLines, teamMappings, shortDate, fullDateMatch, location);
+  if (kentta2Match) {
+    console.log('\n📍 Parsing Kenttä 2 section...\n');
+    parseFieldSection(games, kentta2Match[1], '2', teamMappings, shortDate, fullDateMatch, location);
   }
 
   // Group games by date
@@ -237,6 +221,46 @@ function parsePdfContent(text: string, teamMappings: TeamMappings): GameOutput {
 }
 
 /**
+ * Parse a field section (Kenttä 1 or Kenttä 2)
+ */
+function parseFieldSection(
+  games: Game[],
+  sectionText: string,
+  fieldPrefix: string,
+  teamMappings: TeamMappings,
+  shortDate: string,
+  fullDate: string,
+  location: string
+): void {
+  // Use regex to find all time slots with year and games
+  const timeSlotRegex = /(\d{1,2}\.\d{2}\s*-\s*\d{1,2}\.?\d{2})\s+(\d{4})\s+(.*?)(?=\d{1,2}\.\d{2}\s*-\s*\d{1,2}\.?\d{2}|Kenttä|$)/g;
+
+  let match;
+  while ((match = timeSlotRegex.exec(sectionText)) !== null) {
+    const timeRange = match[1];
+    const ageGroup = match[2];
+    const gamesText = match[3].trim();
+
+    const time = parseTimeRange(timeRange);
+    if (!time || !gamesText) continue;
+
+    // Split games by pattern "TeamA - TeamB" separated by 3 or more spaces
+    const gameLines = gamesText
+      .split(/\s{3,}/)
+      .map(g => g.trim())
+      .map(g => g.replace(/\s+\d+x\d+min.*$/i, '').trim()) // Remove timing suffixes like "1x20min 5min siirtymä"
+      .filter(g => g.includes('-') && !g.includes('OTTELUOHJELMA'));
+
+    if (gameLines.length === 0) {
+      console.warn(`⚠️  No games found in slot: ${timeRange} ${ageGroup}`);
+      continue;
+    }
+
+    processGameSlot(games, time, ageGroup, gameLines, teamMappings, shortDate, fullDate, location, fieldPrefix);
+  }
+}
+
+/**
  * Process a single time slot with multiple games
  */
 function processGameSlot(
@@ -247,22 +271,23 @@ function processGameSlot(
   teamMappings: TeamMappings,
   shortDate: string,
   fullDate: string,
-  location: string
+  location: string,
+  fieldPrefix: string = '1'
 ): void {
-  const fieldCount = getFieldCount(ageGroup);
   const { duration, type } = getGameInfo(ageGroup);
   const year = `20${ageGroup.slice(-2)}`;
 
-  console.log(`⏰ ${time} - Age ${ageGroup} (${type}, ${duration})`);
+  console.log(`⏰ ${time} - Age ${ageGroup} (${type}, ${duration}) - ${gameLines.length} games`);
 
-  const fieldLetters = ['A', 'B', 'C', 'D'];
+  const fieldLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']; // Support up to 8 fields
 
-  for (let i = 0; i < Math.min(gameLines.length, fieldCount); i++) {
+  // Parse ALL games found, not limited by hardcoded field count
+  for (let i = 0; i < gameLines.length; i++) {
     const gameLine = gameLines[i];
     const parsed = parseGameLine(gameLine, teamMappings);
 
     if (parsed) {
-      const field = `Kenttä 1${fieldLetters[i]}`;
+      const field = `Kenttä ${fieldPrefix}${fieldLetters[i]}`;
 
       games.push({
         field,

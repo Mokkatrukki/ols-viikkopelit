@@ -1,5 +1,5 @@
 {
-  "documentDate": "19.11.2025",
+  "documentDate": "22.11.2025",
   "games": [
     {
       "field": "Kenttä 1A",
@@ -8,7 +8,7 @@
       "year": "2020",
       "time": "12:35",
       "team1": "OLS Hollanti 20 Ajax",
-      "team2": "OLS Kreikka Olympiakos",
+      "team2": "OLS Kreikka 20 Olympiakos",
       "date": "22.11",
       "location": "GARAM MASALA"
     },
@@ -35,6 +35,17 @@
       "location": "GARAM MASALA"
     },
     {
+      "field": "Kenttä 1D",
+      "gameDuration": "15MIN",
+      "gameType": "3 v 3",
+      "year": "2020",
+      "time": "12:35",
+      "team1": "OLS Hollanti 20 PSV",
+      "team2": "OLS Kreikka 20 Panathinaikos",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
       "field": "Kenttä 1A",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
@@ -51,7 +62,7 @@
       "gameType": "3 v 3",
       "year": "2020",
       "time": "12:55",
-      "team1": "OLS Kreikka Olympiakos",
+      "team1": "OLS Kreikka 20 Olympiakos",
       "team2": "OLS Belgia 20 Anderlecht",
       "date": "22.11",
       "location": "GARAM MASALA"
@@ -64,6 +75,17 @@
       "time": "12:55",
       "team1": "OLS Belgia 20 Brugge",
       "team2": "OLS Hollanti 20 PSV",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 1D",
+      "gameDuration": "15MIN",
+      "gameType": "3 v 3",
+      "year": "2020",
+      "time": "12:55",
+      "team1": "OLS Ruotsi 20 Hammarby",
+      "team2": "OLS Kreikka 20 Panathinaikos",
       "date": "22.11",
       "location": "GARAM MASALA"
     },
@@ -95,7 +117,7 @@
       "gameType": "3 v 3",
       "year": "2020",
       "time": "13:35",
-      "team1": "OLS Kreikka Olympiakos",
+      "team1": "OLS Kreikka 20 Olympiakos",
       "team2": "OLS Ruotsi 20 AIK",
       "date": "22.11",
       "location": "GARAM MASALA"
@@ -119,6 +141,17 @@
       "time": "13:35",
       "team1": "OLS Hollanti 20 PSV",
       "team2": "OLS Ruotsi 20 Hammarby",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 1D",
+      "gameDuration": "15MIN",
+      "gameType": "3 v 3",
+      "year": "2020",
+      "time": "13:35",
+      "team1": "OLS Belgia 20 Brugge",
+      "team2": "OLS Kreikka 20 Panathinaikos",
       "date": "22.11",
       "location": "GARAM MASALA"
     },
@@ -447,13 +480,24 @@
       "gameType": "4 v 4",
       "year": "2017",
       "time": "18:05",
+      "team1": "ONS 17 Punainen",
+      "team2": "OLS Espanja 17 Real Madrid",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 1C",
+      "gameDuration": "20MIN",
+      "gameType": "4 v 4",
+      "year": "2017",
+      "time": "18:05",
       "team1": "OLS Kreikka 17 PAOK",
       "team2": "KKP Sininen 2017",
       "date": "22.11",
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 1D",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -464,7 +508,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2A",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -475,7 +519,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -486,7 +530,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -497,7 +541,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2A",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -508,18 +552,18 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
       "time": "12:15",
-      "team1": "OLS Kreikka Panathinaikos",
+      "team1": "OLS Kreikka 19 Panathinaikos",
       "team2": "OLS Kreikka 19 AEK",
       "date": "22.11",
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -530,7 +574,18 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2D",
+      "gameDuration": "15MIN",
+      "gameType": "3 v 3",
+      "year": "2019",
+      "time": "12:15",
+      "team1": "OLS Hollanti 19 PSV",
+      "team2": "OLS Ruotsi 19 Hammarby",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 2A",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -541,18 +596,18 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
       "time": "12:35",
-      "team1": "OLS Kreikka Panathinaikos",
+      "team1": "OLS Kreikka 19 Panathinaikos",
       "team2": "OLS Ruotsi 19 Örebro",
       "date": "22.11",
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -563,18 +618,29 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2D",
+      "gameDuration": "15MIN",
+      "gameType": "3 v 3",
+      "year": "2019",
+      "time": "12:35",
+      "team1": "KKP PT18-19",
+      "team2": "OLS Belgia 19 Brugge",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 2A",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
       "time": "12:55",
       "team1": "OLS Belgia 19 Anderlecht",
-      "team2": "OLS Kreikka Panathinaikos",
+      "team2": "OLS Kreikka 19 Panathinaikos",
       "date": "22.11",
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -585,7 +651,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -596,7 +662,18 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2D",
+      "gameDuration": "15MIN",
+      "gameType": "3 v 3",
+      "year": "2019",
+      "time": "12:55",
+      "team1": "OLS Hollanti 19 PSV",
+      "team2": "KKP PT18-19",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 2A",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -607,18 +684,18 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
       "time": "13:15",
-      "team1": "OLS Kreikka Panathinaikos",
+      "team1": "OLS Kreikka 19 Panathinaikos",
       "team2": "OLS Belgia 19 Genk",
       "date": "22.11",
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -629,7 +706,18 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2D",
+      "gameDuration": "15MIN",
+      "gameType": "3 v 3",
+      "year": "2019",
+      "time": "13:15",
+      "team1": "OLS Hollanti 19 PSV",
+      "team2": "OLS Belgia 19 Brugge",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 2A",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -640,7 +728,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -651,7 +739,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
       "gameDuration": "15MIN",
       "gameType": "3 v 3",
       "year": "2019",
@@ -662,7 +750,18 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2D",
+      "gameDuration": "15MIN",
+      "gameType": "3 v 3",
+      "year": "2019",
+      "time": "13:35",
+      "team1": "KKP PT18-19",
+      "team2": "OLS Hollanti 19 Ajax",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 2A",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -673,7 +772,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -684,7 +783,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -695,7 +794,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1D",
+      "field": "Kenttä 2D",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -706,7 +805,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2A",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -717,7 +816,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -728,7 +827,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -739,7 +838,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1D",
+      "field": "Kenttä 2D",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -750,7 +849,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2A",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -761,7 +860,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -772,7 +871,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -783,7 +882,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1D",
+      "field": "Kenttä 2D",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -794,7 +893,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2A",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2018",
@@ -805,7 +904,40 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2B",
+      "gameDuration": "20MIN",
+      "gameType": "4 v 4",
+      "year": "2018",
+      "time": "16:00",
+      "team1": "ONS 17 Valkoinen",
+      "team2": "OLS Hollanti 18 PSV",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 2C",
+      "gameDuration": "20MIN",
+      "gameType": "4 v 4",
+      "year": "2018",
+      "time": "16:00",
+      "team1": "OLS Espanja 18 Real Madrid",
+      "team2": "KKP 18 Valkoinen",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 2D",
+      "gameDuration": "20MIN",
+      "gameType": "4 v 4",
+      "year": "2018",
+      "time": "16:00",
+      "team1": "OLS Portugali 18 Braga",
+      "team2": "OLS Ruotsi 18 Hammarby",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 2A",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -816,7 +948,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -827,7 +959,18 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
+      "gameDuration": "20MIN",
+      "gameType": "4 v 4",
+      "year": "2017",
+      "time": "16:40",
+      "team1": "OLS Ruotsi 17 Djurgården",
+      "team2": "OLS Belgia 17 Anderlecht",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 2D",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -838,7 +981,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2A",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -849,7 +992,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -860,7 +1003,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -871,7 +1014,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1D",
+      "field": "Kenttä 2D",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -882,7 +1025,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2A",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -893,7 +1036,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -904,7 +1047,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -915,7 +1058,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1D",
+      "field": "Kenttä 2D",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -926,7 +1069,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1A",
+      "field": "Kenttä 2A",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -937,7 +1080,7 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1B",
+      "field": "Kenttä 2B",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
@@ -948,13 +1091,24 @@
       "location": "GARAM MASALA"
     },
     {
-      "field": "Kenttä 1C",
+      "field": "Kenttä 2C",
       "gameDuration": "20MIN",
       "gameType": "4 v 4",
       "year": "2017",
       "time": "18:05",
       "team1": "OLS Hollanti 17 Ajax",
       "team2": "OLS Portugali 17 Benfica",
+      "date": "22.11",
+      "location": "GARAM MASALA"
+    },
+    {
+      "field": "Kenttä 2D",
+      "gameDuration": "20MIN",
+      "gameType": "4 v 4",
+      "year": "2017",
+      "time": "18:05",
+      "team1": "OLS Ruotsi 17 AIK",
+      "team2": "OLS Belgia 17 Anderlecht",
       "date": "22.11",
       "location": "GARAM MASALA"
     }
@@ -971,7 +1125,7 @@
           "year": "2020",
           "time": "12:35",
           "team1": "OLS Hollanti 20 Ajax",
-          "team2": "OLS Kreikka Olympiakos",
+          "team2": "OLS Kreikka 20 Olympiakos",
           "date": "22.11",
           "location": "GARAM MASALA"
         },
@@ -998,6 +1152,17 @@
           "location": "GARAM MASALA"
         },
         {
+          "field": "Kenttä 1D",
+          "gameDuration": "15MIN",
+          "gameType": "3 v 3",
+          "year": "2020",
+          "time": "12:35",
+          "team1": "OLS Hollanti 20 PSV",
+          "team2": "OLS Kreikka 20 Panathinaikos",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
           "field": "Kenttä 1A",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
@@ -1014,7 +1179,7 @@
           "gameType": "3 v 3",
           "year": "2020",
           "time": "12:55",
-          "team1": "OLS Kreikka Olympiakos",
+          "team1": "OLS Kreikka 20 Olympiakos",
           "team2": "OLS Belgia 20 Anderlecht",
           "date": "22.11",
           "location": "GARAM MASALA"
@@ -1027,6 +1192,17 @@
           "time": "12:55",
           "team1": "OLS Belgia 20 Brugge",
           "team2": "OLS Hollanti 20 PSV",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 1D",
+          "gameDuration": "15MIN",
+          "gameType": "3 v 3",
+          "year": "2020",
+          "time": "12:55",
+          "team1": "OLS Ruotsi 20 Hammarby",
+          "team2": "OLS Kreikka 20 Panathinaikos",
           "date": "22.11",
           "location": "GARAM MASALA"
         },
@@ -1058,7 +1234,7 @@
           "gameType": "3 v 3",
           "year": "2020",
           "time": "13:35",
-          "team1": "OLS Kreikka Olympiakos",
+          "team1": "OLS Kreikka 20 Olympiakos",
           "team2": "OLS Ruotsi 20 AIK",
           "date": "22.11",
           "location": "GARAM MASALA"
@@ -1082,6 +1258,17 @@
           "time": "13:35",
           "team1": "OLS Hollanti 20 PSV",
           "team2": "OLS Ruotsi 20 Hammarby",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 1D",
+          "gameDuration": "15MIN",
+          "gameType": "3 v 3",
+          "year": "2020",
+          "time": "13:35",
+          "team1": "OLS Belgia 20 Brugge",
+          "team2": "OLS Kreikka 20 Panathinaikos",
           "date": "22.11",
           "location": "GARAM MASALA"
         },
@@ -1410,13 +1597,24 @@
           "gameType": "4 v 4",
           "year": "2017",
           "time": "18:05",
+          "team1": "ONS 17 Punainen",
+          "team2": "OLS Espanja 17 Real Madrid",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 1C",
+          "gameDuration": "20MIN",
+          "gameType": "4 v 4",
+          "year": "2017",
+          "time": "18:05",
           "team1": "OLS Kreikka 17 PAOK",
           "team2": "KKP Sininen 2017",
           "date": "22.11",
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 1D",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1427,7 +1625,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2A",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1438,7 +1636,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1449,7 +1647,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1460,7 +1658,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2A",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1471,18 +1669,18 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
           "time": "12:15",
-          "team1": "OLS Kreikka Panathinaikos",
+          "team1": "OLS Kreikka 19 Panathinaikos",
           "team2": "OLS Kreikka 19 AEK",
           "date": "22.11",
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1493,7 +1691,18 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2D",
+          "gameDuration": "15MIN",
+          "gameType": "3 v 3",
+          "year": "2019",
+          "time": "12:15",
+          "team1": "OLS Hollanti 19 PSV",
+          "team2": "OLS Ruotsi 19 Hammarby",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 2A",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1504,18 +1713,18 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
           "time": "12:35",
-          "team1": "OLS Kreikka Panathinaikos",
+          "team1": "OLS Kreikka 19 Panathinaikos",
           "team2": "OLS Ruotsi 19 Örebro",
           "date": "22.11",
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1526,18 +1735,29 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2D",
+          "gameDuration": "15MIN",
+          "gameType": "3 v 3",
+          "year": "2019",
+          "time": "12:35",
+          "team1": "KKP PT18-19",
+          "team2": "OLS Belgia 19 Brugge",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 2A",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
           "time": "12:55",
           "team1": "OLS Belgia 19 Anderlecht",
-          "team2": "OLS Kreikka Panathinaikos",
+          "team2": "OLS Kreikka 19 Panathinaikos",
           "date": "22.11",
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1548,7 +1768,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1559,7 +1779,18 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2D",
+          "gameDuration": "15MIN",
+          "gameType": "3 v 3",
+          "year": "2019",
+          "time": "12:55",
+          "team1": "OLS Hollanti 19 PSV",
+          "team2": "KKP PT18-19",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 2A",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1570,18 +1801,18 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
           "time": "13:15",
-          "team1": "OLS Kreikka Panathinaikos",
+          "team1": "OLS Kreikka 19 Panathinaikos",
           "team2": "OLS Belgia 19 Genk",
           "date": "22.11",
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1592,7 +1823,18 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2D",
+          "gameDuration": "15MIN",
+          "gameType": "3 v 3",
+          "year": "2019",
+          "time": "13:15",
+          "team1": "OLS Hollanti 19 PSV",
+          "team2": "OLS Belgia 19 Brugge",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 2A",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1603,7 +1845,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1614,7 +1856,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
           "gameDuration": "15MIN",
           "gameType": "3 v 3",
           "year": "2019",
@@ -1625,7 +1867,18 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2D",
+          "gameDuration": "15MIN",
+          "gameType": "3 v 3",
+          "year": "2019",
+          "time": "13:35",
+          "team1": "KKP PT18-19",
+          "team2": "OLS Hollanti 19 Ajax",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 2A",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1636,7 +1889,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1647,7 +1900,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1658,7 +1911,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1D",
+          "field": "Kenttä 2D",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1669,7 +1922,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2A",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1680,7 +1933,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1691,7 +1944,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1702,7 +1955,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1D",
+          "field": "Kenttä 2D",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1713,7 +1966,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2A",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1724,7 +1977,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1735,7 +1988,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1746,7 +1999,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1D",
+          "field": "Kenttä 2D",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1757,7 +2010,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2A",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2018",
@@ -1768,7 +2021,40 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2B",
+          "gameDuration": "20MIN",
+          "gameType": "4 v 4",
+          "year": "2018",
+          "time": "16:00",
+          "team1": "ONS 17 Valkoinen",
+          "team2": "OLS Hollanti 18 PSV",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 2C",
+          "gameDuration": "20MIN",
+          "gameType": "4 v 4",
+          "year": "2018",
+          "time": "16:00",
+          "team1": "OLS Espanja 18 Real Madrid",
+          "team2": "KKP 18 Valkoinen",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 2D",
+          "gameDuration": "20MIN",
+          "gameType": "4 v 4",
+          "year": "2018",
+          "time": "16:00",
+          "team1": "OLS Portugali 18 Braga",
+          "team2": "OLS Ruotsi 18 Hammarby",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 2A",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1779,7 +2065,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1790,7 +2076,18 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
+          "gameDuration": "20MIN",
+          "gameType": "4 v 4",
+          "year": "2017",
+          "time": "16:40",
+          "team1": "OLS Ruotsi 17 Djurgården",
+          "team2": "OLS Belgia 17 Anderlecht",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 2D",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1801,7 +2098,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2A",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1812,7 +2109,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1823,7 +2120,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1834,7 +2131,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1D",
+          "field": "Kenttä 2D",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1845,7 +2142,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2A",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1856,7 +2153,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1867,7 +2164,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1878,7 +2175,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1D",
+          "field": "Kenttä 2D",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1889,7 +2186,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1A",
+          "field": "Kenttä 2A",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1900,7 +2197,7 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1B",
+          "field": "Kenttä 2B",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
@@ -1911,13 +2208,24 @@
           "location": "GARAM MASALA"
         },
         {
-          "field": "Kenttä 1C",
+          "field": "Kenttä 2C",
           "gameDuration": "20MIN",
           "gameType": "4 v 4",
           "year": "2017",
           "time": "18:05",
           "team1": "OLS Hollanti 17 Ajax",
           "team2": "OLS Portugali 17 Benfica",
+          "date": "22.11",
+          "location": "GARAM MASALA"
+        },
+        {
+          "field": "Kenttä 2D",
+          "gameDuration": "20MIN",
+          "gameType": "4 v 4",
+          "year": "2017",
+          "time": "18:05",
+          "team1": "OLS Ruotsi 17 AIK",
+          "team2": "OLS Belgia 17 Anderlecht",
           "date": "22.11",
           "location": "GARAM MASALA"
         }
