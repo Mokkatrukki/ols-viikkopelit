@@ -693,12 +693,20 @@ app.get('/base-team/:baseTeamName', async (req: Request, res: Response) => {
   const baseUrl = getBaseUrl(req);
   const currentUrl = `${baseUrl}/base-team/${encodeURIComponent(baseTeamName)}`;
 
-  // Create description showing all subteams with their next games
+  // Find the next game date (first game date from any subteam)
+  const nextGameDate = subteamsWithNextGame.find(st => st.nextGame)?.nextGame?.date || '';
+
+  // Create title with the date
+  const metaTitle = nextGameDate
+    ? `${baseTeamName} - Talviliiga - ${nextGameDate}`
+    : `${baseTeamName} - Joukkueportaali - Talviliiga`;
+
+  // Create description showing all subteams with their game times (not dates)
   const metaDescription = subteamsWithNextGame
     .map(st => {
       if (st.nextGame) {
         const subteamShortName = st.name.split(' ').pop(); // Get last word (e.g., "AEK", "PAOK")
-        return `${subteamShortName} - ${st.nextGame.fullDate || st.nextGame.date} ${st.nextGame.time}`;
+        return `${subteamShortName} - ${st.nextGame.time}`;
       } else {
         const subteamShortName = st.name.split(' ').pop();
         return `${subteamShortName} - Ei pelejä`;
@@ -708,7 +716,7 @@ app.get('/base-team/:baseTeamName', async (req: Request, res: Response) => {
 
   res.render('base_team_portal', {
     documentTitle: `${baseTeamName} - Joukkueportaali`,
-    metaTitle: `${baseTeamName} - Joukkueportaali - Talviliiga`,
+    metaTitle,
     metaDescription,
     metaUrl: currentUrl,
     baseTeamName: baseTeamName,

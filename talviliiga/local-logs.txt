@@ -1,0 +1,134 @@
+Usage:
+  flyctl logs [flags]
+
+Flags:
+  -a, --app string       Application name
+  -c, --config string    Path to application configuration file
+  -h, --help             help for logs
+  -j, --json             JSON output
+      --machine string   Filter by machine ID
+  -n, --no-tail          Do not continually stream logs
+  -r, --region string    The target region (see 'flyctl platform regions')
+
+Global Flags:
+  -t, --access-token string   Fly API Access Token
+      --debug                 Print additional logs and traces
+      --verbose               Verbose output
+
+Usage:
+  flyctl logs [flags]
+
+Flags:
+  -a, --app string       Application name
+  -c, --config string    Path to application configuration file
+  -h, --help             help for logs
+  -j, --json             JSON output
+      --machine string   Filter by machine ID
+  -n, --no-tail          Do not continually stream logs
+  -r, --region string    The target region (see 'flyctl platform regions')
+
+Global Flags:
+  -t, --access-token string   Fly API Access Token
+      --debug                 Print additional logs and traces
+      --verbose               Verbose output
+
+[2m2025-11-15T16:56:48Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Main child exited with signal (with signal 'SIGINT', core dumped? false)
+[2m2025-11-15T16:56:48Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Starting clean up.
+[2m2025-11-15T16:56:48Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][  462.472224] reboot: Restarting system
+[2m2025-11-15T16:58:05Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]Starting machine
+[2m2025-11-15T16:58:05Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]2025-11-15T16:58:05.112024645 [01K9YG3YQ24TS3TNA5P85892FX:main] Running Firecracker v1.12.1
+[2m2025-11-15T16:58:05Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]2025-11-15T16:58:05.112200460 [01K9YG3YQ24TS3TNA5P85892FX:main] Listening on API socket ("/fc.sock").
+[2m2025-11-15T16:58:05Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Starting init (commit: 6f59af0a)...
+[2m2025-11-15T16:58:06Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Preparing to run: `docker-entrypoint.sh node dist/src/app.js` as nodejs
+[2m2025-11-15T16:58:06Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m [fly api proxy] listening at /.fly/api
+[2m2025-11-15T16:58:06Z[0m runner[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]Machine started in 1.166s
+[2m2025-11-15T16:58:06Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]machine started in 1.357125172s
+[2m2025-11-15T16:58:06Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]2025/11/15 16:58:06 INFO SSH listening listen_address=[fdaa:a:6e92:a7b:5d6:b9e8:791d:2]:22
+[2m2025-11-15T16:58:06Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]🚀 Starting Talviliiga Tournament Viewer...
+[2m2025-11-15T16:58:06Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]📊 Loading game data...
+[2m2025-11-15T16:58:06Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]🌐 Server running at http://localhost:3003
+[2m2025-11-15T16:58:06Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]🏁 Startup time: 8ms
+[2m2025-11-15T16:58:06Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]✅ Loaded 188 games across 3 dates
+[2m2025-11-15T16:58:06Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]✅ Found 34 base teams
+[2m2025-11-15T16:58:06Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]⚡ Data load completed in 86ms
+[2m2025-11-15T16:58:06Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]machine became reachable in 343.192631ms
+[2m2025-11-15T16:58:06Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]📊 [2025-11-15T16:58:06.713Z] GET /base-team/OLS%20Kreikka%2017 - IP: 2001:999:591:3266:cdd2:7db:9948:8d4c - UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537
+[2m2025-11-15T16:58:08Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]📊 [2025-11-15T16:58:08.752Z] GET / - IP: 2001:999:591:3266:cdd2:7db:9948:8d4c - UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537
+[2m2025-11-15T16:58:08Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]📊 [2025-11-15T16:58:08.840Z] GET /date/15.11 - IP: 2001:999:591:3266:cdd2:7db:9948:8d4c - UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537
+[2m2025-11-15T16:58:17Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]📊 [2025-11-15T16:58:17.699Z] GET /team/OLS%20Kreikka%2017%20Paok?date=15.11 - IP: 2001:999:591:3266:cdd2:7db:9948:8d4c - UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537
+[2m2025-11-15T16:58:22Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]📊 [2025-11-15T16:58:22.329Z] GET /team/OLS%20Kreikka%2017%20Paok?date=15.11 - IP: 86.115.115.12 - UA: Mozilla/5.0 (Android 16; Mobile; rv:145.0) Gecko/1
+[2m2025-11-15T17:06:08Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]App talviliiga has excess capacity, autostopping machine 4d8944d5f0ed48. 0 out of 1 machines left running (region=arn, process group=app)
+[2m2025-11-15T17:06:08Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Sending signal SIGINT to main child process w/ PID 640
+[2m2025-11-15T17:06:08Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Main child exited with signal (with signal 'SIGINT', core dumped? false)
+[2m2025-11-15T17:06:08Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Starting clean up.
+[2m2025-11-15T17:06:08Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][  483.475808] reboot: Restarting system
+[2m2025-11-15T17:49:45Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]Starting machine
+[2m2025-11-15T17:49:45Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]2025-11-15T17:49:45.668650263 [01K9YG3YQ24TS3TNA5P85892FX:main] Running Firecracker v1.12.1
+[2m2025-11-15T17:49:45Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]2025-11-15T17:49:45.668840967 [01K9YG3YQ24TS3TNA5P85892FX:main] Listening on API socket ("/fc.sock").
+[2m2025-11-15T17:49:46Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Starting init (commit: 6f59af0a)...
+[2m2025-11-15T17:49:46Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Preparing to run: `docker-entrypoint.sh node dist/src/app.js` as nodejs
+[2m2025-11-15T17:49:46Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m [fly api proxy] listening at /.fly/api
+[2m2025-11-15T17:49:46Z[0m runner[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]Machine started in 1.153s
+[2m2025-11-15T17:49:46Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]machine started in 1.267474899s
+[2m2025-11-15T17:49:46Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]2025/11/15 17:49:46 INFO SSH listening listen_address=[fdaa:a:6e92:a7b:5d6:b9e8:791d:2]:22
+[2m2025-11-15T17:49:47Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]🚀 Starting Talviliiga Tournament Viewer...
+[2m2025-11-15T17:49:47Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]📊 Loading game data...
+[2m2025-11-15T17:49:47Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]🌐 Server running at http://localhost:3003
+[2m2025-11-15T17:49:47Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]🏁 Startup time: 9ms
+[2m2025-11-15T17:49:47Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]machine became reachable in 367.979378ms
+[2m2025-11-15T17:49:47Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]✅ Loaded 188 games across 3 dates
+[2m2025-11-15T17:49:47Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]✅ Found 34 base teams
+[2m2025-11-15T17:49:47Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]⚡ Data load completed in 84ms
+[2m2025-11-15T17:49:47Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]📊 [2025-11-15T17:49:47.263Z] GET /team/OLS%20Kreikka%2017%20Paok?date=15.11 - IP: 2001:14bb:672:5dc5:ab:ebff:fe1b:4348 - UA: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537
+[2m2025-11-15T17:56:30Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]App talviliiga has excess capacity, autostopping machine 4d8944d5f0ed48. 0 out of 1 machines left running (region=arn, process group=app)
+[2m2025-11-15T17:56:30Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Sending signal SIGINT to main child process w/ PID 641
+[2m2025-11-15T17:56:31Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Main child exited with signal (with signal 'SIGINT', core dumped? false)
+[2m2025-11-15T17:56:31Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Starting clean up.
+[2m2025-11-15T17:56:31Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][  405.390532] reboot: Restarting system
+[2m2025-11-15T18:52:43Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]Starting machine
+[2m2025-11-15T18:52:43Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]2025-11-15T18:52:43.656864582 [01K9YG3YQ24TS3TNA5P85892FX:main] Running Firecracker v1.12.1
+[2m2025-11-15T18:52:43Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]2025-11-15T18:52:43.657033797 [01K9YG3YQ24TS3TNA5P85892FX:main] Listening on API socket ("/fc.sock").
+[2m2025-11-15T18:52:44Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Starting init (commit: 6f59af0a)...
+[2m2025-11-15T18:52:44Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Preparing to run: `docker-entrypoint.sh node dist/src/app.js` as nodejs
+[2m2025-11-15T18:52:44Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m [fly api proxy] listening at /.fly/api
+[2m2025-11-15T18:52:44Z[0m runner[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]Machine started in 1.211s
+[2m2025-11-15T18:52:44Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]machine started in 1.323338125s
+[2m2025-11-15T18:52:44Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]2025/11/15 18:52:44 INFO SSH listening listen_address=[fdaa:a:6e92:a7b:5d6:b9e8:791d:2]:22
+[2m2025-11-15T18:52:45Z[0m health[4d8944d5f0ed48] [32marn[0m [[31merror[0m]Health check on port 3003 has failed. Your app is not responding properly. Services exposed on ports [80, 443] will have intermittent failures until the health check passes.
+[2m2025-11-15T18:52:45Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]🚀 Starting Talviliiga Tournament Viewer...
+[2m2025-11-15T18:52:45Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]📊 Loading game data...
+[2m2025-11-15T18:52:45Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]🌐 Server running at http://localhost:3003
+[2m2025-11-15T18:52:45Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]🏁 Startup time: 9ms
+[2m2025-11-15T18:52:45Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]machine became reachable in 358.14514ms
+[2m2025-11-15T18:52:45Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]✅ Loaded 188 games across 3 dates
+[2m2025-11-15T18:52:45Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]✅ Found 34 base teams
+[2m2025-11-15T18:52:45Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]⚡ Data load completed in 84ms
+[2m2025-11-15T18:52:45Z[0m health[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]Health check on port 3003 is now passing.
+[2m2025-11-15T18:59:32Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]App talviliiga has excess capacity, autostopping machine 4d8944d5f0ed48. 0 out of 1 machines left running (region=arn, process group=app)
+[2m2025-11-15T18:59:32Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Sending signal SIGINT to main child process w/ PID 643
+[2m2025-11-15T18:59:33Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Main child exited with signal (with signal 'SIGINT', core dumped? false)
+[2m2025-11-15T18:59:33Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Starting clean up.
+[2m2025-11-15T18:59:33Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][  409.423749] reboot: Restarting system
+[2m2025-11-16T08:08:35Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]Starting machine
+[2m2025-11-16T08:08:35Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]2025-11-16T08:08:35.282459931 [01K9YG3YQ24TS3TNA5P85892FX:main] Running Firecracker v1.12.1
+[2m2025-11-16T08:08:35Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]2025-11-16T08:08:35.282651665 [01K9YG3YQ24TS3TNA5P85892FX:main] Listening on API socket ("/fc.sock").
+[2m2025-11-16T08:08:36Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Starting init (commit: 6f59af0a)...
+[2m2025-11-16T08:08:36Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Preparing to run: `docker-entrypoint.sh node dist/src/app.js` as nodejs
+[2m2025-11-16T08:08:36Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m [fly api proxy] listening at /.fly/api
+[2m2025-11-16T08:08:36Z[0m runner[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]Machine started in 1.12s
+[2m2025-11-16T08:08:36Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]machine started in 1.232219378s
+[2m2025-11-16T08:08:36Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]2025/11/16 08:08:36 INFO SSH listening listen_address=[fdaa:a:6e92:a7b:5d6:b9e8:791d:2]:22
+[2m2025-11-16T08:08:36Z[0m health[4d8944d5f0ed48] [32marn[0m [[31merror[0m]Health check on port 3003 has failed. Your app is not responding properly. Services exposed on ports [80, 443] will have intermittent failures until the health check passes.
+[2m2025-11-16T08:08:36Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]🚀 Starting Talviliiga Tournament Viewer...
+[2m2025-11-16T08:08:36Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]📊 Loading game data...
+[2m2025-11-16T08:08:36Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]🌐 Server running at http://localhost:3003
+[2m2025-11-16T08:08:36Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]🏁 Startup time: 9ms
+[2m2025-11-16T08:08:36Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]✅ Loaded 188 games across 3 dates
+[2m2025-11-16T08:08:36Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]✅ Found 34 base teams
+[2m2025-11-16T08:08:36Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]⚡ Data load completed in 84ms
+[2m2025-11-16T08:08:37Z[0m health[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]Health check on port 3003 is now passing.
+[2m2025-11-16T08:14:21Z[0m proxy[4d8944d5f0ed48] [32marn[0m [[34minfo[0m]App talviliiga has excess capacity, autostopping machine 4d8944d5f0ed48. 0 out of 1 machines left running (region=arn, process group=app)
+[2m2025-11-16T08:14:21Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Sending signal SIGINT to main child process w/ PID 644
+[2m2025-11-16T08:14:22Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Main child exited with signal (with signal 'SIGINT', core dumped? false)
+[2m2025-11-16T08:14:22Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][32m INFO[0m Starting clean up.
+[2m2025-11-16T08:14:22Z[0m app[4d8944d5f0ed48] [32marn[0m [[34minfo[0m][  347.324306] reboot: Restarting system

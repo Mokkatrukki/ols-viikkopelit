@@ -271,6 +271,20 @@ function parseSheet(worksheet: XLSX.WorkSheet, sheetName: string): { games: Game
 }
 
 /**
+ * Check if a date is in the past
+ */
+function isPastDate(dateStr: string, excelDate: number): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset to start of day for comparison
+
+  const excelEpoch = new Date(1899, 11, 30);
+  const gameDate = new Date(excelEpoch.getTime() + excelDate * 86400000);
+  gameDate.setHours(0, 0, 0, 0);
+
+  return gameDate < today;
+}
+
+/**
  * Main parser function
  */
 function parseExcelFile(filePath: string): GameOutput {
@@ -297,8 +311,28 @@ function parseExcelFile(filePath: string): GameOutput {
     });
   }
 
+  // Filter out past dates
+  const filteredGames: Game[] = [];
+  let pastGamesCount = 0;
+
+  allGames.forEach(game => {
+    if (game.date) {
+      const excelDate = allDateToExcelDate.get(game.date);
+      if (excelDate && isPastDate(game.date, excelDate)) {
+        pastGamesCount++;
+        console.log(`Skipping past game: ${game.date} - ${game.team1} vs ${game.team2}`);
+      } else {
+        filteredGames.push(game);
+      }
+    } else {
+      filteredGames.push(game);
+    }
+  });
+
+  console.log(`\nFiltered out ${pastGamesCount} games from past dates`);
+
   // Sort games by date and time
-  allGames.sort((a, b) => {
+  filteredGames.sort((a, b) => {
     if (a.date !== b.date) {
       return (a.date || '').localeCompare(b.date || '');
     }
@@ -307,7 +341,7 @@ function parseExcelFile(filePath: string): GameOutput {
 
   // Group games by date
   const gamesByDateMap = new Map<string, Game[]>();
-  allGames.forEach(game => {
+  filteredGames.forEach(game => {
     if (game.date) {
       if (!gamesByDateMap.has(game.date)) {
         gamesByDateMap.set(game.date, []);
@@ -336,7 +370,7 @@ function parseExcelFile(filePath: string): GameOutput {
 
   return {
     documentDate: new Date().toLocaleDateString('fi-FI'),
-    games: allGames,
+    games: filteredGames,
     gamesByDate
   };
 }
