@@ -193,12 +193,15 @@ async function refreshData(): Promise<{ ok: boolean; message: string }> {
     const pdf = await fetchLatestPdf();
     if (!pdf) return { ok: false, message: 'No PDF found on OLS website' };
 
-    // Skip re-parsing if this is the same PDF we already have
-    if (gamesData?.pdfUrl === pdf.url && gamesData.games.length > 0) {
+    // Skip re-parsing only if URL AND hash both match
+    const sameUrl = gamesData?.pdfUrl === pdf.url;
+    const sameHash = gamesData?.pdfHash && gamesData.pdfHash === pdf.hash;
+    if (sameUrl && sameHash && gamesData!.games.length > 0) {
       return { ok: true, message: `Already up to date (${pdf.url})` };
     }
 
     const data = await parsePdf(pdf.localPath, pdf.url);
+    data.pdfHash = pdf.hash;
     fs.mkdirSync(path.dirname(DATA_PATH), { recursive: true });
     fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
     gamesData = data;

@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { createHash } from 'crypto';
 
 const OLS_PAGE = 'https://ols.fi/jalkapallo/viikkopelit/';
 const DATA_DIR = path.join(import.meta.dir, '../data');
@@ -8,6 +9,11 @@ export interface PdfInfo {
   url: string;
   localPath: string;
   date: Date;
+  hash: string;
+}
+
+function sha256(buf: Buffer): string {
+  return createHash('sha256').update(buf).digest('hex');
 }
 
 function parsePdfUrlDate(url: string): Date | null {
@@ -50,16 +56,17 @@ function findLatest(urls: string[]): PdfInfo | null {
   return latest;
 }
 
-async function downloadPdf(url: string, localPath: string): Promise<void> {
+async function downloadPdf(url: string, localPath: string): Promise<Buffer> {
   const res = await fetch(url, {
     headers: { 'User-Agent': 'OLS-viikkopelit-bot/2.0' },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status} downloading PDF from ${url}`);
 
-  const buffer = await res.arrayBuffer();
+  const buffer = Buffer.from(await res.arrayBuffer());
   fs.mkdirSync(path.dirname(localPath), { recursive: true });
-  fs.writeFileSync(localPath, Buffer.from(buffer));
+  fs.writeFileSync(localPath, buffer);
   console.log(`Downloaded: ${localPath}`);
+  return buffer;
 }
 
 export async function fetchLatestPdf(): Promise<PdfInfo | null> {
@@ -83,12 +90,29 @@ export async function fetchLatestPdf(): Promise<PdfInfo | null> {
   console.log(`Latest: ${latest.url} (${latest.date.toLocaleDateString('fi-FI')})`);
 
   if (fs.existsSync(latest.localPath)) {
-    console.log(`Already downloaded: ${latest.localPath}`);
-    return latest;
+    const existing = fs.readFileSync(latest.localPath);
+    const existingHash = sha256(existing);
+
+    // Re-download to check if OLS replaced the file with same name
+    let freshBuffer: Buffer;
+    try {
+      freshBuffer = await downloadPdf(latest.url, latest.localPath);
+    } catch {
+      console.warn('Re-download failed, using cached file');
+      return { ...latest, hash: existingHash };
+    }
+
+    const freshHash = sha256(freshBuffer);
+    if (freshHash !== existingHash) {
+      console.log(`PDF content changed (hash mismatch) → will re-parse`);
+    } else {
+      console.log(`PDF unchanged (hash match): ${latest.localPath}`);
+    }
+    return { ...latest, hash: freshHash };
   }
 
-  await downloadPdf(latest.url, latest.localPath);
-  return latest;
+  const buffer = await downloadPdf(latest.url, latest.localPath);
+  return { ...latest, hash: sha256(buffer) };
 }
 
 if (import.meta.main) {

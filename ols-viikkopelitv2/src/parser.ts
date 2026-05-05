@@ -22,6 +22,7 @@ export interface DateGroup {
 export interface GamesData {
   lastUpdated: string;
   pdfUrl: string;
+  pdfHash?: string;
   documentDate: string;
   games: Game[];
   gamesByDate: DateGroup[];
@@ -343,7 +344,7 @@ export async function parsePdf(filePath: string, pdfUrl = ''): Promise<GamesData
     return am !== bm ? am - bm : ad - bd;
   });
 
-  return { lastUpdated: new Date().toISOString(), pdfUrl, documentDate, games, gamesByDate };
+  return { lastUpdated: new Date().toISOString(), pdfUrl, documentDate, games, gamesByDate, pdfHash: '' };
 }
 
 // ─── CLI ──────────────────────────────────────────────────────────────────────
