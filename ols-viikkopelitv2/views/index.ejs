@@ -83,31 +83,11 @@
 <body>
     <div class="container">
         <header>
-            <% if (gamesByDate && gamesByDate.length > 0 && selectedDate) { %>
-                <% const idx = typeof currentDateIndex !== 'undefined' ? currentDateIndex : gamesByDate.findIndex(d => d.date === selectedDate); %>
-                <% const cur = gamesByDate[idx]; %>
-                <% const prev = idx > 0 ? gamesByDate[idx - 1] : null; %>
-                <% const next = idx < gamesByDate.length - 1 ? gamesByDate[idx + 1] : null; %>
-                <div class="header-nav">
-                    <% if (prev) { %>
-                        <a href="<%= selectedTeam ? '/team/' + encodeURIComponent(selectedTeam) + '?date=' + encodeURIComponent(prev.date) : '/date/' + encodeURIComponent(prev.date) %>" class="nav-btn">&lt;</a>
-                    <% } else { %>
-                        <span class="nav-btn disabled">&lt;</span>
-                    <% } %>
-                    <h1>OLS Viikkopelit - <%= cur ? cur.fullDate : selectedDate %></h1>
-                    <% if (next) { %>
-                        <a href="<%= selectedTeam ? '/team/' + encodeURIComponent(selectedTeam) + '?date=' + encodeURIComponent(next.date) : '/date/' + encodeURIComponent(next.date) %>" class="nav-btn">&gt;</a>
-                    <% } else { %>
-                        <span class="nav-btn disabled">&gt;</span>
-                    <% } %>
-                </div>
-            <% } else { %>
-                <h1>OLS Viikkopelit</h1>
-            <% } %>
+            <h1>OLS Viikkopelit<% if (documentDate) { %> - <%= documentDate %><% } %></h1>
         </header>
 
         <main>
-            <% if (!gamesByDate || gamesByDate.length === 0) { %>
+            <% if (!hasData) { %>
                 <div class="no-data">
                     <h2>Ei otteluohjelmaa</h2>
                     <p>Viikkopelit-PDF:ää ei ole vielä haettu.</p>
@@ -137,7 +117,6 @@
                 </div>
 
                 <script>
-                    const currentDate = '<%= typeof selectedDate !== "undefined" && selectedDate ? selectedDate : "" %>';
                     const inp = document.getElementById('teamSearch');
                     const dd = document.getElementById('teamDropdown');
                     const opts = dd.querySelectorAll('.opt');
@@ -160,13 +139,11 @@
                             if (!val) inp.placeholder = '-- Kaikki joukkueet --';
                             dd.classList.remove('open');
                             if (!val) {
-                                window.location.href = currentDate ? '/date/' + encodeURIComponent(currentDate) : '/';
+                                window.location.href = '/';
                             } else if (val.startsWith('base-team:')) {
                                 window.location.href = '/base-team/' + encodeURIComponent(val.slice('base-team:'.length));
                             } else {
-                                window.location.href = currentDate
-                                    ? '/team/' + encodeURIComponent(val) + '?date=' + encodeURIComponent(currentDate)
-                                    : '/team/' + encodeURIComponent(val);
+                                window.location.href = '/team/' + encodeURIComponent(val);
                             }
                         });
                     });
@@ -211,6 +188,20 @@
                                 <div class="game-meta">
                                     <strong>Pelimuoto:</strong> <%= game.gameType %> &middot; <strong>Kesto:</strong> <%= game.gameDuration %>
                                 </div>
+                                <% const fieldImg = fieldMapData[game.field]; if (fieldImg) {
+                                   const nameNoExt = fieldImg.src.replace(/\.[^.]+$/, '');
+                                   const isFirst = idx === 0; %>
+                                <div style="margin-top:1rem;border-radius:8px;overflow:hidden;aspect-ratio:<%= fieldImg.width %>/<%= fieldImg.height %>;">
+                                    <picture>
+                                        <source srcset="<%= nameNoExt %>-336w.webp 336w, <%= nameNoExt %>-504w.webp 504w, <%= nameNoExt %>-672w.webp 672w"
+                                                sizes="(max-width:480px) 100vw, (max-width:768px) 80vw, 60vw" type="image/webp">
+                                        <img src="<%= fieldImg.src %>" alt="Kenttäkartta - <%= game.field %>"
+                                             width="<%= fieldImg.width %>" height="<%= fieldImg.height %>"
+                                             style="width:100%;height:auto;display:block;"
+                                             loading="<%= isFirst ? 'eager' : 'lazy' %>" decoding="async">
+                                    </picture>
+                                </div>
+                                <% } %>
                             </div>
                         <% }); %>
                     </div>

@@ -92,20 +92,6 @@ function buildGroupedTeams(games: Game[]): GroupedTeamEntry[] {
   return [{ year: '', teams: names.sort(), baseTeams, individualTeams }];
 }
 
-function buildGroupedTeamsForDate(date: string, allGames: Game[], cachedBase: BaseTeam[]): GroupedTeamEntry[] {
-  const gamesOnDate = allGames.filter(g => g.date === date);
-  const onDate = new Set([...gamesOnDate.map(g => g.team1), ...gamesOnDate.map(g => g.team2)].filter(Boolean));
-  const allGlobalSubs = new Set(cachedBase.flatMap(b => b.subteams));
-
-  const baseTeams: BaseTeam[] = cachedBase
-    .map(b => ({ name: b.name, subteams: b.subteams.filter(s => onDate.has(s)) }))
-    .filter(b => b.subteams.length > 0)
-    .sort((a, b) => a.name.localeCompare(b.name));
-
-  const individualTeams = [...onDate].filter(n => !allGlobalSubs.has(n)).sort();
-
-  return [{ year: '', teams: [...onDate].sort(), baseTeams, individualTeams }];
-}
 
 function splitTeamName(name: string, baseTeams: BaseTeam[]): { parent: string | null; subteam: string | null; fullName: string } {
   for (const bt of baseTeams) {
@@ -116,30 +102,33 @@ function splitTeamName(name: string, baseTeams: BaseTeam[]): { parent: string | 
   return { parent: null, subteam: null, fullName: name };
 }
 
-function parseFullDate(s: string): Date | null {
-  const p = s.split('.');
-  if (p.length !== 3) return null;
-  const d = parseInt(p[0]), m = parseInt(p[1]) - 1, y = parseInt(p[2]);
-  if (isNaN(d) || isNaN(m) || isNaN(y)) return null;
-  return new Date(y, m, d);
-}
-
-function findDefaultDate(gamesByDate: DateGroup[]): string | null {
-  if (!gamesByDate.length) return null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  for (const dg of gamesByDate) {
-    const gd = parseFullDate(dg.fullDate);
-    if (gd && gd >= today) return dg.date;
-  }
-  return gamesByDate[gamesByDate.length - 1].date;
-}
 
 function parseTimeToMinutes(s: string): number {
   const p = s.split(':');
   if (p.length !== 2) return NaN;
   return parseInt(p[0]) * 60 + parseInt(p[1]);
 }
+
+// ─── Field map data ───────────────────────────────────────────────────────────
+
+const fieldMapData: Record<string, { src: string; width: number; height: number }> = {
+  'PÖRHÖ AREENA 1A': { src: '/images/garam_masala_map_kentta_1a.png', width: 672, height: 1010 },
+  'PÖRHÖ AREENA 1B': { src: '/images/garam_masala_map_kentta_1b.png', width: 672, height: 1010 },
+  'PÖRHÖ AREENA 1C': { src: '/images/garam_masala_map_kentta_1c.png', width: 672, height: 1010 },
+  'PÖRHÖ AREENA 1D': { src: '/images/garam_masala_map_kentta_1d.png', width: 672, height: 1010 },
+  'PÖRHÖ AREENA 2A': { src: '/images/garam_masala_map_kentta_2a.png', width: 672, height: 1010 },
+  'PÖRHÖ AREENA 2B': { src: '/images/garam_masala_map_kentta_2b.png', width: 672, height: 1010 },
+  'PÖRHÖ AREENA 2C': { src: '/images/garam_masala_map_kentta_2c.png', width: 672, height: 1010 },
+  'PÖRHÖ AREENA 2D': { src: '/images/garam_masala_map_kentta_2d.png', width: 672, height: 1010 },
+  'HEINÄPÄÄN TEKONURMI A': { src: '/images/tekonurmi_map_kentta_a.png', width: 672, height: 1010 },
+  'HEINÄPÄÄN TEKONURMI B': { src: '/images/tekonurmi_map_kentta_b.png', width: 672, height: 1010 },
+  'HEINÄPÄÄN TEKONURMI C': { src: '/images/tekonurmi_map_kentta_c.png', width: 672, height: 1010 },
+  'HEINÄPÄÄN TEKONURMI D': { src: '/images/tekonurmi_map_kentta_d.png', width: 672, height: 1010 },
+  'HEPA - HALLI A': { src: '/images/heinapaan_halli_map_kentta_a.png', width: 672, height: 444 },
+  'HEPA - HALLI B': { src: '/images/heinapaan_halli_map_kentta_b.png', width: 672, height: 444 },
+  'HEPA - HALLI C': { src: '/images/heinapaan_halli_map_kentta_c.png', width: 672, height: 444 },
+  'HEPA - HALLI D': { src: '/images/heinapaan_halli_map_kentta_d.png', width: 672, height: 444 },
+};
 
 // ─── Data store ───────────────────────────────────────────────────────────────
 
@@ -203,71 +192,38 @@ function redirect(location: string): Response {
 
 // ─── Route handlers ───────────────────────────────────────────────────────────
 
-async function handleHome(req: Request): Promise<Response> {
-  const baseUrl = getBaseUrl(req);
-  const gamesByDate = gamesData?.gamesByDate ?? [];
-  const defaultDate = findDefaultDate(gamesByDate);
-
-  if (defaultDate) return redirect(`/date/${encodeURIComponent(defaultDate)}`);
-
-  return render('index.ejs', {
-    documentTitle: 'OLS Viikkopelit',
-    metaTitle: 'OLS Viikkopelit',
+function makeIndexVars(baseUrl: string, extra: Record<string, unknown> = {}): Record<string, unknown> {
+  const documentDate = gamesData?.documentDate ?? '';
+  const title = documentDate ? `OLS Viikkopelit - ${documentDate}` : 'OLS Viikkopelit';
+  return {
+    documentTitle: title,
+    metaTitle: title,
     metaDescription: 'OLS:n viikkopelien otteluohjelma',
     metaUrl: baseUrl,
-    groupedTeams: [],
+    documentDate,
+    groupedTeams: cachedGroupedTeams,
     selectedTeam: null,
     teamNameSplit: null,
-    selectedDate: null,
     gamesForTeam: [],
-    fieldMapData: {},
-    gamesByDate: [],
-    currentDateIndex: 0,
+    fieldMapData,
+    hasData: !!gamesData && gamesData.games.length > 0,
     lastUpdated: gamesData?.lastUpdated ?? null,
     pdfUrl: gamesData?.pdfUrl ?? null,
-  });
+    ...extra,
+  };
 }
 
-async function handleDate(req: Request, selectedDate: string): Promise<Response> {
+async function handleHome(req: Request): Promise<Response> {
+  const baseUrl = getBaseUrl(req);
+  return render('index.ejs', makeIndexVars(baseUrl));
+}
+
+async function handleTeam(req: Request, teamName: string): Promise<Response> {
   const baseUrl = getBaseUrl(req);
   const games = gamesData?.games ?? [];
   const gamesByDate = gamesData?.gamesByDate ?? [];
-  const currentDateIndex = gamesByDate.findIndex(dg => dg.date === selectedDate);
-  const dateGroup = gamesByDate[currentDateIndex];
 
-  if (!dateGroup) return redirect('/');
-
-  return render('index.ejs', {
-    documentTitle: `OLS Viikkopelit - ${dateGroup.fullDate}`,
-    metaTitle: `OLS Viikkopelit - ${dateGroup.fullDate}`,
-    metaDescription: `Viikkopelit ${dateGroup.fullDate}`,
-    metaUrl: `${baseUrl}/date/${encodeURIComponent(selectedDate)}`,
-    groupedTeams: buildGroupedTeamsForDate(selectedDate, games, cachedBaseTeams),
-    selectedTeam: null,
-    teamNameSplit: null,
-    selectedDate,
-    gamesForTeam: [],
-    fieldMapData: {},
-    gamesByDate,
-    currentDateIndex,
-    lastUpdated: gamesData?.lastUpdated ?? null,
-    pdfUrl: gamesData?.pdfUrl ?? null,
-  });
-}
-
-async function handleTeam(req: Request, teamName: string, url: URL): Promise<Response> {
-  const baseUrl = getBaseUrl(req);
-  const selectedDate = url.searchParams.get('date');
-  const games = gamesData?.games ?? [];
-  const gamesByDate = gamesData?.gamesByDate ?? [];
-
-  if (!selectedDate) {
-    const defaultDate = findDefaultDate(gamesByDate);
-    if (defaultDate) return redirect(`/team/${encodeURIComponent(teamName)}?date=${encodeURIComponent(defaultDate)}`);
-  }
-
-  const dateGames = selectedDate ? (gamesByDate.find(dg => dg.date === selectedDate)?.games ?? games) : games;
-  const gamesForTeam = dateGames
+  const gamesForTeam = games
     .filter(g => g.team1 === teamName || g.team2 === teamName)
     .map(g => {
       const opponent = g.team1 === teamName ? g.team2 : g.team1;
@@ -279,7 +235,6 @@ async function handleTeam(req: Request, teamName: string, url: URL): Promise<Res
       return parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time);
     });
 
-  // Add break durations
   for (let i = 1; i < gamesForTeam.length; i++) {
     const cur = gamesForTeam[i] as any;
     const prev = gamesForTeam[i - 1];
@@ -290,11 +245,7 @@ async function handleTeam(req: Request, teamName: string, url: URL): Promise<Res
     if (breakMin > 0) cur.breakDurationMinutes = breakMin;
   }
 
-  const currentDateIndex = selectedDate ? gamesByDate.findIndex(dg => dg.date === selectedDate) : -1;
-  const groupedTeams = selectedDate ? buildGroupedTeamsForDate(selectedDate, games, cachedBaseTeams) : cachedGroupedTeams;
   const teamNameSplit = splitTeamName(teamName, cachedBaseTeams);
-
-  const dateGroupForMeta = selectedDate ? gamesByDate.find(dg => dg.date === selectedDate) : null;
   const firstGame = gamesForTeam[0];
   const metaDescription = firstGame
     ? `Eka peli: ${firstGame.time}${firstGame.location ? ', ' + firstGame.location : ''}`
@@ -303,27 +254,16 @@ async function handleTeam(req: Request, teamName: string, url: URL): Promise<Res
   let metaTitle = teamNameSplit.parent && teamNameSplit.subteam
     ? `${teamNameSplit.parent} ${teamNameSplit.subteam}`
     : teamName;
-  if (dateGroupForMeta) metaTitle += ` - ${dateGroupForMeta.fullDate}`;
   metaTitle += ' - OLS Viikkopelit';
 
-  return render('index.ejs', {
-    documentTitle: `OLS Viikkopelit`,
+  return render('index.ejs', makeIndexVars(`${baseUrl}/team/${encodeURIComponent(teamName)}`, {
     metaTitle,
     metaDescription,
-    metaUrl: selectedDate
-      ? `${baseUrl}/team/${encodeURIComponent(teamName)}?date=${encodeURIComponent(selectedDate)}`
-      : `${baseUrl}/team/${encodeURIComponent(teamName)}`,
-    groupedTeams,
+    metaUrl: `${baseUrl}/team/${encodeURIComponent(teamName)}`,
     selectedTeam: teamName,
     teamNameSplit,
-    selectedDate: selectedDate ?? null,
     gamesForTeam,
-    fieldMapData: {},
-    gamesByDate,
-    currentDateIndex: currentDateIndex >= 0 ? currentDateIndex : 0,
-    lastUpdated: gamesData?.lastUpdated ?? null,
-    pdfUrl: gamesData?.pdfUrl ?? null,
-  });
+  }));
 }
 
 async function handleBaseTeam(req: Request, baseTeamName: string): Promise<Response> {
@@ -366,7 +306,7 @@ async function handleBaseTeam(req: Request, baseTeamName: string): Promise<Respo
     metaUrl: `${baseUrl}/base-team/${encodeURIComponent(baseTeamName)}`,
     baseTeamName,
     subteams: subteamsWithNextGame,
-    fieldMapData: {},
+    fieldMapData,
     lastUpdated: gamesData?.lastUpdated ?? null,
   });
 }
@@ -426,14 +366,13 @@ Bun.serve({
     if (p === '/admin') return handleAdmin(req);
     if (p === '/') return handleHome(req);
 
-    const dateM = p.match(/^\/date\/(.+)$/);
-    if (dateM) return handleDate(req, decodeURIComponent(dateM[1]));
+    if (p.startsWith('/date/')) return redirect('/');
 
     const baseTeamM = p.match(/^\/base-team\/(.+)$/);
     if (baseTeamM) return handleBaseTeam(req, decodeURIComponent(baseTeamM[1]));
 
     const teamM = p.match(/^\/team\/(.+)$/);
-    if (teamM) return handleTeam(req, decodeURIComponent(teamM[1]), url);
+    if (teamM) return handleTeam(req, decodeURIComponent(teamM[1]));
 
     return new Response('Not Found', { status: 404 });
   },
