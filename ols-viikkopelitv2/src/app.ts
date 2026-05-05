@@ -130,6 +130,33 @@ const fieldMapData: Record<string, { src: string; width: number; height: number 
   'HEPA - HALLI D': { src: '/images/heinapaan_halli_map_kentta_d.png', width: 672, height: 444 },
 };
 
+// ─── Active user tracking ─────────────────────────────────────────────────────
+
+const activeSessions = new Map<string, number>(); // sessionId → lastSeen ms
+const SESSION_TTL = 60_000; // 60s
+
+function pruneOldSessions() {
+  const cutoff = Date.now() - SESSION_TTL;
+  for (const [id, ts] of activeSessions) {
+    if (ts < cutoff) activeSessions.delete(id);
+  }
+}
+
+function activeUserCount(): number {
+  pruneOldSessions();
+  return activeSessions.size;
+}
+
+function handleHeartbeat(req: Request): Response {
+  const body = req.headers.get('content-type')?.includes('json')
+    ? null : null; // sessionId comes from URL param or body
+  const url = new URL(req.url);
+  let sid = url.searchParams.get('sid') ?? '';
+  if (!sid || sid.length < 8) sid = Math.random().toString(36).slice(2);
+  activeSessions.set(sid, Date.now());
+  return Response.json({ sid, active: activeUserCount() });
+}
+
 // ─── Data store ───────────────────────────────────────────────────────────────
 
 let gamesData: GamesData | null = null;
@@ -354,7 +381,8 @@ Bun.serve({
       console.log(`${req.method} ${p} - ${ip}`);
     }
 
-    if (p === '/health') return Response.json({ status: 'UP', games: gamesData?.games.length ?? 0 });
+    if (p === '/health') return Response.json({ status: 'UP', games: gamesData?.games.length ?? 0, active: activeUserCount() });
+    if (p === '/api/heartbeat') return handleHeartbeat(req);
 
     if (p.startsWith('/css/') || p.startsWith('/images/') || p === '/favicon.ico') {
       return handleStatic(p);

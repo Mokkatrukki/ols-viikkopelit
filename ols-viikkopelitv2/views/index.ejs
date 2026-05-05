@@ -234,5 +234,17 @@
                 .catch(e => { status.textContent = 'Verkkovirhe: ' + e; btn.disabled = false; btn.textContent = 'Hae viikkopelit'; });
         }
     </script>
+    <script>
+        (function() {
+            let sid = localStorage.getItem('hb_sid') || '';
+            function beat() {
+                fetch('/api/heartbeat?sid=' + encodeURIComponent(sid))
+                    .then(r => r.json())
+                    .then(d => { sid = d.sid; localStorage.setItem('hb_sid', sid); });
+            }
+            beat();
+            setInterval(beat, 30000);
+        })();
+    </script>
 </body>
 </html>

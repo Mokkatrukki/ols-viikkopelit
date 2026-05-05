@@ -35,6 +35,7 @@
 
         <div class="card">
             <h2>Tila</h2>
+            <div class="stat"><span class="stat-label">Aktiiviset käyttäjät</span><span class="stat-value" id="activeUsers">...</span></div>
             <div class="stat"><span class="stat-label">Pelit</span><span class="stat-value"><%= gamesCount %></span></div>
             <div class="stat"><span class="stat-label">Pelipäivät</span><span class="stat-value"><%= datesCount %></span></div>
             <div class="stat">
@@ -56,6 +57,10 @@
     </div>
 
     <script>
+        fetch('/health').then(r => r.json()).then(d => {
+            document.getElementById('activeUsers').textContent = d.active ?? 0;
+        });
+
         async function doRefresh() {
             const btn = document.getElementById('refreshBtn');
             const status = document.getElementById('status');
