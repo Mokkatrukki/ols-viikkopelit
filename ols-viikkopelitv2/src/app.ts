@@ -176,9 +176,9 @@ let cachedBaseTeams: BaseTeam[] = [];
 
 async function loadData(): Promise<void> {
   try {
-    if (!fs.existsSync(DATA_PATH)) return;
-    const raw = fs.readFileSync(DATA_PATH, 'utf-8');
-    gamesData = JSON.parse(raw) as GamesData;
+    const f = Bun.file(DATA_PATH);
+    if (!(await f.exists())) return;
+    gamesData = await f.json() as GamesData;
     cachedGroupedTeams = buildGroupedTeams(gamesData.games);
     cachedBaseTeams = cachedGroupedTeams[0]?.baseTeams ?? [];
     console.log(`Loaded ${gamesData.games.length} games, ${gamesData.gamesByDate.length} dates`);
@@ -425,8 +425,10 @@ const startTime = Date.now();
 console.log('Starting OLS Viikkopelit v2...');
 await loadData();
 
-Bun.serve({
+const server = Bun.serve({
   port: PORT,
+  hostname: '0.0.0.0',
+  maxRequestBodySize: 1024 * 1024 * 2, // 2 MB
   async fetch(req) {
     const url = new URL(req.url);
     const p = url.pathname;
@@ -460,6 +462,18 @@ Bun.serve({
 
     return new Response('Not Found', { status: 404 });
   },
+  error(err) {
+    console.error('Unhandled server error:', err);
+    return new Response('Internal Server Error', { status: 500 });
+  },
 });
 
 console.log(`Server running at http://localhost:${PORT} (startup: ${Date.now() - startTime}ms)`);
+
+for (const sig of ['SIGTERM', 'SIGINT'] as const) {
+  process.on(sig, async () => {
+    console.log(`${sig} received, shutting down gracefully...`);
+    await server.stop(true);
+    process.exit(0);
+  });
+}
