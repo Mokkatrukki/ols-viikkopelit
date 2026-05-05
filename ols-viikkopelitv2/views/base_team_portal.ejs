@@ -11,11 +11,16 @@
     <meta property="og:description" content="<%= metaDescription %>">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; background: #f1f5f9; color: #1e293b; min-height: 100vh; }
-        .container { width: 100%; max-width: 48rem; margin: 0 auto; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; background: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; flex-direction: column; }
+        .container { width: 100%; max-width: 48rem; margin: 0 auto; flex: 1; display: flex; flex-direction: column; }
+        main { flex: 1; }
         header { background: #15803d; color: white; padding: 1rem; border-radius: 0 0 0.5rem 0.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1); }
         header a { color: #86efac; text-decoration: none; font-size: 0.875rem; }
         h1 { font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem; }
+        .time-range { margin-top: 0.5rem; font-size: 0.9rem; color: #bbf7d0; }
+        .time-range strong { color: white; }
+        .time-range-label { opacity: 0.85; }
+        .next-date { opacity: 0.75; font-size: 0.8rem; }
         main { padding: 1rem; margin-top: 1rem; }
         @media (min-width: 768px) { main { padding: 2rem; } }
         .subteam-card { background: white; padding: 1.25rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1); border-left: 4px solid #16a34a; margin-bottom: 1rem; }
@@ -25,8 +30,9 @@
         .subteam-name a:hover { text-decoration: underline; }
         .next-game { font-size: 0.875rem; color: #475569; }
         .next-game .time { font-weight: 700; color: #166534; }
+        .game-label { color: #94a3b8; font-size: 0.8rem; }
         .no-game { font-size: 0.875rem; color: #94a3b8; }
-        footer { background: #1e293b; color: #cbd5e1; text-align: center; padding: 1rem; margin-top: 3rem; font-size: 0.875rem; }
+        footer { background: #1e293b; color: #cbd5e1; text-align: center; padding: 1rem; font-size: 0.875rem; }
         footer a { color: #4ade80; }
     </style>
 </head>
@@ -35,6 +41,9 @@
         <header>
             <a href="/">← Takaisin</a>
             <h1><%= baseTeamName %></h1>
+            <% if (nextDate) { %>
+                <div class="time-range"><span class="next-date"><%= nextDate %></span></div>
+            <% } %>
         </header>
         <main>
             <% subteams.forEach(st => { %>
@@ -44,10 +53,11 @@
                     </div>
                     <% if (st.nextGame) { %>
                         <div class="next-game">
-                            Seuraava: <span class="time"><%= st.nextGame.time %></span>
-                            <%= st.nextGame.fullDate || st.nextGame.date %> –
-                            <%= st.nextGame.opponent %>
-                            (<%= st.nextGame.field %>)
+                            <span class="game-label">Eka peli:</span> <span class="time"><%= st.nextGame.time %></span>
+                            &nbsp;&nbsp;
+                            <span class="game-label">Vika peli loppuu:</span> <span class="time"><%= st.lastEndTime %></span>
+                            &nbsp;&nbsp;
+                            <span class="game-label">Paikka:</span> <%= st.location %>
                         </div>
                     <% } else { %>
                         <div class="no-game">Ei tulevia pelejä</div>

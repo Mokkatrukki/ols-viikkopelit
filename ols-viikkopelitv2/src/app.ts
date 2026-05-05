@@ -109,6 +109,17 @@ function parseTimeToMinutes(s: string): number {
   return parseInt(p[0]) * 60 + parseInt(p[1]);
 }
 
+function parseDurationMinutes(dur: string): number {
+  const m = dur.match(/(\d+)/);
+  return m ? parseInt(m[1]) : 0;
+}
+
+function minutesToTime(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+}
+
 // ─── Field map data ───────────────────────────────────────────────────────────
 
 const fieldMapData: Record<string, { src: string; width: number; height: number }> = {
@@ -312,19 +323,61 @@ async function handleBaseTeam(req: Request, baseTeamName: string): Promise<Respo
         if (a.date !== b.date) return a.date.localeCompare(b.date);
         return parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time);
       });
-    return { name, nextGame: subGames[0] ?? null };
+
+    const firstGame = subGames[0] ?? null;
+    const nextDate = firstGame?.date ?? '';
+    const gamesOnDate = nextDate ? subGames.filter(g => g.date === nextDate) : subGames;
+
+    let subLastEndTime: string | null = null;
+    if (gamesOnDate.length > 0) {
+      const endMins = gamesOnDate.map(g => {
+        const s = parseTimeToMinutes(g.time);
+        return isNaN(s) ? NaN : s + parseDurationMinutes(g.gameDuration);
+      }).filter(t => !isNaN(t));
+      if (endMins.length > 0) subLastEndTime = minutesToTime(Math.max(...endMins));
+    }
+
+    return { name, nextGame: firstGame, lastEndTime: subLastEndTime, location: firstGame?.location ?? null };
   }).sort((a, b) => a.name.localeCompare(b.name));
 
   const nextDate = subteamsWithNextGame.find(s => s.nextGame)?.nextGame?.date ?? '';
+
+  // Compute first game start and last game end across all subteams on next game date
+  const allSubteamGames = baseTeam.subteams.flatMap(name =>
+    games.filter(g => (g.team1 === name || g.team2 === name) && (!nextDate || g.date === nextDate))
+  );
+
+  let firstGameTime: string | null = null;
+  let lastGameEndTime: string | null = null;
+
+  if (allSubteamGames.length > 0) {
+    const startMins = allSubteamGames.map(g => parseTimeToMinutes(g.time)).filter(t => !isNaN(t));
+    const endMins = allSubteamGames.map(g => {
+      const s = parseTimeToMinutes(g.time);
+      return isNaN(s) ? NaN : s + parseDurationMinutes(g.gameDuration);
+    }).filter(t => !isNaN(t));
+
+    if (startMins.length > 0) firstGameTime = minutesToTime(Math.min(...startMins));
+    if (endMins.length > 0) lastGameEndTime = minutesToTime(Math.max(...endMins));
+  }
+
   const metaTitle = nextDate
     ? `${baseTeamName} - ${nextDate} - OLS Viikkopelit`
     : `${baseTeamName} - OLS Viikkopelit`;
-  const metaDescription = subteamsWithNextGame
+
+  const teamTimes = subteamsWithNextGame
     .map(s => {
       const short = s.name.split(' ').pop();
-      return s.nextGame ? `${short} - ${s.nextGame.time}` : `${short} - Ei pelejä`;
+      return s.nextGame ? `${short} ${s.nextGame.time}` : null;
     })
+    .filter(Boolean)
     .join(', ');
+
+  const timeRange = firstGameTime && lastGameEndTime
+    ? `${firstGameTime}–${lastGameEndTime}`
+    : null;
+
+  const metaDescription = [timeRange, teamTimes].filter(Boolean).join(' | ');
 
   return render('base_team_portal.ejs', {
     documentTitle: `${baseTeamName} - Joukkueportaali`,
@@ -333,6 +386,9 @@ async function handleBaseTeam(req: Request, baseTeamName: string): Promise<Respo
     metaUrl: `${baseUrl}/base-team/${encodeURIComponent(baseTeamName)}`,
     baseTeamName,
     subteams: subteamsWithNextGame,
+    firstGameTime,
+    lastGameEndTime,
+    nextDate,
     fieldMapData,
     lastUpdated: gamesData?.lastUpdated ?? null,
   });
