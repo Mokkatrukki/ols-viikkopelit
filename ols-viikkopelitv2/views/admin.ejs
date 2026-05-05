@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= documentTitle %></title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; }
+        .container { width: 100%; max-width: 40rem; margin: 0 auto; padding: 2rem 1rem; }
+        header { background: #15803d; color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 2rem; }
+        header h1 { font-size: 1.5rem; font-weight: 700; }
+        header a { color: #86efac; font-size: 0.875rem; }
+        .card { background: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1); margin-bottom: 1.5rem; }
+        .card h2 { font-size: 1.125rem; font-weight: 600; color: #166534; margin-bottom: 1rem; }
+        .stat { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.875rem; }
+        .stat:last-child { border-bottom: none; }
+        .stat-label { color: #64748b; }
+        .stat-value { font-weight: 600; }
+        .btn { display: inline-block; background: #15803d; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 1rem; }
+        .btn:hover { background: #166534; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        #status { margin-top: 1rem; padding: 0.75rem; border-radius: 0.5rem; display: none; }
+        #status.ok { background: #dcfce7; color: #166534; display: block; }
+        #status.err { background: #fee2e2; color: #991b1b; display: block; }
+        .url { font-size: 0.75rem; color: #64748b; word-break: break-all; margin-top: 0.25rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/">← Takaisin</a>
+            <h1>Admin</h1>
+        </header>
+
+        <div class="card">
+            <h2>Tila</h2>
+            <div class="stat"><span class="stat-label">Pelit</span><span class="stat-value"><%= gamesCount %></span></div>
+            <div class="stat"><span class="stat-label">Pelipäivät</span><span class="stat-value"><%= datesCount %></span></div>
+            <div class="stat">
+                <span class="stat-label">Päivitetty</span>
+                <span class="stat-value"><%= lastUpdated ? new Date(lastUpdated).toLocaleString('fi-FI') : 'Ei dataa' %></span>
+            </div>
+            <% if (pdfUrl) { %>
+                <div class="stat"><span class="stat-label">PDF</span></div>
+                <div class="url"><%= pdfUrl %></div>
+            <% } %>
+        </div>
+
+        <div class="card">
+            <h2>Päivitä data</h2>
+            <p style="font-size:0.875rem;color:#475569;">Hakee uusimman viikkopelit-PDF:n OLS:n sivulta ja parsii sen.</p>
+            <button class="btn" id="refreshBtn" onclick="doRefresh()">Hae uusin PDF</button>
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <script>
+        async function doRefresh() {
+            const btn = document.getElementById('refreshBtn');
+            const status = document.getElementById('status');
+            btn.disabled = true;
+            btn.textContent = 'Haetaan...';
+            status.className = '';
+            status.textContent = '';
+
+            try {
+                const r = await fetch('/api/refresh', { method: 'POST' });
+                const d = await r.json();
+                status.textContent = d.message;
+                status.className = d.ok ? 'ok' : 'err';
+                if (d.ok) setTimeout(() => window.location.reload(), 1500);
+                else { btn.disabled = false; btn.textContent = 'Hae uusin PDF'; }
+            } catch (e) {
+                status.textContent = 'Verkkovirhe: ' + e;
+                status.className = 'err';
+                btn.disabled = false;
+                btn.textContent = 'Hae uusin PDF';
+            }
+        }
+    </script>
+</body>
+</html>

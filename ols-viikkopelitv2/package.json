@@ -1,0 +1,15 @@
+{
+  "name": "ols-viikkopelitv2",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot src/app.ts",
+    "start": "bun run src/app.ts",
+    "fetch": "bun run src/fetcher.ts",
+    "parse": "bun run src/parser.ts"
+  },
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "pdfjs-dist": "^5.4.394"
+  }
+}

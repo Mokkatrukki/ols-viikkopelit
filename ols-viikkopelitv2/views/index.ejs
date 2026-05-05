@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="<%= metaDescription %>">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <title><%= documentTitle %></title>
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<%= metaUrl %>">
+    <meta property="og:title" content="<%= metaTitle %>">
+    <meta property="og:description" content="<%= metaDescription %>">
+    <meta property="og:site_name" content="OLS Viikkopelit">
+    <meta property="twitter:card" content="summary">
+    <meta property="twitter:url" content="<%= metaUrl %>">
+    <meta property="twitter:title" content="<%= metaTitle %>">
+    <meta property="twitter:description" content="<%= metaDescription %>">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; background: #f1f5f9; color: #1e293b; display: flex; flex-direction: column; min-height: 100vh; }
+
+        .container { width: 100%; max-width: 48rem; margin: 0 auto; display: flex; flex-direction: column; flex-grow: 1; }
+
+        header { background: #15803d; color: white; padding: 1rem; border-radius: 0 0 0.5rem 0.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1); }
+        header h1 { font-size: 1.25rem; font-weight: 700; text-align: center; flex-grow: 1; }
+        .header-nav { display: flex; align-items: center; justify-content: space-between; }
+        .nav-btn { color: white; font-size: 1.5rem; text-decoration: none; }
+        .nav-btn.disabled { color: #86efac; }
+
+        main { padding: 1rem; margin-top: 1rem; flex-grow: 1; }
+        @media (min-width: 768px) { main { padding: 2rem; } }
+
+        footer { background: #1e293b; color: #cbd5e1; text-align: center; padding: 1rem; margin-top: 3rem; font-size: 0.875rem; }
+        footer a { color: #4ade80; }
+
+        /* Team selector */
+        .selector-label { display: block; font-size: 1.125rem; font-weight: 500; color: #166534; margin-bottom: 0.5rem; }
+        .selector-wrap { position: relative; width: 100%; margin-bottom: 1.5rem; }
+        .selector-input { width: 100%; padding: 0.75rem; padding-right: 2.5rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 1rem; background: white; cursor: pointer; }
+        .selector-input:focus { outline: 2px solid #22c55e; outline-offset: -1px; }
+        .selector-arrow { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: #475569; }
+        .dropdown { position: absolute; top: 100%; left: 0; right: 0; margin-top: 0.25rem; background: white; border: 1px solid #cbd5e1; border-radius: 0.5rem; max-height: 20rem; overflow-y: auto; box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1); z-index: 50; display: none; }
+        .dropdown.open { display: block; }
+        .opt { padding: 0.75rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+        .opt:hover { background: #f0fdf4; }
+        .opt:last-child { border-bottom: none; }
+        .opt.selected { background: #dcfce7; font-weight: 600; }
+        .opt.base-team { font-weight: 700; color: #166534; }
+        .opt.subteam { padding-left: 2rem; color: #475569; }
+        .opt.hidden { display: none; }
+
+        /* Game cards */
+        .games-list { display: flex; flex-direction: column; gap: 1.5rem; }
+        .game-card { background: white; padding: 1.25rem; border-radius: 0.5rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / .1); border: 1px solid #16a34a; }
+        .game-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+        .game-date { font-size: 1.125rem; font-weight: 700; color: #334155; }
+        .game-time { font-size: 1.25rem; font-weight: 700; color: #15803d; }
+        .game-location { font-size: 0.875rem; color: #475569; text-align: right; }
+        .game-field { font-size: 1.125rem; font-weight: 600; color: #334155; text-align: right; }
+        .game-matchup { margin-bottom: 0.5rem; }
+        .game-matchup span.me { font-weight: 700; color: #15803d; }
+        .game-matchup span.opp { color: #334155; }
+        .game-meta { font-size: 0.875rem; color: #475569; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e2e8f0; }
+
+        .break-card { background: white; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1); display: flex; align-items: center; justify-content: center; text-align: center; }
+        .break-label { font-size: 0.875rem; font-weight: 600; color: #166534; text-transform: uppercase; letter-spacing: 0.025em; margin-bottom: 0.25rem; }
+        .break-duration { font-size: 1.5rem; font-weight: 700; color: #15803d; }
+
+        .empty-state { text-align: center; color: #64748b; margin-top: 2.5rem; font-size: 1.125rem; }
+
+        /* No data state */
+        .no-data { text-align: center; padding: 3rem 1rem; }
+        .no-data h2 { font-size: 1.5rem; font-weight: 600; color: #166534; margin-bottom: 1rem; }
+        .no-data p { color: #475569; margin-bottom: 1.5rem; }
+        .refresh-btn { background: #15803d; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .refresh-btn:hover { background: #166534; }
+        .refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <% if (gamesByDate && gamesByDate.length > 0 && selectedDate) { %>
+                <% const idx = typeof currentDateIndex !== 'undefined' ? currentDateIndex : gamesByDate.findIndex(d => d.date === selectedDate); %>
+                <% const cur = gamesByDate[idx]; %>
+                <% const prev = idx > 0 ? gamesByDate[idx - 1] : null; %>
+                <% const next = idx < gamesByDate.length - 1 ? gamesByDate[idx + 1] : null; %>
+                <div class="header-nav">
+                    <% if (prev) { %>
+                        <a href="<%= selectedTeam ? '/team/' + encodeURIComponent(selectedTeam) + '?date=' + encodeURIComponent(prev.date) : '/date/' + encodeURIComponent(prev.date) %>" class="nav-btn">&lt;</a>
+                    <% } else { %>
+                        <span class="nav-btn disabled">&lt;</span>
+                    <% } %>
+                    <h1>OLS Viikkopelit - <%= cur ? cur.fullDate : selectedDate %></h1>
+                    <% if (next) { %>
+                        <a href="<%= selectedTeam ? '/team/' + encodeURIComponent(selectedTeam) + '?date=' + encodeURIComponent(next.date) : '/date/' + encodeURIComponent(next.date) %>" class="nav-btn">&gt;</a>
+                    <% } else { %>
+                        <span class="nav-btn disabled">&gt;</span>
+                    <% } %>
+                </div>
+            <% } else { %>
+                <h1>OLS Viikkopelit</h1>
+            <% } %>
+        </header>
+
+        <main>
+            <% if (!gamesByDate || gamesByDate.length === 0) { %>
+                <div class="no-data">
+                    <h2>Ei otteluohjelmaa</h2>
+                    <p>Viikkopelit-PDF:ää ei ole vielä haettu.</p>
+                    <button class="refresh-btn" onclick="doRefresh(this)">Hae viikkopelit</button>
+                    <p id="refresh-status" style="margin-top:1rem;color:#475569;"></p>
+                </div>
+            <% } else { %>
+                <label class="selector-label">Valitse joukkue:</label>
+                <div class="selector-wrap">
+                    <input type="text" id="teamSearch" class="selector-input" placeholder="-- Kaikki joukkueet --" autocomplete="off" value="<%= selectedTeam ? selectedTeam : '' %>">
+                    <span class="selector-arrow">▼</span>
+                    <div id="teamDropdown" class="dropdown">
+                        <div class="opt" data-value="">-- Kaikki joukkueet --</div>
+                        <% groupedTeams.forEach(group => { %>
+                            <% group.baseTeams.forEach(bt => { %>
+                                <div class="opt base-team" data-value="base-team:<%= bt.name %>" data-fullname="<%= bt.name %>" data-search="<%= bt.name.toLowerCase() %>">● <%= bt.name %></div>
+                                <% bt.subteams.forEach(sub => { %>
+                                    <% const suffix = sub.substring(bt.name.length).trim(); %>
+                                    <div class="opt subteam <%= selectedTeam === sub ? 'selected' : '' %>" data-value="<%= sub %>" data-fullname="<%= sub %>" data-search="<%= sub.toLowerCase() %> <%= suffix.toLowerCase() %>"><%= bt.name %> - <%= suffix %></div>
+                                <% }); %>
+                            <% }); %>
+                            <% group.individualTeams.forEach(team => { %>
+                                <div class="opt <%= selectedTeam === team ? 'selected' : '' %>" data-value="<%= team %>" data-fullname="<%= team %>" data-search="<%= team.toLowerCase() %>"><%= team %></div>
+                            <% }); %>
+                        <% }); %>
+                    </div>
+                </div>
+
+                <script>
+                    const currentDate = '<%= typeof selectedDate !== "undefined" && selectedDate ? selectedDate : "" %>';
+                    const inp = document.getElementById('teamSearch');
+                    const dd = document.getElementById('teamDropdown');
+                    const opts = dd.querySelectorAll('.opt');
+
+                    inp.addEventListener('click', () => { dd.classList.toggle('open'); inp.select(); });
+                    inp.addEventListener('focus', () => setTimeout(() => inp.select(), 10));
+                    inp.addEventListener('input', () => {
+                        const q = inp.value.toLowerCase().trim();
+                        dd.classList.add('open');
+                        opts.forEach(o => {
+                            const s = o.getAttribute('data-search') || '';
+                            o.classList.toggle('hidden', q !== '' && !s.includes(q));
+                        });
+                    });
+                    opts.forEach(o => {
+                        o.addEventListener('click', () => {
+                            const val = o.getAttribute('data-value');
+                            const full = o.getAttribute('data-fullname');
+                            inp.value = val ? (full || '') : '';
+                            if (!val) inp.placeholder = '-- Kaikki joukkueet --';
+                            dd.classList.remove('open');
+                            if (!val) {
+                                window.location.href = currentDate ? '/date/' + encodeURIComponent(currentDate) : '/';
+                            } else if (val.startsWith('base-team:')) {
+                                window.location.href = '/base-team/' + encodeURIComponent(val.slice('base-team:'.length));
+                            } else {
+                                window.location.href = currentDate
+                                    ? '/team/' + encodeURIComponent(val) + '?date=' + encodeURIComponent(currentDate)
+                                    : '/team/' + encodeURIComponent(val);
+                            }
+                        });
+                    });
+                    document.addEventListener('click', e => {
+                        if (!inp.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('open');
+                    });
+                </script>
+
+                <% if (selectedTeam && gamesForTeam && gamesForTeam.length > 0) { %>
+                    <h2 style="font-size:1.5rem;font-weight:600;color:#166534;margin-bottom:1rem;text-align:center;">
+                        <% if (teamNameSplit && teamNameSplit.parent && teamNameSplit.subteam) { %>
+                            <a href="/base-team/<%= encodeURIComponent(teamNameSplit.parent) %>" style="color:#15803d;text-decoration:underline;"><%= teamNameSplit.parent %></a> / <%= teamNameSplit.subteam %> - Otteluohjelma
+                        <% } else { %>
+                            <%= selectedTeam %> - Otteluohjelma
+                        <% } %>
+                    </h2>
+
+                    <div class="games-list">
+                        <% gamesForTeam.forEach((game, idx) => { %>
+                            <% if (game.breakDurationMinutes && game.breakDurationMinutes > 0) { %>
+                                <div class="break-card">
+                                    <div>
+                                        <div class="break-label">Tauko</div>
+                                        <div class="break-duration"><%= game.breakDurationMinutes %> min</div>
+                                    </div>
+                                </div>
+                            <% } %>
+                            <div class="game-card">
+                                <div class="game-card-header">
+                                    <div>
+                                        <div class="game-date"><%= game.fullDate || game.date %></div>
+                                        <div class="game-time"><%= game.time %></div>
+                                    </div>
+                                    <div>
+                                        <div class="game-location"><%= game.location %></div>
+                                        <div class="game-field"><%= game.field %></div>
+                                    </div>
+                                </div>
+                                <div class="game-matchup">
+                                    <span class="me"><%= selectedTeam %></span> vs <span class="opp"><%= game.opponent %></span>
+                                </div>
+                                <div class="game-meta">
+                                    <strong>Pelimuoto:</strong> <%= game.gameType %> &middot; <strong>Kesto:</strong> <%= game.gameDuration %>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else if (selectedTeam) { %>
+                    <p class="empty-state">Ei pelejä valitulle joukkueelle.</p>
+                <% } else { %>
+                    <p class="empty-state">Valitse joukkue nähdäksesi otteluohjelman.</p>
+                <% } %>
+            <% } %>
+        </main>
+    </div>
+
+    <footer>
+        <p>Epävirallinen OLS Viikkopelit -työkalu.
+        <% if (lastUpdated) { %> Päivitetty: <%= new Date(lastUpdated).toLocaleString('fi-FI') %>.<% } %>
+        &nbsp;<a href="/admin">Admin</a></p>
+    </footer>
+
+    <script>
+        function doRefresh(btn) {
+            btn.disabled = true;
+            btn.textContent = 'Haetaan...';
+            const status = document.getElementById('refresh-status');
+            fetch('/api/refresh', { method: 'POST' })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.ok) { status.textContent = d.message; setTimeout(() => window.location.reload(), 1000); }
+                    else { status.textContent = 'Virhe: ' + d.message; btn.disabled = false; btn.textContent = 'Hae viikkopelit'; }
+                })
+                .catch(e => { status.textContent = 'Verkkovirhe: ' + e; btn.disabled = false; btn.textContent = 'Hae viikkopelit'; });
+        }
+    </script>
+</body>
+</html>
