@@ -13,7 +13,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Skip if summer break (Jun 26 – Jul 26)
+        id: break_check
+        run: |
+          M=$(date +%-m)
+          D=$(date +%-d)
+          if { [ "$M" -eq 6 ] && [ "$D" -ge 26 ]; } || \
+             { [ "$M" -eq 7 ] && [ "$D" -le 26 ]; }; then
+            echo "Summer break – skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Trigger refresh (retry until machine wakes)
+        if: steps.break_check.outputs.skip != 'true'
         run: |
           URL="https://ols-viikkopelit.fly.dev/api/refresh"
           for i in 1 2 3; do
