@@ -25,3 +25,7 @@ primary_region = "arn"
 [[vm]]
   size = "shared-cpu-1x"
   memory = "256mb"
+
+[mounts]
+  source = "ols_data"
+  destination = "/app/data"
