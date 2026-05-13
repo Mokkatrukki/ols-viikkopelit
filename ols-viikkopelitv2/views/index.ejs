@@ -194,11 +194,13 @@
                                 <div style="margin-top:1rem;border-radius:8px;overflow:hidden;aspect-ratio:<%= fieldImg.width %>/<%= fieldImg.height %>;">
                                     <picture>
                                         <source srcset="<%= nameNoExt %>-336w.webp 336w, <%= nameNoExt %>-504w.webp 504w, <%= nameNoExt %>-672w.webp 672w"
-                                                sizes="(max-width:480px) 100vw, (max-width:768px) 80vw, 60vw" type="image/webp">
+                                                sizes="(max-width:480px) calc(100vw - 5rem), (max-width:768px) calc(80vw - 5rem), calc(48rem - 6rem)" type="image/webp">
                                         <img src="<%= fieldImg.src %>" alt="Kenttäkartta - <%= game.field %>"
                                              width="<%= fieldImg.width %>" height="<%= fieldImg.height %>"
                                              style="width:100%;height:auto;display:block;"
-                                             loading="<%= isFirst ? 'eager' : 'lazy' %>" decoding="async">
+                                             loading="<%= isFirst ? 'eager' : 'lazy' %>"
+                                             decoding="<%= isFirst ? 'sync' : 'async' %>"
+                                             <%- isFirst ? 'fetchpriority="high"' : '' %>>
                                     </picture>
                                 </div>
                                 <% } %>

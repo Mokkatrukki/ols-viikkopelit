@@ -216,8 +216,19 @@ async function refreshData(): Promise<{ ok: boolean; message: string }> {
 
 // ─── Rendering ───────────────────────────────────────────────────────────────
 
-async function render(template: string, data: Record<string, unknown>): Promise<Response> {
+async function render(template: string, data: Record<string, unknown>, req: Request): Promise<Response> {
   const html = await ejs.renderFile(path.join(ROOT, 'views', template), data);
+  const ae = req.headers.get('accept-encoding') ?? '';
+  if (ae.includes('gzip')) {
+    const compressed = Bun.gzipSync(Buffer.from(html, 'utf-8'));
+    return new Response(compressed, {
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Content-Encoding': 'gzip',
+        'Vary': 'Accept-Encoding',
+      },
+    });
+  }
   return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 }
 
@@ -256,7 +267,7 @@ function makeIndexVars(baseUrl: string, extra: Record<string, unknown> = {}): Re
 
 async function handleHome(req: Request): Promise<Response> {
   const baseUrl = getBaseUrl(req);
-  return render('index.ejs', makeIndexVars(baseUrl));
+  return render('index.ejs', makeIndexVars(baseUrl), req);
 }
 
 async function handleTeam(req: Request, teamName: string): Promise<Response> {
@@ -304,7 +315,7 @@ async function handleTeam(req: Request, teamName: string): Promise<Response> {
     selectedTeam: teamName,
     teamNameSplit,
     gamesForTeam,
-  }));
+  }), req);
 }
 
 async function handleBaseTeam(req: Request, baseTeamName: string): Promise<Response> {
@@ -394,7 +405,7 @@ async function handleBaseTeam(req: Request, baseTeamName: string): Promise<Respo
     nextDate,
     fieldMapData,
     lastUpdated: gamesData?.lastUpdated ?? null,
-  });
+  }, req);
 }
 
 async function handleAdmin(req: Request): Promise<Response> {
@@ -404,7 +415,7 @@ async function handleAdmin(req: Request): Promise<Response> {
     pdfUrl: gamesData?.pdfUrl ?? null,
     gamesCount: gamesData?.games.length ?? 0,
     datesCount: gamesData?.gamesByDate.length ?? 0,
-  });
+  }, req);
 }
 
 async function handleRefresh(): Promise<Response> {
@@ -415,8 +426,9 @@ async function handleRefresh(): Promise<Response> {
 async function handleStatic(pathname: string): Promise<Response> {
   const file = Bun.file(path.join(ROOT, 'public', pathname));
   if (await file.exists()) {
+    const isImage = pathname.startsWith('/images/');
     return new Response(file, {
-      headers: { 'Cache-Control': 'public, max-age=86400' },
+      headers: { 'Cache-Control': isImage ? 'public, max-age=2592000' : 'public, max-age=86400' },
     });
   }
   return new Response('Not Found', { status: 404 });

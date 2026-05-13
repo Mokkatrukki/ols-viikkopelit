@@ -21,13 +21,16 @@ function sha256(buf: Buffer): string {
   return createHash('sha256').update(buf).digest('hex');
 }
 
-function parsePdfUrlDate(url: string): Date | null {
-  // "Viikkopelit-7_5_2026.pdf", "Viikkopelit_8_5_2025.pdf", "VIIKKopelit1235_7_5_2026.pdf"
-  const m = url.match(/viik+opelit[-_\d]*[-_](\d{1,2})_(\d{1,2})_(\d{4})\.pdf/i);
+function parsePdfUrlDate(url: string): { date: Date; revision: number } | null {
+  // "Viikkopelit-7_5_2026.pdf", "Viikkopelit-14_5_2026_b.pdf", "Viikkopelit-14_5_2026_korjaus.pdf"
+  const m = url.match(/viik+opelit[-_\d]*[-_](\d{1,2})_(\d{1,2})_(\d{4})(?:_([a-z0-9]+))?\.pdf/i);
   if (!m) return null;
   const d = parseInt(m[1]), mo = parseInt(m[2]), y = parseInt(m[3]);
   if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
-  return new Date(y, mo - 1, d);
+  // Single letter suffix = revision letter (a=1, b=2...), longer suffix = later than base
+  const sfx = m[4]?.toLowerCase() ?? '';
+  const revision = sfx.length === 1 ? sfx.charCodeAt(0) - 'a'.charCodeAt(0) + 1 : sfx.length > 1 ? 99 : 0;
+  return { date: new Date(y, mo - 1, d), revision };
 }
 
 function extractPdfUrls(html: string, base: string): string[] {
@@ -61,21 +64,24 @@ async function scanDirectory(year: number, month: number): Promise<string[]> {
 
 function findLatest(urls: string[]): PdfInfo | null {
   let latest: PdfInfo | null = null;
-  let fallback: PdfInfo | null = null; // URL with no parseable date
+  let latestRevision = -1;
+  let fallback: PdfInfo | null = null;
 
   for (const url of urls) {
-    const date = parsePdfUrlDate(url);
+    const parsed = parsePdfUrlDate(url);
     const filename = url.split('/').pop()!.replace(/\.pdf$/i, '');
     const localPath = path.join(DATA_DIR, `${filename}.pdf`);
 
-    if (!date) {
-      // Keep as fallback — prefer first seen (OLS page links are first)
+    if (!parsed) {
       if (!fallback) fallback = { url, localPath, date: new Date(0), hash: '' };
       continue;
     }
 
-    if (!latest || date > latest.date) {
+    const { date, revision } = parsed;
+    const isNewer = !latest || date > latest.date || (date.getTime() === latest.date.getTime() && revision > latestRevision);
+    if (isNewer) {
       latest = { url, localPath, date, hash: '' };
+      latestRevision = revision;
     }
   }
 
