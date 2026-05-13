@@ -146,6 +146,29 @@ const fieldMapData: Record<string, { src: string; width: number; height: number 
 const activeSessions = new Map<string, number>(); // sessionId → lastSeen ms
 const SESSION_TTL = 60_000; // 60s
 
+const STATS_PATH = path.join(ROOT, 'data/stats.json');
+interface Stats {
+  dailyMaxUsers: Record<string, number>; // "YYYY-MM-DD" → max active users that day
+}
+let stats: Stats = { dailyMaxUsers: {} };
+
+function loadStats() {
+  try {
+    if (fs.existsSync(STATS_PATH)) {
+      stats = JSON.parse(fs.readFileSync(STATS_PATH, 'utf-8'));
+      stats.dailyMaxUsers ??= {};
+    }
+  } catch { stats = { dailyMaxUsers: {} }; }
+}
+
+function saveStats() {
+  try { fs.writeFileSync(STATS_PATH, JSON.stringify(stats, null, 2)); } catch { }
+}
+
+function todayKey(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function pruneOldSessions() {
   const cutoff = Date.now() - SESSION_TTL;
   for (const [id, ts] of activeSessions) {
@@ -158,14 +181,22 @@ function activeUserCount(): number {
   return activeSessions.size;
 }
 
+function updateDailyMax(count: number) {
+  const key = todayKey();
+  if ((stats.dailyMaxUsers[key] ?? 0) < count) {
+    stats.dailyMaxUsers[key] = count;
+    saveStats();
+  }
+}
+
 function handleHeartbeat(req: Request): Response {
-  const body = req.headers.get('content-type')?.includes('json')
-    ? null : null; // sessionId comes from URL param or body
   const url = new URL(req.url);
   let sid = url.searchParams.get('sid') ?? '';
   if (!sid || sid.length < 8) sid = Math.random().toString(36).slice(2);
   activeSessions.set(sid, Date.now());
-  return Response.json({ sid, active: activeUserCount() });
+  const active = activeUserCount();
+  updateDailyMax(active);
+  return Response.json({ sid, active });
 }
 
 // ─── Data store ───────────────────────────────────────────────────────────────
@@ -409,12 +440,22 @@ async function handleBaseTeam(req: Request, baseTeamName: string): Promise<Respo
 }
 
 async function handleAdmin(req: Request): Promise<Response> {
+  // Last 30 days sorted ascending
+  const today = todayKey();
+  const dailyStats = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (29 - i));
+    const key = d.toISOString().slice(0, 10);
+    return { date: key, max: stats.dailyMaxUsers[key] ?? 0 };
+  });
   return render('admin.ejs', {
     documentTitle: 'Admin - OLS Viikkopelit',
     lastUpdated: gamesData?.lastUpdated ?? null,
     pdfUrl: gamesData?.pdfUrl ?? null,
     gamesCount: gamesData?.games.length ?? 0,
     datesCount: gamesData?.gamesByDate.length ?? 0,
+    dailyStats,
+    todayMax: stats.dailyMaxUsers[today] ?? 0,
   }, req);
 }
 
@@ -438,6 +479,7 @@ async function handleStatic(pathname: string): Promise<Response> {
 
 const startTime = Date.now();
 console.log('Starting OLS Viikkopelit v2...');
+loadStats();
 await loadData();
 
 const server = Bun.serve({
