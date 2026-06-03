@@ -39,6 +39,16 @@ const MIN_RE = /^\d+\s+min$/i;
 const VV_RE = /\d+\s*v\s*\d+/;
 const YEAR4_RE = /^\d{4}/;
 
+// Normalize field names from PDF: fix missing spaces around dashes and collapse extra whitespace.
+// e.g. "HEPA- HALLI D" → "HEPA - HALLI D", "HEPA -HALLI D" → "HEPA - HALLI D"
+function normalizeFieldName(name: string): string {
+  return name
+    .trim()
+    .replace(/\s*-\s*/g, ' - ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 // ─── PDF extraction ───────────────────────────────────────────────────────────
 
 async function extractTextItems(filePath: string): Promise<TextItem[]> {
@@ -204,7 +214,7 @@ function extractSectionMeta(
     }
   }
 
-  return { fields: fields.map(f => f.trim()), durations, gameTypes, years };
+  return { fields: fields.map(normalizeFieldName), durations, gameTypes, years };
 }
 
 function extractGamesFromRow(
