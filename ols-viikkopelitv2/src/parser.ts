@@ -19,10 +19,13 @@ export interface DateGroup {
   games: Game[];
 }
 
+export const PARSER_VERSION = 2;
+
 export interface GamesData {
   lastUpdated: string;
   pdfUrl: string;
   pdfHash?: string;
+  parserVersion?: number;
   documentDate: string;
   games: Game[];
   gamesByDate: DateGroup[];
@@ -319,7 +322,7 @@ export async function parsePdf(filePath: string, pdfUrl = ''): Promise<GamesData
   // Global column positions from ALL time items
   const colPositions = detectColumnPositions(rows);
   if (!colPositions.length) {
-    return { lastUpdated: new Date().toISOString(), pdfUrl, documentDate, games: [], gamesByDate: [] };
+    return { lastUpdated: new Date().toISOString(), pdfUrl, documentDate, parserVersion: PARSER_VERSION, games: [], gamesByDate: [] };
   }
 
   // Find sections and extract games
@@ -354,7 +357,7 @@ export async function parsePdf(filePath: string, pdfUrl = ''): Promise<GamesData
     return am !== bm ? am - bm : ad - bd;
   });
 
-  return { lastUpdated: new Date().toISOString(), pdfUrl, documentDate, games, gamesByDate, pdfHash: '' };
+  return { lastUpdated: new Date().toISOString(), pdfUrl, documentDate, parserVersion: PARSER_VERSION, games, gamesByDate, pdfHash: '' };
 }
 
 // ─── CLI ──────────────────────────────────────────────────────────────────────

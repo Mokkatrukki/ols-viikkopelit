@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import ejs from 'ejs';
 import { fetchLatestPdf } from './fetcher.ts';
-import { parsePdf } from './parser.ts';
+import { parsePdf, PARSER_VERSION } from './parser.ts';
 import type { Game, DateGroup, GamesData } from './parser.ts';
 
 const ROOT = path.join(import.meta.dir, '..');
@@ -224,10 +224,11 @@ async function refreshData(): Promise<{ ok: boolean; message: string }> {
     const pdf = await fetchLatestPdf();
     if (!pdf) return { ok: false, message: 'No PDF found on OLS website' };
 
-    // Skip re-parsing only if URL AND hash both match
+    // Skip re-parsing only if URL, hash, AND parser version all match
     const sameUrl = gamesData?.pdfUrl === pdf.url;
     const sameHash = gamesData?.pdfHash && gamesData.pdfHash === pdf.hash;
-    if (sameUrl && sameHash && gamesData!.games.length > 0) {
+    const sameVersion = gamesData?.parserVersion === PARSER_VERSION;
+    if (sameUrl && sameHash && sameVersion && gamesData!.games.length > 0) {
       return { ok: true, message: `Already up to date (${pdf.url})` };
     }
 
