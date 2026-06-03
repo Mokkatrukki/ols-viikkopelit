@@ -119,33 +119,32 @@
                 <script>
                     const inp = document.getElementById('teamSearch');
                     const dd = document.getElementById('teamDropdown');
-                    const opts = dd.querySelectorAll('.opt');
 
                     inp.addEventListener('click', () => { dd.classList.toggle('open'); inp.select(); });
                     inp.addEventListener('focus', () => setTimeout(() => inp.select(), 10));
                     inp.addEventListener('input', () => {
                         const q = inp.value.toLowerCase().trim();
                         dd.classList.add('open');
-                        opts.forEach(o => {
+                        dd.querySelectorAll('.opt').forEach(o => {
                             const s = o.getAttribute('data-search') || '';
                             o.classList.toggle('hidden', q !== '' && !s.includes(q));
                         });
                     });
-                    opts.forEach(o => {
-                        o.addEventListener('click', () => {
-                            const val = o.getAttribute('data-value');
-                            const full = o.getAttribute('data-fullname');
-                            inp.value = val ? (full || '') : '';
-                            if (!val) inp.placeholder = '-- Kaikki joukkueet --';
-                            dd.classList.remove('open');
-                            if (!val) {
-                                window.location.href = '/';
-                            } else if (val.startsWith('base-team:')) {
-                                window.location.href = '/base-team/' + encodeURIComponent(val.slice('base-team:'.length));
-                            } else {
-                                window.location.href = '/team/' + encodeURIComponent(val);
-                            }
-                        });
+                    dd.addEventListener('click', e => {
+                        const o = e.target.closest('.opt');
+                        if (!o) return;
+                        const val = o.getAttribute('data-value');
+                        const full = o.getAttribute('data-fullname');
+                        inp.value = val ? (full || '') : '';
+                        if (!val) inp.placeholder = '-- Kaikki joukkueet --';
+                        dd.classList.remove('open');
+                        if (!val) {
+                            window.location.href = '/';
+                        } else if (val.startsWith('base-team:')) {
+                            window.location.href = '/base-team/' + encodeURIComponent(val.slice('base-team:'.length));
+                        } else {
+                            window.location.href = '/team/' + encodeURIComponent(val);
+                        }
                     });
                     document.addEventListener('click', e => {
                         if (!inp.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('open');
