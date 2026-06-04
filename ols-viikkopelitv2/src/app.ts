@@ -141,24 +141,23 @@ const fieldMapData: Record<string, { src: string; width: number; height: number 
   'HEPA - HALLI D': { src: '/images/heinapaan_halli_map_kentta_d.png', width: 672, height: 444 },
 };
 
-// ─── Active user tracking ─────────────────────────────────────────────────────
-
-const activeSessions = new Map<string, number>(); // sessionId → lastSeen ms
-const SESSION_TTL = 60_000; // 60s
+// ─── Visitor tracking ─────────────────────────────────────────────────────────
 
 const STATS_PATH = path.join(ROOT, 'data/stats.json');
 interface Stats {
-  dailyMaxUsers: Record<string, number>; // "YYYY-MM-DD" → max active users that day
+  dailyVisits: Record<string, number>;        // "YYYY-MM-DD" → total page loads
+  dailyUnique: Record<string, string[]>;      // "YYYY-MM-DD" → unique sid list
 }
-let stats: Stats = { dailyMaxUsers: {} };
+let stats: Stats = { dailyVisits: {}, dailyUnique: {} };
 
 function loadStats() {
   try {
     if (fs.existsSync(STATS_PATH)) {
       stats = JSON.parse(fs.readFileSync(STATS_PATH, 'utf-8'));
-      stats.dailyMaxUsers ??= {};
+      stats.dailyVisits ??= {};
+      stats.dailyUnique ??= {};
     }
-  } catch { stats = { dailyMaxUsers: {} }; }
+  } catch { stats = { dailyVisits: {}, dailyUnique: {} }; }
 }
 
 function saveStats() {
@@ -169,34 +168,12 @@ function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function pruneOldSessions() {
-  const cutoff = Date.now() - SESSION_TTL;
-  for (const [id, ts] of activeSessions) {
-    if (ts < cutoff) activeSessions.delete(id);
-  }
-}
-
-function activeUserCount(): number {
-  pruneOldSessions();
-  return activeSessions.size;
-}
-
-function updateDailyMax(count: number) {
+function recordVisit(sid: string) {
   const key = todayKey();
-  if ((stats.dailyMaxUsers[key] ?? 0) < count) {
-    stats.dailyMaxUsers[key] = count;
-    saveStats();
-  }
-}
-
-function handleHeartbeat(req: Request): Response {
-  const url = new URL(req.url);
-  let sid = url.searchParams.get('sid') ?? '';
-  if (!sid || sid.length < 8) sid = Math.random().toString(36).slice(2);
-  activeSessions.set(sid, Date.now());
-  const active = activeUserCount();
-  updateDailyMax(active);
-  return Response.json({ sid, active });
+  stats.dailyVisits[key] = (stats.dailyVisits[key] ?? 0) + 1;
+  if (!stats.dailyUnique[key]) stats.dailyUnique[key] = [];
+  if (!stats.dailyUnique[key].includes(sid)) stats.dailyUnique[key].push(sid);
+  saveStats();
 }
 
 // ─── Data store ───────────────────────────────────────────────────────────────
@@ -447,7 +424,11 @@ async function handleAdmin(req: Request): Promise<Response> {
     const d = new Date();
     d.setDate(d.getDate() - (29 - i));
     const key = d.toISOString().slice(0, 10);
-    return { date: key, max: stats.dailyMaxUsers[key] ?? 0 };
+    return {
+      date: key,
+      visits: stats.dailyVisits[key] ?? 0,
+      unique: stats.dailyUnique[key]?.length ?? 0,
+    };
   });
   return render('admin.ejs', {
     documentTitle: 'Admin - OLS Viikkopelit',
@@ -456,7 +437,8 @@ async function handleAdmin(req: Request): Promise<Response> {
     gamesCount: gamesData?.games.length ?? 0,
     datesCount: gamesData?.gamesByDate.length ?? 0,
     dailyStats,
-    todayMax: stats.dailyMaxUsers[today] ?? 0,
+    todayVisits: stats.dailyVisits[today] ?? 0,
+    todayUnique: stats.dailyUnique[today]?.length ?? 0,
   }, req);
 }
 
@@ -497,8 +479,7 @@ const server = Bun.serve({
       console.log(`${req.method} ${p} - ${ip}`);
     }
 
-    if (p === '/health') return Response.json({ status: 'UP', games: gamesData?.games.length ?? 0, active: activeUserCount() });
-    if (p === '/api/heartbeat') return handleHeartbeat(req);
+    if (p === '/health') return Response.json({ status: 'UP', games: gamesData?.games.length ?? 0 });
 
     if (p.startsWith('/css/') || p.startsWith('/images/') || p === '/favicon.ico') {
       return handleStatic(p);
@@ -508,15 +489,36 @@ const server = Bun.serve({
     if (p === '/api/refresh' && req.method === 'GET') return handleRefresh(); // dev convenience
 
     if (p === '/admin') return handleAdmin(req);
-    if (p === '/') return handleHome(req);
 
-    if (p.startsWith('/date/')) return redirect('/');
+    // Track visits for all page routes
+    const cookieHeader = req.headers.get('cookie') ?? '';
+    const sidMatch = cookieHeader.match(/(?:^|;\s*)hb_sid=([^;]+)/);
+    let sid = sidMatch ? decodeURIComponent(sidMatch[1]) : '';
+    const isNewSid = !sid || sid.length < 8;
+    if (isNewSid) sid = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
 
-    const baseTeamM = p.match(/^\/base-team\/(.+)$/);
-    if (baseTeamM) return handleBaseTeam(req, decodeURIComponent(baseTeamM[1]));
+    let res: Response;
+    if (p === '/') res = await handleHome(req);
+    else if (p.startsWith('/date/')) res = redirect('/');
+    else {
+      const baseTeamM = p.match(/^\/base-team\/(.+)$/);
+      if (baseTeamM) res = await handleBaseTeam(req, decodeURIComponent(baseTeamM[1]));
+      else {
+        const teamM = p.match(/^\/team\/(.+)$/);
+        if (teamM) res = await handleTeam(req, decodeURIComponent(teamM[1]));
+        else res = new Response('Not Found', { status: 404 });
+      }
+    }
 
-    const teamM = p.match(/^\/team\/(.+)$/);
-    if (teamM) return handleTeam(req, decodeURIComponent(teamM[1]));
+    if (res.status === 200 && res.headers.get('content-type')?.includes('text/html')) {
+      recordVisit(sid);
+      if (isNewSid) {
+        const headers = new Headers(res.headers);
+        headers.set('Set-Cookie', `hb_sid=${encodeURIComponent(sid)}; Path=/; Max-Age=31536000; SameSite=Lax`);
+        return new Response(res.body, { status: res.status, headers });
+      }
+    }
+    return res;
 
     return new Response('Not Found', { status: 404 });
   },

@@ -42,8 +42,8 @@
 
         <div class="card">
             <h2>Tila</h2>
-            <div class="stat"><span class="stat-label">Aktiiviset nyt</span><span class="stat-value" id="activeUsers">...</span></div>
-            <div class="stat"><span class="stat-label">Tänään max</span><span class="stat-value"><%= todayMax %></span></div>
+            <div class="stat"><span class="stat-label">Tänään käynnit</span><span class="stat-value"><%= todayVisits %></span></div>
+            <div class="stat"><span class="stat-label">Tänään uniikit</span><span class="stat-value"><%= todayUnique %></span></div>
             <div class="stat"><span class="stat-label">Pelit</span><span class="stat-value"><%= gamesCount %></span></div>
             <div class="stat"><span class="stat-label">Pelipäivät</span><span class="stat-value"><%= datesCount %></span></div>
             <div class="stat">
@@ -57,28 +57,26 @@
         </div>
 
         <div class="card">
-            <h2>Käyttäjät / päivä (30 pv)</h2>
-            <% const maxVal = Math.max(...dailyStats.map(d => d.max), 1); %>
+            <h2>Kävijät / päivä (30 pv)</h2>
+            <% const maxVal = Math.max(...dailyStats.map(d => d.unique), 1); %>
             <div style="display:flex;flex-direction:column;gap:0.25rem;">
             <% dailyStats.slice().reverse().forEach(function(d) { %>
-                <% if (d.max === 0) return; %>
+                <% if (d.visits === 0) return; %>
                 <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;">
                     <span style="width:5.5rem;color:#64748b;flex-shrink:0;"><%= d.date %></span>
                     <div style="flex:1;background:#f1f5f9;border-radius:2px;height:1.1rem;position:relative;">
-                        <div style="width:<%= Math.round(d.max / maxVal * 100) %>%;background:#15803d;height:100%;border-radius:2px;"></div>
+                        <div style="width:<%= Math.round(d.unique / maxVal * 100) %>%;background:#15803d;height:100%;border-radius:2px;"></div>
                     </div>
-                    <span style="width:1.5rem;text-align:right;font-weight:600;"><%= d.max %></span>
+                    <span style="width:3.5rem;text-align:right;font-weight:600;color:#64748b;font-size:0.75rem;"><%= d.visits %>kpl</span>
+                    <span style="width:2rem;text-align:right;font-weight:600;"><%= d.unique %></span>
                 </div>
             <% }); %>
             </div>
+            <p style="font-size:0.75rem;color:#94a3b8;margin-top:0.75rem;">Pylväs = uniikit kävijät &nbsp;|&nbsp; kpl = sivulataukset</p>
         </div>
     </div>
 
     <script>
-        fetch('/health').then(r => r.json()).then(d => {
-            document.getElementById('activeUsers').textContent = d.active ?? 0;
-        });
-
         async function doRefresh() {
             const btn = document.getElementById('refreshBtn');
             const status = document.getElementById('status');
