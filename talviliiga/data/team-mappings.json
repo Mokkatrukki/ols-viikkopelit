@@ -48,6 +48,7 @@
     "hollanti 19 ajax": "OLS Hollanti 19 Ajax",
     "hollanti 19 psv": "OLS Hollanti 19 PSV",
     "kkp pt18-19": "KKP PT18-19",
+    "kkp pt 18-19": "KKP PT18-19",
     "kkp pt1819": "KKP PT18-19",
     "belgia 19 brugge": "OLS Belgia 19 Brugge",
     "kreikka 19 olympiakos": "OLS Kreikka 19 Olympiakos",
@@ -65,6 +66,28 @@
     "belgia 20 brugge": "OLS Belgia 20 Brugge",
     "hollanti 20 feyenoord": "OLS Hollanti 20 Feyenoord",
     "kreikka 20 panathinaikos": "OLS Kreikka 20 Panathinaikos",
+
+    "portugali 20 benfica": "Portugali 20 Benfica",
+    "portugali 20 porto": "Portugali 20 Porto",
+    "kreika 20 olympiakos": "OLS Kreikka 20 Olympiakos",
+
+    "ruotsi 21 aik": "Ruotsi 21 AIK",
+    "ruotsi 21 hammarby": "Ruotsi 21 Hammarby",
+    "kreikka 21 aek": "Kreikka 21 AEK",
+    "kreikka 21 olympiakos": "Kreikka 21 Olympiakos",
+
+    "ruotsi 19 djurgården": "Ruotsi 19 Djurgården",
+    "ruotsi 19 djurgarden": "Ruotsi 19 Djurgården",
+
+    "portugali 18 benfica": "Portugali 18 Benfica",
+    "espanja 18 sevilla": "Espanja 18 Sevilla",
+    "belgia 18 genk": "Belgia 18 Genk",
+    "kreikka 18 panathinaikos": "Kreikka 18 Panathinaikos",
+
+    "hollanti 17 feyenoord": "Hollanti 17 Feyenoord",
+    "espanja 17 sevilla": "Espanja 17 Sevilla",
+    "kkp oranssi 17": "KKP Oranssi 17",
+    "kkp valkoinen": "KKP Valkoinen",
 
     "lipk pt 1819": "LiPK PT1819",
     "ons 2017 punainen": "ONS 17 Punainen",
