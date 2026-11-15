@@ -37,7 +37,7 @@
 
         <div class="card">
             <h2>Päivitä data</h2>
-            <p style="font-size:0.875rem;color:#475569;">Data päivittyy automaattisesti, kun sivua käytetään. Tällä napilla haet Google Sheetin heti.</p>
+            <p style="font-size:0.875rem;color:#475569;">Data päivittyy automaattisesti, kun sivua käytetään. Tällä napilla haet Tervarien Google Sheetin ja OLS:n sivun ja PDF:t heti.</p>
             <button class="btn" id="refreshBtn" onclick="doRefresh()">Hae nyt</button>
             <div id="status"></div>
         </div>
@@ -49,7 +49,18 @@
             <div class="stat"><span class="stat-label">Pelit</span><span class="stat-value"><%= gamesCount %></span></div>
             <div class="stat"><span class="stat-label">Tänään käynnit / uniikit</span><span class="stat-value"><%= todayVisits %> / <%= todayUnique %></span></div>
             <div class="stat"><span class="stat-label">Päivitetty</span><span class="stat-value"><%= lastUpdated ? new Date(lastUpdated).toLocaleString('fi-FI', { timeZone: 'Europe/Helsinki' }) : 'Ei dataa' %></span></div>
-            <div class="stat"><span class="stat-label">Lähde</span><span class="stat-value"><a href="<%= sheetUrl %>">Google Sheet</a></span></div>
+            <% sources.forEach(s => { %>
+                <div class="stat"><span class="stat-label"><%= s.name %></span><span class="stat-value"><%= s.games %> peliä · <%= s.updated ? new Date(s.updated).toLocaleString('fi-FI', { timeZone: 'Europe/Helsinki' }) : 'ei haettu' %></span></div>
+            <% }); %>
+            <div class="stat"><span class="stat-label">Lähteet</span><span class="stat-value"><a href="<%= sheetUrl %>">Google Sheet</a> · <a href="<%= olsUrl %>">ols.fi</a></span></div>
+        </div>
+
+        <div class="card">
+            <h2>OLS PDF:t</h2>
+            <% if (!olsPdfs.length) { %><p style="font-size:0.875rem;color:#64748b;">Kauden otteluohjelma-PDF:iä ei ole vielä julkaistu.</p><% } %>
+            <% olsPdfs.forEach(p => { %>
+                <div class="stat"><span class="stat-label"><a href="<%= p.url %>"><%= p.url.split('/').pop() %></a></span><span class="stat-value"><%= (p.games || []).length %> peliä</span></div>
+            <% }); %>
         </div>
 
         <% if (warnings.length) { %>
@@ -63,7 +74,7 @@
             <h2>Pelipäivät</h2>
             <% days.forEach(d => { %>
                 <div class="stat <%= d.past ? 'past' : '' %>">
-                    <span class="stat-label"><%= d.dateLabel %> · <%= d.gameType %> · <%= d.location %></span>
+                    <span class="stat-label"><%= d.dateLabel %> · <%= d.organizer %> <%= d.gameType %> · <%= d.location %></span>
                     <span class="stat-value"><%= d.gamesPublished ? d.gamesPublished + ' peliä' : 'ei ohjelmaa' %></span>
                 </div>
             <% }); %>

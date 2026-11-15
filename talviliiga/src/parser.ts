@@ -33,6 +33,7 @@ export interface SeriesDay {
 
 export interface Series {
   id: string;        // "Pojat 5v5 P10 (2017) Taso 1 (EP)"
+  organizer: string; // "Tervarit" | "OLS"
   gender: string;    // "Pojat" | "Tytöt"
   gameType: string;  // "5v5"
   ageGroup: string;  // "P10 (2017)"
@@ -44,7 +45,8 @@ export interface Series {
 
 export interface TournamentDay {
   date: string;
-  gameType: string;
+  organizer: string;
+  gameType: string;      // "5v5", or "3v3 / 4v4" when a venue hosts several
   location: string;
   series: string[];      // series ids playing that day
   kiosk: string[];
@@ -178,6 +180,7 @@ function parseSeries(rows: Rows, locations: Record<string, string>): Series[] {
 
       result.push({
         id: [gender, gameType, ageGroup, level].filter(Boolean).join(' '),
+        organizer: 'Tervarit',
         gender, gameType, ageGroup, level,
         location: locations[gameType] ?? '',
         teams, days,
@@ -323,6 +326,40 @@ function staleWarnings(rows: Rows, sheetName: string, seasonStart: string, seaso
   return out;
 }
 
+// ─── Tournament days ──────────────────────────────────────────────────────────
+
+// Tournament days = union of series days, one entry per date + venue.
+export function buildDays(series: Series[], games: Game[], warnings: string[]): TournamentDay[] {
+  const dayMap = new Map<string, TournamentDay & { types: Set<string> }>();
+  const get = (date: string, location: string, organizer: string) => {
+    const key = `${date}|${location}`;
+    let day = dayMap.get(key);
+    if (!day) {
+      day = { date, organizer, gameType: '', location, series: [], kiosk: [], gamesPublished: 0, types: new Set() };
+      dayMap.set(key, day);
+    }
+    return day;
+  };
+  for (const s of series) {
+    for (const d of s.days) {
+      const day = get(d.date, s.location, s.organizer);
+      day.series.push(s.id);
+      day.types.add(s.gameType);
+      if (d.kiosk && !day.kiosk.includes(d.kiosk)) day.kiosk.push(d.kiosk);
+    }
+  }
+  for (const g of games) {
+    const key = `${g.date}|${g.location}`;
+    if (!dayMap.has(key)) warnings.push(`${g.location}: pelejä päivälle ${g.date}, jota ei ole sarjojen pelipäivissä`);
+    const day = get(g.date, g.location, series[0]?.organizer ?? '');
+    day.types.add(g.gameType);
+    day.gamesPublished++;
+  }
+  return [...dayMap.values()]
+    .map(({ types, ...d }) => ({ ...d, gameType: [...types].sort().join(' / ') }))
+    .sort((a, b) => a.date.localeCompare(b.date) || a.location.localeCompare(b.location, 'fi'));
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export function parseWorkbook(buf: Buffer | Uint8Array, sourceUrl = ''): GamesData {
@@ -352,31 +389,7 @@ export function parseWorkbook(buf: Buffer | Uint8Array, sourceUrl = ''): GamesDa
   }
   games.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time) || a.field.localeCompare(b.field));
 
-  // Tournament days = union of series days, grouped by date + game type
-  const dayMap = new Map<string, TournamentDay>();
-  for (const s of series) {
-    for (const d of s.days) {
-      const key = `${d.date}|${s.gameType}`;
-      let day = dayMap.get(key);
-      if (!day) {
-        day = { date: d.date, gameType: s.gameType, location: s.location, series: [], kiosk: [], gamesPublished: 0 };
-        dayMap.set(key, day);
-      }
-      day.series.push(s.id);
-      if (d.kiosk && !day.kiosk.includes(d.kiosk)) day.kiosk.push(d.kiosk);
-    }
-  }
-  for (const g of games) {
-    const key = `${g.date}|${g.gameType}`;
-    let day = dayMap.get(key);
-    if (!day) {
-      warnings.push(`${g.gameType} pelejä päivälle ${g.date}, jota ei ole sarjojen pelipäivissä`);
-      day = { date: g.date, gameType: g.gameType, location: g.location, series: [], kiosk: [], gamesPublished: 0 };
-      dayMap.set(key, day);
-    }
-    day.gamesPublished++;
-  }
-  const days = [...dayMap.values()].sort((a, b) => a.date.localeCompare(b.date) || b.gameType.localeCompare(a.gameType));
+  const days = buildDays(series, games, warnings);
 
   return {
     parserVersion: PARSER_VERSION,

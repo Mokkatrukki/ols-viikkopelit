@@ -3,10 +3,11 @@ import * as fs from 'fs';
 import ejs from 'ejs';
 import { fetchSheet, SHEET_URL } from './fetcher.ts';
 import { parseWorkbook, teamKey, PARSER_VERSION } from './parser.ts';
+import { refreshOls, OLS_PAGE } from './ols.ts';
+import type { OlsData } from './ols.ts';
 import type { Game, GamesData, Series, TournamentDay } from './parser.ts';
 
 const ROOT = path.join(import.meta.dir, '..');
-const DATA_PATH = path.join(ROOT, 'data/games.json');
 const STATS_PATH = path.join(ROOT, 'data/stats.json');
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3003;
 // Data is refreshed lazily: a request arriving after this long triggers a background fetch
@@ -100,7 +101,14 @@ function findTeamGroups(names: string[]): Map<string, string[]> {
 
 interface TeamInfo { name: string; series: Series[] }
 
-let gamesData: GamesData | null = null;
+// Two sources, stored separately and merged in memory
+const SOURCES = {
+  tervarit: path.join(ROOT, 'data/tervarit.json'),
+  ols: path.join(ROOT, 'data/ols.json'),
+};
+let tervarit: GamesData | null = null;
+let ols: OlsData | null = null;
+let gamesData: GamesData | null = null;              // merged view
 let teams = new Map<string, TeamInfo>();          // teamKey → info
 let baseTeams: BaseTeam[] = [];
 let individualTeams: string[] = [];
@@ -126,47 +134,82 @@ function indexData(data: GamesData) {
   individualTeams = names.filter(n => !grouped.has(n)).sort((a, b) => a.localeCompare(b, 'fi'));
 }
 
-function setData(data: GamesData) {
-  gamesData = data;
-  indexData(data);
+function merge() {
+  const parts = [tervarit, ols].filter((d): d is GamesData => !!d);
+  if (parts.length === 0) { gamesData = null; return; }
+  gamesData = {
+    parserVersion: PARSER_VERSION,
+    lastUpdated: parts.map(d => d.lastUpdated).sort()[0],
+    sourceUrl: '',
+    season: tervarit?.season || ols?.season || '',
+    games: parts.flatMap(d => d.games),
+    series: parts.flatMap(d => d.series),
+    days: parts.flatMap(d => d.days).sort((a, b) => a.date.localeCompare(b.date) || a.location.localeCompare(b.location, 'fi')),
+    warnings: [
+      ...(tervarit?.warnings ?? []).map(w => `Tervarit: ${w}`),
+      ...(ols?.warnings ?? []).map(w => `OLS: ${w.replace(/^OLS:?\s*/, '')}`),
+    ],
+  };
+  indexData(gamesData);
+}
+
+async function readJson<T>(file: string): Promise<T | null> {
+  try {
+    const f = Bun.file(file);
+    return (await f.exists()) ? await f.json() as T : null;
+  } catch (e) {
+    console.error(`Failed to read ${file}:`, e);
+    return null;
+  }
+}
+
+function writeJson(file: string, data: unknown) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
 async function loadData(): Promise<void> {
-  try {
-    const f = Bun.file(DATA_PATH);
-    if (!(await f.exists())) return;
-    setData(await f.json() as GamesData);
-    console.log(`Loaded ${gamesData!.games.length} games, ${gamesData!.days.length} days`);
-  } catch (e) {
-    console.error('Failed to load data:', e);
+  tervarit = await readJson<GamesData>(SOURCES.tervarit);
+  ols = await readJson<OlsData>(SOURCES.ols);
+  merge();
+  if (gamesData) console.log(`Loaded ${gamesData.games.length} games, ${gamesData.days.length} days`);
+}
+
+async function refreshTervarit(): Promise<string> {
+  const sheet = await fetchSheet();
+  if (tervarit?.sourceHash === sheet.hash && tervarit.parserVersion === PARSER_VERSION) {
+    tervarit.lastUpdated = new Date().toISOString();
+    writeJson(SOURCES.tervarit, tervarit);
+    return 'Tervarit: ei muutoksia';
   }
+  const data = parseWorkbook(sheet.buffer, sheet.url);
+  data.sourceHash = sheet.hash;
+  if (data.series.length === 0 && tervarit?.series.length) {
+    throw new Error('Tervarit: parsinta ei löytänyt sarjoja – vanha data säilytetty');
+  }
+  writeJson(SOURCES.tervarit, data);
+  tervarit = data;
+  return `Tervarit: ${data.games.length} peliä, ${data.days.length} pelipäivää`;
+}
+
+async function refreshOlsSource(): Promise<string> {
+  const data = await refreshOls(ols);
+  if (data.series.length === 0 && ols?.series.length) {
+    throw new Error('OLS: sivulta ei löytynyt sarjoja – vanha data säilytetty');
+  }
+  writeJson(SOURCES.ols, data);
+  ols = data;
+  return `OLS: ${data.games.length} peliä (${data.pdfs.length} PDF), ${data.days.length} pelipäivää`;
 }
 
 async function doRefresh(): Promise<{ ok: boolean; message: string }> {
   lastRefreshAttempt = Date.now();
-  try {
-    const sheet = await fetchSheet();
-    if (gamesData?.sourceHash === sheet.hash && gamesData.parserVersion === PARSER_VERSION) {
-      gamesData.lastUpdated = new Date().toISOString();
-      fs.writeFileSync(DATA_PATH, JSON.stringify(gamesData, null, 2));
-      return { ok: true, message: 'Ei muutoksia' };
-    }
-    const data = parseWorkbook(sheet.buffer, sheet.url);
-    data.sourceHash = sheet.hash;
-    if (data.series.length === 0 && gamesData && gamesData.series.length > 0) {
-      // Don't wipe good data with a broken parse
-      return { ok: false, message: 'Parsinta ei löytänyt sarjoja – vanha data säilytetty. ' + data.warnings.join('; ') };
-    }
-    fs.mkdirSync(path.dirname(DATA_PATH), { recursive: true });
-    fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
-    setData(data);
-    const msg = `Päivitetty: ${data.games.length} peliä, ${data.days.length} pelipäivää`;
-    console.log(msg);
-    return { ok: true, message: msg };
-  } catch (e) {
-    console.error('Refresh failed:', e);
-    return { ok: false, message: String(e) };
-  }
+  const results = await Promise.allSettled([refreshTervarit(), refreshOlsSource()]);
+  merge();
+  const msgs = results.map(r => (r.status === 'fulfilled' ? r.value : `Virhe: ${r.reason}`));
+  const message = msgs.join(' · ');
+  console.log(message);
+  return { ok: results.every(r => r.status === 'fulfilled'), message };
 }
 
 function refreshData(): Promise<{ ok: boolean; message: string }> {
@@ -176,7 +219,7 @@ function refreshData(): Promise<{ ok: boolean; message: string }> {
 
 function maybeRefreshInBackground() {
   if (refreshInFlight || Date.now() - lastRefreshAttempt < REFRESH_INTERVAL_MS) return;
-  const age = gamesData ? Date.now() - new Date(gamesData.lastUpdated).getTime() : Infinity;
+  const age = tervarit && ols ? Date.now() - new Date(gamesData!.lastUpdated).getTime() : Infinity;
   if (age >= REFRESH_INTERVAL_MS) void refreshData();
 }
 
@@ -213,6 +256,9 @@ const fieldMapData: Record<string, { src: string; width: number; height: number 
   'KEMPELE AREENA KENTTÄ 2': { src: '/images/kempele-kentta-2.webp', width: 1000, height: 707 },
   'KEMPELE AREENA KENTTÄ 3': { src: '/images/kempele-kentta-3.webp', width: 1000, height: 707 },
   'KEMPELE AREENA KENTTÄ 4': { src: '/images/kempele-kentta-4.webp', width: 1000, height: 707 },
+  ...Object.fromEntries(['1A', '1B', '1C', '1D', '2A', '2B', '2C', '2D'].map(f => [
+    `PÖRHÖ AREENA KENTTÄ ${f}`, { src: `/images/porho-kentta-${f.toLowerCase()}.webp`, width: 672, height: 1010 },
+  ])),
 };
 
 function fieldMap(g: Game) {
@@ -224,6 +270,7 @@ function fieldMap(g: Game) {
 interface DaySection {
   date: string;
   dateLabel: string;
+  organizer: string;
   location: string;
   gameType: string;
   series: string[];
@@ -234,8 +281,8 @@ interface DaySection {
   lastEnd: string | null;
 }
 
-function findDay(date: string, gameType: string): TournamentDay | undefined {
-  return gamesData?.days.find(d => d.date === date && d.gameType === gameType);
+function findDay(date: string, location: string): TournamentDay | undefined {
+  return gamesData?.days.find(d => d.date === date && d.location === location);
 }
 
 function teamSections(teamName: string, includePast: boolean): DaySection[] {
@@ -246,12 +293,12 @@ function teamSections(teamName: string, includePast: boolean): DaySection[] {
   const sections = new Map<string, DaySection>();
 
   const ensure = (date: string, gameType: string, location: string, seriesId?: string, kiosk = '') => {
-    const key = `${date}|${gameType}`;
+    const key = `${date}|${location}`;
     let s = sections.get(key);
     if (!s) {
-      const day = findDay(date, gameType);
+      const day = findDay(date, location);
       s = {
-        date, dateLabel: formatDate(date), location: location || day?.location || '', gameType,
+        date, dateLabel: formatDate(date), organizer: day?.organizer ?? '', location: location || day?.location || '', gameType,
         series: [], kiosk, published: (day?.gamesPublished ?? 0) > 0, games: [], firstTime: null, lastEnd: null,
       };
       sections.set(key, s);
@@ -331,6 +378,7 @@ function commonVars(baseUrl: string) {
     hasData: !!gamesData,
     lastUpdated: gamesData?.lastUpdated ?? null,
     sheetUrl: SHEET_URL,
+    olsUrl: OLS_PAGE,
     metaUrl: baseUrl,
   };
 }
@@ -429,6 +477,12 @@ async function handleAdmin(req: Request): Promise<Response> {
     documentTitle: 'Admin - Talviliiga',
     lastUpdated: gamesData?.lastUpdated ?? null,
     sheetUrl: SHEET_URL,
+    olsUrl: OLS_PAGE,
+    sources: [
+      { name: 'Tervarit (Google Sheet)', updated: tervarit?.lastUpdated ?? null, games: tervarit?.games.length ?? 0 },
+      { name: 'OLS (ols.fi)', updated: ols?.lastUpdated ?? null, games: ols?.games.length ?? 0 },
+    ],
+    olsPdfs: ols?.pdfs ?? [],
     season: gamesData?.season ?? '',
     gamesCount: gamesData?.games.length ?? 0,
     seriesCount: gamesData?.series.length ?? 0,

@@ -40,4 +40,13 @@ fly volumes create talviliiga_data -a talviliiga -r arn -s 1   # once
 fly deploy
 ```
 
-`scripts/parsePdf.ts` is the old parser for OLS's own Talviliiga PDFs (last season); not wired in.
+
+
+## OLS Talviliiga (second source)
+
+`src/ols.ts` reads https://ols.fi/jalkapallo/talviliiga/ for game days, age groups, game format
+and registered teams (EP/VP), and looks for schedule PDFs named `Talviliiga<ddmmyy><rev>.pdf`
+on the page and in the `wp-content/uploads/<year>/<month>/` directories (previous, current, next month).
+The newest revision per game day is parsed; short PDF names ("Kreikka 17 AEK") are matched to the
+registered names ("OLS Kreikka 17 AEK"). Unmatched names are listed on `/admin`.
+Last season's PDFs in `test/fixtures/ols-pdf/` are used as parser tests.

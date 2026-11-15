@@ -138,7 +138,7 @@
                         <div class="section">
                             <div class="section-head">
                                 <div class="d"><%= sec.dateLabel %><% if (sec.firstTime) { %> · <%= sec.firstTime %><% if (sec.lastEnd) { %>–<%= sec.lastEnd %><% } %><% } %></div>
-                                <div class="m"><%= sec.location %> · <%= sec.gameType %><% if (sec.kiosk) { %> · Kioski: <%= sec.kiosk %><% } %></div>
+                                <div class="m"><%= sec.location %> · <%= sec.gameType %><% if (sec.organizer) { %> · <%= sec.organizer %><% } %><% if (sec.kiosk) { %> · Kioski: <%= sec.kiosk %><% } %></div>
                             </div>
                             <% if (sec.games.length === 0) { %>
                                 <div class="pending">
@@ -194,7 +194,7 @@
                             <div class="day-card <%= d.isToday ? 'today' : (d.gamesPublished ? 'published' : '') %>">
                                 <div class="day-head">
                                     <span class="day-date"><%= d.dateLabel %></span>
-                                    <span class="day-type"><%= d.gameType %></span>
+                                    <span class="day-type"><%= d.organizer %> · <%= d.gameType %></span>
                                 </div>
                                 <div class="day-loc"><%= d.location %><% if (d.kiosk.length) { %> · Kioski: <%= d.kiosk.join(', ') %><% } %></div>
                                 <div class="day-series"><%= d.seriesLabels.join(' · ') %></div>
@@ -240,7 +240,7 @@
     </div>
 
     <footer>
-        <p>Epävirallinen työkalu Talviliigan otteluohjelman selaamiseen. Lähde: <a href="<%= sheetUrl %>" rel="noopener">Tervarit Juniorit – otteluohjelmat</a>.</p>
+        <p>Epävirallinen työkalu Talviliigan otteluohjelman selaamiseen. Lähteet: <a href="<%= sheetUrl %>" rel="noopener">Tervarit Juniorit</a> ja <a href="<%= olsUrl %>" rel="noopener">OLS</a>.</p>
         <p><% if (lastUpdated) { %>Päivitetty <%= new Date(lastUpdated).toLocaleString('fi-FI', { timeZone: 'Europe/Helsinki' }) %>. <% } %>Palaute: <a href="mailto:leohoitaa@gmail.com">leohoitaa@gmail.com</a></p>
     </footer>
 </body>
