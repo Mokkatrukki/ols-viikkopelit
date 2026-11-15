@@ -1,34 +1,6 @@
-# Dependencies
 node_modules/
-
-# Build outputs
-dist/
-
-# Environment files
+data/games.json
+data/stats.json
+data/*.xlsx
 .env
-.env.local
-
-# Logs
-*.log
-npm-debug.log*
-
-# OS files
 .DS_Store
-Thumbs.db
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Temporary files
-*.tmp
-.cache/
-
-# CSS build output (except minified for production)
-public/css/style.css
-
-# Optional: Uncomment if you want to gitignore the generated games.json
-# (regenerate it from Excel on each deployment)
-# data/games.json

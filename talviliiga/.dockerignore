@@ -1,41 +1,11 @@
-# Dependencies
-node_modules/
-
-# Git files
-.git/
-.gitignore
-
-# Environment files
-.env
-.env.local
-
-# Build outputs (will be rebuilt in container)
-dist/
-
-# Documentation
-README.md
+node_modules
+data
+test
+scripts
+.git
+.claude
+.playwright-mcp
 *.md
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Logs
-*.log
-npm-debug.log*
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Fly.io files
+*.pdf
+*.PDF
 fly.toml
-
-# Temporary files
-*.tmp
-.cache/
-
-# Development-only scripts (PDF parsing with canvas dependency)
-scripts/

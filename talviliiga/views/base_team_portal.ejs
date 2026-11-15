@@ -1,123 +1,62 @@
 <!DOCTYPE html>
 <html lang="fi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="<%= metaDescription || (baseTeamName + ' joukkueportaali - katsele alijoukkueiden aikatauluja ja pelejä.') %>">
-    <meta property="og:title" content="<%= metaTitle || documentTitle %>">
-    <meta property="og:description" content="<%= metaDescription || (baseTeamName + ' joukkueportaali - katsele alijoukkueiden aikatauluja.') %>">
-    <meta property="og:url" content="<%= metaUrl || '' %>">
-    <meta property="og:type" content="website">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <meta name="description" content="<%= metaDescription %>">
     <title><%= documentTitle %></title>
-
-    <!-- Tailwind CSS -->
-    <link href="/css/style.css" rel="stylesheet">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<%= metaUrl %>">
+    <meta property="og:title" content="<%= metaTitle %>">
+    <meta property="og:description" content="<%= metaDescription %>">
+    <meta property="og:site_name" content="Talviliiga">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; background: #f1f5f9; color: #1e293b; min-height: 100vh; display: flex; flex-direction: column; }
+        .container { width: 100%; max-width: 48rem; margin: 0 auto; flex: 1; }
+        header { background: #1d4ed8; color: white; padding: 1rem; border-radius: 0 0 0.5rem 0.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1); }
+        header a { color: white; text-decoration: none; font-size: 0.875rem; }
+        h1 { font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem; }
+        .time-range { font-size: 0.9375rem; color: #dbeafe; }
+        main { padding: 1rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+        @media (min-width: 768px) { main { padding: 2rem; } }
+        .card { background: white; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1); border-left: 4px solid #1d4ed8; }
+        .card a { color: #1d4ed8; font-weight: 700; font-size: 1.0625rem; }
+        .row { font-size: 0.875rem; color: #475569; margin-top: 0.25rem; }
+        .time { font-weight: 700; color: #1e293b; }
+        footer { background: #1e293b; color: #cbd5e1; text-align: center; padding: 1rem; font-size: 0.875rem; margin-top: 3rem; }
+        footer a { color: #93c5fd; }
+    </style>
 </head>
-
-<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen flex flex-col">
-    <div class="container mx-auto max-w-4xl px-4 py-8 flex-grow">
-        <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-2xl shadow-2xl mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2">
-                <%= baseTeamName %>
-            </h1>
-            <p class="text-center text-blue-100 text-lg">Joukkueportaali</p>
-        </header>
-
-        <main class="flex-grow">
-            <!-- Back navigation -->
-            <div class="mb-6">
-                <a href="/" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                    Takaisin kaikkiin joukkueisiin
-                </a>
-            </div>
-
-            <% if (typeof loading !== 'undefined' && loading) { %>
-                <div class="text-center py-12">
-                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-                    <p class="mt-4 text-xl text-blue-800 font-semibold">Ladataan alijoukkueita...</p>
-                    <p class="text-sm text-slate-600 mt-2">Palvelin käynnistyy, odota hetki.</p>
-                </div>
-            <% } else if (subteams.length > 0) { %>
-                <h2 class="text-2xl font-bold text-slate-800 mb-6">
-                    Alijoukkueet (<%= subteams.length %>)
-                </h2>
-
-                <div class="grid gap-6 md:grid-cols-2">
-                    <% subteams.forEach((subteam) => { %>
-                        <div class="bg-white p-6 rounded-xl shadow-lg border-2 border-blue-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300">
-                            <div class="flex justify-between items-start mb-4">
-                                <h3 class="text-xl font-bold text-blue-700">
-                                    <%= subteam.name.split(' ').pop() %>
-                                </h3>
-                            </div>
-
-                            <% if (subteam.nextGame) { %>
-                                <div class="mb-4 space-y-2">
-                                    <p class="text-sm font-semibold text-slate-600 uppercase tracking-wide">
-                                        Seuraava peli:
-                                    </p>
-                                    <div class="bg-blue-50 p-3 rounded-lg">
-                                        <% if (subteam.nextGame.fullDate) { %>
-                                        <p class="text-lg font-bold text-slate-700 mb-1">
-                                            <%= subteam.nextGame.fullDate %>
-                                        </p>
-                                        <% } %>
-                                        <p class="text-lg font-bold text-blue-700 mb-2">
-                                            <%= subteam.nextGame.time %>
-                                        </p>
-                                        <p class="text-md text-slate-700">
-                                            vs <%= subteam.nextGame.opponent %>
-                                        </p>
-                                        <p class="text-sm text-slate-600 mt-2">
-                                            📍 <%= subteam.nextGame.field %>
-                                        </p>
-                                        <% if (subteam.nextGame.location) { %>
-                                        <p class="text-sm text-slate-600">
-                                            🏟️ <%= subteam.nextGame.location %>
-                                        </p>
-                                        <% } %>
-                                    </div>
-                                </div>
-
-                                <div class="text-xs text-slate-500 mb-4 py-3 border-t border-slate-200">
-                                    <div class="flex flex-wrap gap-3">
-                                        <span><span class="font-semibold">Pelimuoto:</span> <%= subteam.nextGame.gameType %></span>
-                                        <span><span class="font-semibold">Kesto:</span> <%= subteam.nextGame.gameDuration %></span>
-                                    </div>
-                                </div>
-                            <% } else { %>
-                                <div class="mb-4 bg-slate-50 p-4 rounded-lg">
-                                    <p class="text-slate-500">
-                                        Ei tulevia pelejä
-                                    </p>
-                                </div>
-                            <% } %>
-
-                            <div class="pt-4 border-t border-slate-200">
-                                <a href="/team/<%= encodeURIComponent(subteam.name) %><% if (subteam.nextGame && subteam.nextGame.date) { %>?date=<%= encodeURIComponent(subteam.nextGame.date) %><% } %>"
-                                   class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors duration-200">
-                                    Näytä koko aikataulu
-                                </a>
-                            </div>
-                        </div>
-                    <% }); %>
-                </div>
-            <% } else { %>
-                <div class="text-center py-12 bg-white rounded-xl shadow-lg">
-                    <p class="text-slate-500 text-lg">Ei alijoukkueita löytynyt.</p>
-                </div>
+<body>
+    <div class="container">
+        <header>
+            <a href="/">← Takaisin</a>
+            <h1><%= baseTeamName %></h1>
+            <% if (nextDate) { %>
+                <div class="time-range">Seuraava pelipäivä <%= nextDate %><% if (firstGameTime && lastGameEndTime) { %> · <%= firstGameTime %>–<%= lastGameEndTime %><% } %></div>
             <% } %>
+        </header>
+        <main>
+            <% subteams.forEach(st => { %>
+                <div class="card">
+                    <a href="/team/<%= encodeURIComponent(st.name) %>"><%= st.name %></a>
+                    <% if (!st.next) { %>
+                        <div class="row">Ei tulevia pelipäiviä</div>
+                    <% } else { %>
+                        <div class="row"><%= st.next.dateLabel %> · <%= st.next.location %><% if (st.next.series.length) { %> · <%= st.next.series.join(', ') %><% } %></div>
+                        <% if (st.next.games.length) { %>
+                            <div class="row">Eka peli <span class="time"><%= st.next.firstTime %></span><% if (st.next.lastEnd) { %> · vika loppuu <span class="time"><%= st.next.lastEnd %></span><% } %> · <%= st.next.games.length %> peliä</div>
+                        <% } else { %>
+                            <div class="row">Otteluohjelma julkaistaan myöhemmin</div>
+                        <% } %>
+                    <% } %>
+                </div>
+            <% }); %>
         </main>
-
-        <footer class="mt-12 text-center text-slate-600 text-sm py-6">
-            <p>Tämä on epävirallinen työkalu Talviliigan otteluohjelman selaamiseen.</p>
-        </footer>
     </div>
+    <footer>
+        <p>Talviliiga<% if (lastUpdated) { %> · Päivitetty <%= new Date(lastUpdated).toLocaleString('fi-FI', { timeZone: 'Europe/Helsinki' }) %><% } %></p>
+    </footer>
 </body>
-
 </html>

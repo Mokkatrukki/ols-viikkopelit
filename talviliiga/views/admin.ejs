@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title><%= documentTitle %></title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; }
+        .container { width: 100%; max-width: 40rem; margin: 0 auto; padding: 2rem 1rem; }
+        header { background: #1d4ed8; color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 2rem; }
+        header h1 { font-size: 1.5rem; font-weight: 700; }
+        header a { color: #bfdbfe; font-size: 0.875rem; }
+        .card { background: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1); margin-bottom: 1.5rem; }
+        .card h2 { font-size: 1.125rem; font-weight: 600; color: #1e40af; margin-bottom: 1rem; }
+        .stat { display: flex; justify-content: space-between; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.875rem; }
+        .stat:last-child { border-bottom: none; }
+        .stat-label { color: #64748b; }
+        .stat-value { font-weight: 600; text-align: right; }
+        .past { opacity: 0.5; }
+        .warn { font-size: 0.8125rem; color: #92400e; background: #fef3c7; padding: 0.5rem; border-radius: 0.25rem; margin-bottom: 0.5rem; }
+        .btn { display: inline-block; background: #1d4ed8; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 1rem; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        #status { margin-top: 1rem; padding: 0.75rem; border-radius: 0.5rem; display: none; }
+        #status.ok { background: #dcfce7; color: #166534; display: block; }
+        #status.err { background: #fee2e2; color: #991b1b; display: block; }
+        a { color: #1d4ed8; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/">← Takaisin</a>
+            <h1>Admin</h1>
+        </header>
+
+        <div class="card">
+            <h2>Päivitä data</h2>
+            <p style="font-size:0.875rem;color:#475569;">Data päivittyy automaattisesti, kun sivua käytetään. Tällä napilla haet Google Sheetin heti.</p>
+            <button class="btn" id="refreshBtn" onclick="doRefresh()">Hae nyt</button>
+            <div id="status"></div>
+        </div>
+
+        <div class="card">
+            <h2>Tila</h2>
+            <div class="stat"><span class="stat-label">Kausi</span><span class="stat-value"><%= season || '-' %></span></div>
+            <div class="stat"><span class="stat-label">Sarjat / joukkueet</span><span class="stat-value"><%= seriesCount %> / <%= teamsCount %></span></div>
+            <div class="stat"><span class="stat-label">Pelit</span><span class="stat-value"><%= gamesCount %></span></div>
+            <div class="stat"><span class="stat-label">Tänään käynnit / uniikit</span><span class="stat-value"><%= todayVisits %> / <%= todayUnique %></span></div>
+            <div class="stat"><span class="stat-label">Päivitetty</span><span class="stat-value"><%= lastUpdated ? new Date(lastUpdated).toLocaleString('fi-FI', { timeZone: 'Europe/Helsinki' }) : 'Ei dataa' %></span></div>
+            <div class="stat"><span class="stat-label">Lähde</span><span class="stat-value"><a href="<%= sheetUrl %>">Google Sheet</a></span></div>
+        </div>
+
+        <% if (warnings.length) { %>
+        <div class="card">
+            <h2>Parserin huomiot (<%= warnings.length %>)</h2>
+            <% warnings.forEach(w => { %><div class="warn"><%= w %></div><% }); %>
+        </div>
+        <% } %>
+
+        <div class="card">
+            <h2>Pelipäivät</h2>
+            <% days.forEach(d => { %>
+                <div class="stat <%= d.past ? 'past' : '' %>">
+                    <span class="stat-label"><%= d.dateLabel %> · <%= d.gameType %> · <%= d.location %></span>
+                    <span class="stat-value"><%= d.gamesPublished ? d.gamesPublished + ' peliä' : 'ei ohjelmaa' %></span>
+                </div>
+            <% }); %>
+        </div>
+
+        <div class="card">
+            <h2>Kävijät / päivä (30 pv)</h2>
+            <% const maxVal = Math.max(...dailyStats.map(d => d.unique), 1); %>
+            <div style="display:flex;flex-direction:column;gap:0.25rem;">
+            <% dailyStats.slice().reverse().forEach(function(d) { if (d.visits === 0) return; %>
+                <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;">
+                    <span style="width:5.5rem;color:#64748b;flex-shrink:0;"><%= d.date %></span>
+                    <div style="flex:1;background:#f1f5f9;border-radius:2px;height:1.1rem;">
+                        <div style="width:<%= Math.round(d.unique / maxVal * 100) %>%;background:#1d4ed8;height:100%;border-radius:2px;"></div>
+                    </div>
+                    <span style="width:3.5rem;text-align:right;color:#64748b;font-size:0.75rem;"><%= d.visits %>kpl</span>
+                    <span style="width:2rem;text-align:right;font-weight:600;"><%= d.unique %></span>
+                </div>
+            <% }); %>
+            </div>
+            <p style="font-size:0.75rem;color:#94a3b8;margin-top:0.75rem;">Pylväs = uniikit kävijät | kpl = sivulataukset</p>
+        </div>
+    </div>
+
+    <script>
+        async function doRefresh() {
+            const btn = document.getElementById('refreshBtn');
+            const status = document.getElementById('status');
+            btn.disabled = true; btn.textContent = 'Haetaan...';
+            try {
+                const r = await fetch('/api/refresh', { method: 'POST' });
+                const d = await r.json();
+                status.textContent = d.message;
+                status.className = d.ok ? 'ok' : 'err';
+                if (d.ok) setTimeout(() => location.reload(), 1200);
+            } catch (e) {
+                status.textContent = 'Verkkovirhe: ' + e; status.className = 'err';
+            }
+            btn.disabled = false; btn.textContent = 'Hae nyt';
+        }
+    </script>
+</body>
+</html>

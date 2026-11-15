@@ -1,43 +1,16 @@
 {
   "name": "talviliiga",
-  "version": "1.0.0",
-  "description": "Talviliiga Tournament Viewer - Simple, fast tournament schedule app",
-  "main": "dist/src/app.js",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
-    "start": "node dist/src/app.js",
-    "dev": "npm run build:css & node --import \"data:text/javascript,import { register } from 'node:module'; import { pathToFileURL } from 'node:url'; register('ts-node/esm', pathToFileURL('./'));\" src/app.ts",
-    "build": "tsc && npm run build:css:once",
-    "build:css:once": "tailwindcss -i ./src/input.css -o ./public/css/style.css && csso ./public/css/style.css -o ./public/css/style.min.css",
-    "build:css": "tailwindcss -i ./src/input.css -o ./public/css/style.css --watch",
-    "parse": "node --import \"data:text/javascript,import { register } from 'node:module'; import { pathToFileURL } from 'node:url'; register('ts-node/esm', pathToFileURL('./'));\" scripts/parseExcel.ts",
-    "parse:pdf": "node --import \"data:text/javascript,import { register } from 'node:module'; import { pathToFileURL } from 'node:url'; register('ts-node/esm', pathToFileURL('./'));\" scripts/parsePdf.ts"
+    "dev": "bun run --hot src/app.ts",
+    "start": "bun run src/app.ts",
+    "fetch": "bun run src/fetcher.ts",
+    "parse": "bun run src/parser.ts",
+    "test": "bun test"
   },
-  "keywords": [
-    "tournament",
-    "talviliiga",
-    "schedule"
-  ],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "ejs": "^3.1.10",
-    "express": "^5.1.0"
-  },
-  "devDependencies": {
-    "@types/ejs": "^3.1.5",
-    "@types/express": "^5.0.1",
-    "@types/node": "^20.12.12",
-    "autoprefixer": "^10.4.21",
-    "csso-cli": "^4.0.2",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^3.4.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
-  },
-  "optionalDependencies": {
-    "canvas": "^3.2.0",
-    "pdfjs-dist": "^5.4.394",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
 }

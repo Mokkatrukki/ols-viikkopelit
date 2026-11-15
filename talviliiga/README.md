@@ -1,264 +1,43 @@
-# Talviliiga Tournament Viewer
+# Talviliiga
 
-A simple, fast, and lightweight tournament schedule viewer for Talviliiga tournaments. Built specifically for static tournament schedules with performance and simplicity in mind.
+Unofficial schedule viewer for Tervarit Juniorit's Talviliiga 4v4 and 5v5 tournaments.
+Bun + EJS, same architecture as `ols-viikkopelitv2`.
 
-## ⚡ Performance
+## Data source
 
-- **< 10ms startup time** (achieved: **8ms**)
-- Minimal dependencies (express, ejs only)
-- No complex algorithms or heavy computation
-- Async data loading for fast cold starts
+The public Google Sheet linked from
+https://sites.google.com/tervaritjuniorit.fi/talviliiga/etusivu ("4v4&5v5>>"),
+downloaded as xlsx (`src/fetcher.ts`). For a new season, set `SHEET_ID`.
 
-## 🚀 Features
+`src/parser.ts` reads:
 
-- Team-based view - select a team to see their schedule
-- Display date, time, opponent, location, field, and game duration
-- Field maps - automatically displays venue field layout for each game
-- Clean, responsive Tailwind CSS design
-- Mobile-friendly interface
-- Parses tournament schedules from Excel or PDF files
+- **Ilmoittautuneet joukkueet**: series, registered teams, game days ("Pelipäivät") and kiosk team.
+  This is the source of truth for upcoming tournament days.
+- **5v5 turnaukset / 4v4 turnaukset**: per-day schedule blocks (time, field, teams).
+  Blocks whose date falls outside the current season (leftovers from last season) and
+  later duplicate copies of a day are skipped. Skipped blocks with games are listed on `/admin`.
 
-## 📁 Project Structure
+## Refresh
 
-```
-talviliiga/
-├── src/
-│   ├── app.ts              # Main Express server
-│   └── input.css           # Tailwind CSS input
-├── views/
-│   └── index.ejs           # Main template
-├── public/
-│   ├── css/                # Built CSS files
-│   └── images/             # Venue field maps (webp)
-├── data/
-│   ├── talviliiga.xlsx     # Source Excel file (optional)
-│   ├── team-mappings.json  # Team name mappings for PDF parser
-│   └── games.json          # Parsed game data
-├── scripts/
-│   ├── parseExcel.ts       # Excel parser
-│   └── parsePdf.ts         # PDF parser
-├── dist/                   # Compiled TypeScript
-├── Dockerfile              # Docker configuration
-├── fly.toml                # Fly.io deployment config
-└── package.json
-```
+No cron. When a request arrives and the data is older than `REFRESH_MINUTES` (default 15),
+the sheet is fetched in the background. On first boot without data the fetch blocks startup.
+Manual: `POST /api/refresh` or the button on `/admin`.
 
-## 🛠️ Development Setup
-
-### Prerequisites
-
-- Node.js 22+
-- npm
-
-### Installation
+## Commands
 
 ```bash
-# Install dependencies
-npm install
-
-# Parse schedule file to generate games.json
-# For Excel format:
-npm run parse
-
-# For PDF format:
-npm run parse:pdf
-
-# Build the application
-npm run build
-
-# Start the server
-npm start
+bun install
+bun run dev                       # http://localhost:3003
+bun test                          # parser tests against test/fixtures/*.xlsx
+bun run fetch data/talviliiga.xlsx
+bun run parse data/talviliiga.xlsx
 ```
 
-The app will be available at `http://localhost:3003`
-
-### Development Mode
+## Deploy (Fly.io)
 
 ```bash
-# Run in development mode with auto-reload
-npm run dev
-```
-
-## 📊 Updating Tournament Data
-
-### Excel Format
-
-1. **Update Excel file**: Replace `data/talviliiga.xlsx` with the new schedule
-2. **Parse Excel**: Run `npm run parse` to generate `data/games.json`
-3. **Rebuild**: Run `npm run build`
-4. **Deploy**: Commit and deploy (see deployment section)
-
-### PDF Format
-
-1. **Add PDF file**: Place your PDF schedule in the project root (e.g., `Talviliiga221125a.pdf`)
-2. **Update team mappings**: Edit `data/team-mappings.json` if needed to add new teams
-3. **Parse PDF**: Run `npm run parse:pdf` to generate `data/games.json`
-4. **Rebuild**: Run `npm run build`
-5. **Deploy**: Commit and deploy (see deployment section)
-
-**Note:** You can specify custom paths:
-```bash
-npm run parse:pdf path/to/schedule.pdf data/output.json
-```
-
-## 🐳 Docker
-
-Build and run with Docker:
-
-```bash
-# Build image
-docker build -t talviliiga .
-
-# Run container
-docker run -p 3003:3003 talviliiga
-```
-
-## 🚁 Deployment (Fly.io)
-
-### Initial Setup
-
-```bash
-# Login to Fly.io
-fly auth login
-
-# Launch the app (first time)
-fly launch --copy-config --yes
-
-# Deploy
+fly volumes create talviliiga_data -a talviliiga -r arn -s 1   # once
 fly deploy
 ```
 
-### Updating Schedule
-
-```bash
-# Update Excel file
-cp new-schedule.xlsx data/talviliiga.xlsx
-
-# Parse and rebuild
-npm run parse
-npm run build
-
-# Deploy updated schedule
-git add data/
-git commit -m "Update tournament schedule"
-fly deploy
-```
-
-### Monitoring
-
-```bash
-# View logs
-fly logs
-
-# Check app status
-fly status
-
-# Open app in browser
-fly open
-```
-
-## 📝 Schedule File Formats
-
-### Excel Format
-
-The Excel file should have two sheets:
-- `5v5 turnaukset` - 5v5 tournament games
-- `4v4 turnaukset` - 4v4 tournament games
-
-Each sheet should contain:
-- Date (Excel date format)
-- Location (e.g., "Kempele Areena", "Kurikkahaantien halli")
-- Game duration (e.g., "PELIAIKA 25MIN")
-- Game rows with: Time | Team1 | Team2 (repeating pattern across columns)
-
-### PDF Format
-
-The PDF parser supports landscape-format tournament schedules with:
-- Multiple fields (e.g., Kenttä 1A, 1B, 1C, 1D)
-- Time slots with age groups (2017-2020)
-- Automatic game type detection:
-  - **2019-2020**: 3v3, 15min games, 3 fields (A, B, C)
-  - **2017-2018**: 4v4, 20min games, 4 fields (A, B, C, D)
-- Team name mapping via `data/team-mappings.json`
-
-The parser extracts:
-- Date and location from PDF metadata
-- Time slots and age groups
-- Team matchups
-- Field assignments
-
-## 🎯 Design Principles
-
-1. **Simplicity First** - No unnecessary features or complexity
-2. **Performance** - Fast startup, minimal dependencies
-3. **Maintainability** - Easy to understand and modify
-4. **Cost-Effective** - Low resource usage (~$0.39/month on Fly.io)
-
-## 📈 Performance Comparison
-
-| Metric | OLS Viikkopelit | Talviliiga |
-|--------|-----------------|------------|
-| Startup Time | ~12ms | **8ms** ✅ |
-| Dependencies | 4 (express, ejs, axios, dotenv) | **2 (express, ejs)** |
-| Architecture | 2 apps (main + admin) | **1 app** |
-| Data Updates | Auto-scraping with Puppeteer | Manual Excel update |
-| Docker Image | ~59MB | **< 50MB** |
-
-## 🤝 Contributing
-
-This is a simple, focused tool. If you want to add features, please ensure they:
-- Don't slow down startup time
-- Don't add unnecessary dependencies
-- Keep the codebase simple and maintainable
-
-## 📄 License
-
-ISC
-
-## 📊 Usage Analytics
-
-The app includes request logging to track page views and usage statistics. After game days, you can check the logs to see how many people used the app.
-
-### View Logs
-
-```bash
-# See recent logs with page views
-fly logs --app talviliiga --no-tail | grep "📊"
-
-# See live logs (real-time)
-fly logs --app talviliiga -f
-```
-
-### Usage Statistics
-
-```bash
-# Count total page views
-fly logs --app talviliiga --no-tail | grep "📊" | wc -l
-
-# Count unique visitors (approximate)
-fly logs --app talviliiga --no-tail | grep "📊" | grep -oP 'IP: \K[^\s]+' | sort -u | wc -l
-
-# See which teams/pages are most popular
-fly logs --app talviliiga --no-tail | grep "📊" | grep -oP 'GET \K[^\s]+' | sort | uniq -c | sort -rn
-
-# Count mobile vs desktop usage
-fly logs --app talviliiga --no-tail | grep "📊" | grep -i "iphone\|android\|mobile" | wc -l
-```
-
-### Example Log Output
-
-```
-📊 [2025-11-13T11:26:24.459Z] GET / - IP: 192.168.1.1 - UA: Mozilla/5.0 (iPhone...)
-📊 [2025-11-13T11:26:27.597Z] GET /base-team/Ajax%20P10 - IP: 192.168.1.1 - UA: Mozilla/5.0...
-📊 [2025-11-13T11:26:30.168Z] GET /team/Ajax%20P10%20Keltainen?date=16.11 - IP: 192.168.1.2 - UA: Mozilla/5.0...
-```
-
-Each log entry shows:
-- **Timestamp**: When the request was made
-- **URL**: Which page was visited
-- **IP**: Visitor's IP address (first part only)
-- **User Agent**: Browser/device information (truncated)
-
-## 🙏 Acknowledgments
-
-Built using simplified patterns from the OLS Viikkopelit app, focusing on performance and simplicity for static tournament schedules.
+`scripts/parsePdf.ts` is the old parser for OLS's own Talviliiga PDFs (last season); not wired in.
