@@ -38,6 +38,7 @@
             <% } %>
         </header>
         <main>
+            <% if (subteams.length === 0) { %><div class="card">Ei joukkueita tänään eikä seuraavana turnauspäivänä. <a href="/">Tulevat turnauspäivät</a></div><% } %>
             <% subteams.forEach(st => { %>
                 <div class="card">
                     <a href="/team/<%= encodeURIComponent(st.name) %>"><%= st.name %></a>

@@ -132,7 +132,7 @@
                     <p class="subtitle"><%= teamSeries.length ? teamSeries.join(', ') : 'Sarjaa ei löytynyt ilmoittautuneista' %></p>
 
                     <% if (sections.length === 0) { %>
-                        <p class="empty-state">Ei tulevia pelipäiviä.</p>
+                        <p class="empty-state">Ei pelejä tänään eikä seuraavana turnauspäivänä. <a href="/">Tulevat turnauspäivät etusivulla</a>.</p>
                     <% } %>
                     <% sections.forEach((sec, si) => { %>
                         <div class="section">

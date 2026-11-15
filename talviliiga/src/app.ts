@@ -281,6 +281,37 @@ interface DaySection {
   lastEnd: string | null;
 }
 
+// The "current" tournament date: today if games are played today, otherwise the
+// next upcoming one. Team lists and team pages only show this date; later
+// tournaments appear only in the front page list.
+function activeDate(): string | null {
+  const today = todayIso();
+  return gamesData?.days.map(d => d.date).filter(d => d >= today).sort()[0] ?? null;
+}
+
+function teamsOnDate(date: string | null): Set<string> {
+  const keys = new Set<string>();
+  if (!gamesData || !date) return keys;
+  for (const g of gamesData.games) {
+    if (g.date === date) { keys.add(teamKey(g.team1)); keys.add(teamKey(g.team2)); }
+  }
+  for (const s of gamesData.series) {
+    if (s.days.some(d => d.date === date)) s.teams.forEach(n => keys.add(teamKey(n)));
+  }
+  return keys;
+}
+
+function activeTeamLists() {
+  const active = teamsOnDate(activeDate());
+  const on = (n: string) => active.has(teamKey(n));
+  return {
+    baseTeams: baseTeams
+      .map(bt => ({ name: bt.name, subteams: bt.subteams.filter(on) }))
+      .filter(bt => bt.subteams.length > 0),
+    individualTeams: individualTeams.filter(on),
+  };
+}
+
 function findDay(date: string, location: string): TournamentDay | undefined {
   return gamesData?.days.find(d => d.date === date && d.location === location);
 }
@@ -289,6 +320,7 @@ function teamSections(teamName: string, includePast: boolean): DaySection[] {
   if (!gamesData) return [];
   const info = teams.get(teamKey(teamName));
   const today = todayIso();
+  const until = activeDate();
   const k = teamKey(teamName);
   const sections = new Map<string, DaySection>();
 
@@ -332,7 +364,7 @@ function teamSections(teamName: string, includePast: boolean): DaySection[] {
   }
 
   return [...sections.values()]
-    .filter(s => includePast || s.date >= today)
+    .filter(s => (includePast || s.date >= today) && (!until || s.date <= until))
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
@@ -372,8 +404,7 @@ function getBaseUrl(req: Request): string {
 function commonVars(baseUrl: string) {
   return {
     season: gamesData?.season ?? '',
-    baseTeams,
-    individualTeams,
+    ...activeTeamLists(),
     selectedTeam: null as string | null,
     hasData: !!gamesData,
     lastUpdated: gamesData?.lastUpdated ?? null,
@@ -441,7 +472,8 @@ async function handleBaseTeam(req: Request, name: string): Promise<Response> {
   const bt = baseTeams.find(b => b.name === name);
   if (!bt) return new Response('Not found', { status: 404 });
 
-  const subteams = bt.subteams.map(sub => {
+  const active = teamsOnDate(activeDate());
+  const subteams = bt.subteams.filter(sub => active.has(teamKey(sub))).map(sub => {
     const next = teamSections(sub, false)[0] ?? null;
     return { name: sub, suffix: sub.substring(bt.name.length).trim(), next };
   });
